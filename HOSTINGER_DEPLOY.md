@@ -383,21 +383,142 @@ Browser checks:
 
 ## 11. Update the new site later
 
+### A) One-time: connect `/var/www/doorway` to GitHub
+
+Your live folder was uploaded by zip (no `.git`). Convert it once:
+
 ```bash
+ssh root@76.13.254.129
+
+# backup live env + uploads
+mkdir -p /root/doorway-backup
+cp /var/www/doorway/backend/.env /root/doorway-backup/backend.env
+cp /var/www/doorway/.env /root/doorway-backup/site.env 2>/dev/null || true
+cp /var/www/doorway/admin/.env /root/doorway-backup/admin.env 2>/dev/null || true
+cp -a /var/www/doorway/backend/uploads /root/doorway-backup/uploads 2>/dev/null || true
+
+# replace folder with a clean git clone
+cd /var/www
+mv doorway doorway-zip-old
+git clone https://github.com/Doorway25/New-Website.git doorway
 cd /var/www/doorway
-# upload new files OR git pull
+
+# restore production env files
+cp /root/doorway-backup/backend.env /var/www/doorway/backend/.env
+echo 'VITE_API_URL=https://web.educationdoorway.com' > /var/www/doorway/.env
+echo 'VITE_API_URL=' > /var/www/doorway/admin/.env
+
+# restore uploaded images/logos
+mkdir -p /var/www/doorway/backend/uploads
+cp -a /root/doorway-backup/uploads/. /var/www/doorway/backend/uploads/ 2>/dev/null || true
+
+# install + migrate + build + restart
+cd /var/www/doorway/backend && npm install && npx prisma migrate deploy && pm2 restart doorway-api --update-env
+cd /var/www/doorway && npm install && npm run build
+cd /var/www/doorway/admin && npm install && npm run build
+
+# verify
+curl -s http://127.0.0.1:4000/api/health
+curl -sI https://web.educationdoorway.com | head -5
+curl -sI https://admin.educationdoorway.com | head -5
+```
+
+If everything looks good:
+
+```bash
+rm -rf /var/www/doorway-zip-old
+```
+
+Private repo? Use a deploy key or:
+
+```bash
+git clone https://YOUR_GITHUB_USERNAME:YOUR_TOKEN@github.com/Doorway25/New-Website.git doorway
+```
+
+---
+
+### B) Every time you update code (normal workflow)
+
+**On your PC**
+
+```bash
+cd "C:\Users\Thinkbook 15 g4\OneDrive\Desktop\New Website"
+git add .
+git commit -m "Describe your change"
+git push origin main
+```
+
+**On the VPS**
+
+```bash
+ssh root@76.13.254.129
+cd /var/www/doorway
+git pull origin main
 
 cd /var/www/doorway/backend
 npm install
 npx prisma migrate deploy
-pm2 restart doorway-api
+pm2 restart doorway-api --update-env
 
 cd /var/www/doorway
-npm install && npm run build
+npm install
+npm run build
 
 cd /var/www/doorway/admin
-npm install && npm run build
+npm install
+npm run build
 ```
+
+One-liner after `git pull`:
+
+```bash
+cd /var/www/doorway && \
+  (cd backend && npm install && npx prisma migrate deploy && pm2 restart doorway-api --update-env) && \
+  npm install && npm run build && \
+  (cd admin && npm install && npm run build)
+```
+
+---
+
+### C) Optional: auto-deploy script on the VPS
+
+```bash
+cat > /usr/local/bin/doorway-deploy <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+cd /var/www/doorway
+git pull origin main
+cd /var/www/doorway/backend
+npm install
+npx prisma migrate deploy
+pm2 restart doorway-api --update-env
+cd /var/www/doorway
+npm install
+npm run build
+cd /var/www/doorway/admin
+npm install
+npm run build
+echo "Deploy done: $(date)"
+EOF
+chmod +x /usr/local/bin/doorway-deploy
+```
+
+Then after each GitHub push:
+
+```bash
+ssh root@76.13.254.129 doorway-deploy
+```
+
+---
+
+### D) Optional later: GitHub Actions (auto on push)
+
+You can add a workflow that SSHs into the VPS and runs `doorway-deploy` on every push to `main`. Needs:
+
+- GitHub repo secret `VPS_HOST` = `76.13.254.129`
+- GitHub repo secret `VPS_SSH_KEY` = private key that can SSH as root
+
+Ask if you want this Actions file added to the repo.
 
 ---
 
