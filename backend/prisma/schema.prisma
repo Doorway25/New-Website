@@ -1,0 +1,352 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String   @default("Admin")
+  role         String   @default("editor")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique @default("main")
+  name      String
+  short     String
+  tagline   String
+  since     Int
+  phone     String
+  phoneAlt  String?
+  email     String
+  hours     String
+  address   String
+  whatsapp  String
+  socials   Json
+  stats     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Page {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  subtitle        String?
+  eyebrow         String?
+  body            String?  @db.Text
+  content         Json?
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  ogTitle         String?
+  ogDescription   String?
+  ogImage         String?
+  canonicalUrl    String?
+  robots          String?  @default("index,follow")
+  schemaJson      Json?
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Country {
+  id              String       @id @default(cuid())
+  slug            String       @unique
+  name            String
+  flag            String?
+  code            String
+  region          String
+  blurb           String?
+  imageUrl        String?
+  sortOrder       Int          @default(0)
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  ogTitle         String?
+  ogDescription   String?
+  ogImage         String?
+  canonicalUrl    String?
+  robots          String?      @default("index,follow")
+  schemaJson      Json?
+  published       Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  universities    University[]
+}
+
+model Program {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  name      String
+  count     Int      @default(0)
+  blurb     String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subject {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  popular   Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model University {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  countrySlug     String
+  country         Country  @relation(fields: [countrySlug], references: [slug], onDelete: Cascade)
+  city            String
+  feeFrom         Int
+  imageUrl        String?
+  logoUrl         String?
+  programs        String[]
+  subjects        String[]
+  intakes         String[]
+  upcoming        String[]
+  docs            String[]
+  overview        String?  @db.Text
+  studentLife     String[] @default([])
+  accommodation   String[] @default([])
+  campus          String[] @default([])
+  featured        Boolean  @default(false)
+  sortOrder       Int      @default(0)
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  ogTitle         String?
+  ogDescription   String?
+  ogImage         String?
+  canonicalUrl    String?
+  robots          String?  @default("index,follow")
+  schemaJson      Json?
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Article {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  category        String
+  date            DateTime
+  readTime        Int
+  author          String
+  image           String?
+  excerpt         String?
+  content         String[]
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  ogTitle         String?
+  ogDescription   String?
+  ogImage         String?
+  canonicalUrl    String?
+  robots          String?  @default("index,follow")
+  schemaJson      Json?
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Event {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  type            String
+  date            DateTime
+  time            String
+  location        String
+  image           String?
+  excerpt         String?
+  description     String?  @db.Text
+  agenda          String[]
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  ogTitle         String?
+  ogDescription   String?
+  ogImage         String?
+  canonicalUrl    String?
+  robots          String?  @default("index,follow")
+  schemaJson      Json?
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model StoryCategory {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  label           String
+  short           String?
+  icon            String?
+  blurb           String?
+  sortOrder       Int      @default(0)
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  ogTitle         String?
+  ogDescription   String?
+  ogImage         String?
+  canonicalUrl    String?
+  robots          String?  @default("index,follow")
+  schemaJson      Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  stories         Story[]
+}
+
+model Story {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  name            String
+  role            String
+  roleKey         String
+  category        StoryCategory @relation(fields: [roleKey], references: [key], onDelete: Cascade)
+  relation        String?
+  image           String?
+  youtubeId       String?
+  quote           String?
+  text            String[]
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  ogTitle         String?
+  ogDescription   String?
+  ogImage         String?
+  canonicalUrl    String?
+  robots          String?       @default("index,follow")
+  schemaJson      Json?
+  published       Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Branch {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  city            String
+  country         String
+  code            String
+  head            Boolean  @default(false)
+  address         String
+  phone           String
+  phoneAlt        String?
+  email           String
+  hours           String
+  mapQuery        String?
+  blurb           String?
+  imageUrl        String?
+  details         String[] @default([])
+  sortOrder       Int      @default(0)
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  ogTitle         String?
+  ogDescription   String?
+  ogImage         String?
+  canonicalUrl    String?
+  robots          String?  @default("index,follow")
+  schemaJson      Json?
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Pillar {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  icon            String?
+  eyebrow         String?
+  teaser          String?
+  short           String?
+  intro           String?
+  points          Json
+  sortOrder       Int      @default(0)
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  ogTitle         String?
+  ogDescription   String?
+  ogImage         String?
+  canonicalUrl    String?
+  robots          String?  @default("index,follow")
+  schemaJson      Json?
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  initials  String
+  name      String
+  code      String
+  place     String
+  text      String   @db.Text
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Service {
+  id        String   @id @default(cuid())
+  icon      String?
+  title     String
+  text      String
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WhyUs {
+  id        String   @id @default(cuid())
+  icon      String?
+  title     String
+  text      String
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Partner {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  type      String   @default("counselling")
+  name      String
+  email     String?
+  phone     String?
+  message   String?
+  meta      Json?
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

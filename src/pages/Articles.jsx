@@ -4,14 +4,15 @@ import CounsellingSection from "../components/CounsellingSection";
 import PageHero from "../components/PageHero";
 import Pagination from "../components/Pagination";
 import Reveal from "../components/Reveal";
-import { articles } from "../data/site";
+import { useSite } from "../api/SiteContext";
 
 const PAGE_SIZE = 6;
 
 export default function Articles() {
+  const { articles } = useSite();
   const categories = useMemo(
     () => ["All", ...Array.from(new Set(articles.map((a) => a.category)))],
-    []
+    [articles]
   );
   const [active, setActive] = useState("All");
   const [page, setPage] = useState(1);
@@ -59,7 +60,7 @@ export default function Articles() {
         </div>
         <Pagination page={current} totalPages={totalPages} onChange={setPage} />
         <p className="mt-6 text-center text-sm text-slate-500">
-          Showing <strong>{(current - 1) * PAGE_SIZE + 1}</strong> to{" "}
+          Showing <strong>{list.length ? (current - 1) * PAGE_SIZE + 1 : 0}</strong> to{" "}
           <strong>{Math.min(current * PAGE_SIZE, list.length)}</strong> of{" "}
           <strong>{list.length}</strong> articles
         </p>

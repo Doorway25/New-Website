@@ -3,11 +3,12 @@ import CounsellingSection from "../components/CounsellingSection";
 import EventCard from "../components/EventCard";
 import PageHero from "../components/PageHero";
 import Reveal from "../components/Reveal";
-import { events } from "../data/site";
+import { useSite } from "../api/SiteContext";
 
 const filters = ["All", "In-person", "Online"];
 
 export default function Events() {
+  const { events } = useSite();
   const [active, setActive] = useState("All");
   const list = active === "All" ? events : events.filter((e) => e.type === active);
 

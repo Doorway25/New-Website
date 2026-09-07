@@ -39,11 +39,18 @@ export default function EventCard({ event }) {
           {event.title}
         </h3>
         <div className="mt-3 space-y-1.5 text-sm text-slate-500">
-          <p className="flex items-center gap-2"><Icon name="calendar" className="h-4 w-4 text-brand-400" /> {formatDate(event.date, { weekday: "short", day: "numeric", month: "long", year: "numeric" })}</p>
-          <p className="flex items-center gap-2"><Icon name="clock" className="h-4 w-4 text-brand-400" /> {event.time}</p>
-          <p className="flex items-center gap-2"><Icon name="pin" className="h-4 w-4 text-brand-400" /> {event.location}</p>
+          <div className="grid grid-cols-2 gap-2">
+            <p className="flex min-w-0 items-center gap-1.5">
+              <Icon name="calendar" className="h-4 w-4 shrink-0 text-brand-400" />
+              <span className="truncate">{formatDate(event.date, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</span>
+            </p>
+            <p className="flex min-w-0 items-center gap-1.5">
+              <Icon name="clock" className="h-4 w-4 shrink-0 text-brand-400" />
+              <span className="truncate">{event.time}</span>
+            </p>
+          </div>
+          <p className="flex items-center gap-2"><Icon name="pin" className="h-4 w-4 shrink-0 text-brand-400" /> {event.location}</p>
         </div>
-        <p className="mt-3 line-clamp-2 flex-1 text-sm leading-relaxed text-slate-500">{event.excerpt}</p>
         <span className="mt-4 inline-flex items-center gap-1.5 border-t border-slate-100 pt-3 text-sm font-semibold text-brand-600 transition-transform group-hover:translate-x-0.5">
           View details <Icon name="arrow" className="h-4 w-4" />
         </span>

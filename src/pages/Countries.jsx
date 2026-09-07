@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
-import Icon from "../components/Icon";
-import Flag from "../components/Flag";
-import Reveal from "../components/Reveal";
-import PageHero from "../components/PageHero";
 import CounsellingSection from "../components/CounsellingSection";
-import { countries, countUniversities } from "../data/site";
+import Flag from "../components/Flag";
+import Icon from "../components/Icon";
+import PageHero from "../components/PageHero";
+import Reveal from "../components/Reveal";
+import { useSite } from "../api/SiteContext";
 
 export default function Countries() {
+  const { countries, countUniversities } = useSite();
+
   return (
     <>
       <PageHero
@@ -27,7 +29,7 @@ export default function Countries() {
                 >
                   <div className="relative flex items-center gap-4 bg-gradient-to-br from-brand-950 to-brand-800 p-6 text-white">
                     <div className="pointer-events-none absolute inset-0 opacity-15 [background-image:radial-gradient(circle_at_80%_20%,white_1px,transparent_1px)] [background-size:18px_18px]" />
-                    <Flag code={c.code} className="relative text-5xl drop-shadow" title={c.name} />
+                    <Flag code={c.code} className="relative h-14 w-14 drop-shadow" title={c.name} />
                     <div className="relative">
                       <h3 className="font-display text-lg font-bold leading-tight">{c.name}</h3>
                       <span className="mt-1 inline-block rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-medium text-gold-400">

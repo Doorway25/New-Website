@@ -1,24 +1,26 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import CounsellingSection from "../components/CounsellingSection";
 import Icon from "../components/Icon";
-import Reveal from "../components/Reveal";
 import PageHero from "../components/PageHero";
 import Pagination from "../components/Pagination";
-import CounsellingSection from "../components/CounsellingSection";
-import { programs, subjects } from "../data/site";
+import Reveal from "../components/Reveal";
+import { useSite } from "../api/SiteContext";
 
 const SUBJECT_PAGE_SIZE = 12;
 
 const programIcons = {
   foundation: "spark",
+  diploma: "doc",
   undergraduate: "cap",
   postgraduate: "book",
-  diploma: "doc",
+  mres: "award",
   "postgraduate-diploma": "award",
   phd: "target",
 };
 
 export default function Courses() {
+  const { programs, subjects } = useSite();
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(subjects.length / SUBJECT_PAGE_SIZE));
   const current = Math.min(page, totalPages);
@@ -27,10 +29,10 @@ export default function Courses() {
   return (
     <>
       <PageHero
-        eyebrow="Courses"
-        title="View All Global Courses"
+        eyebrow="Course Finder"
+        title="Find Your Course"
         subtitle="Select your academic level to view relevant university options across our global network."
-        crumbs={[{ label: "Courses" }]}
+        crumbs={[{ label: "Course Finder" }]}
       />
 
       <section className="container-x -mt-8 relative z-10">
@@ -43,7 +45,7 @@ export default function Courses() {
               >
                 <div className="flex items-center justify-between">
                   <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white">
-                    <Icon name={programIcons[p.key]} className="h-6 w-6" />
+                    <Icon name={programIcons[p.key] || "book"} className="h-6 w-6" />
                   </span>
                   <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-600">
                     {p.count} Courses
@@ -79,7 +81,6 @@ export default function Courses() {
         </div>
         <Pagination page={current} totalPages={totalPages} onChange={setPage} />
       </section>
-
       <CounsellingSection />
     </>
   );

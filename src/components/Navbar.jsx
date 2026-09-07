@@ -3,14 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import Icon from "./Icon";
 import Flag from "./Flag";
 import Logo from "./Logo";
-import { company, countries, programs, subjects } from "../data/site";
-
-const regions = [
-  { key: "ASIA", label: "Asia" },
-  { key: "AUSTRALIA", label: "Australia" },
-  { key: "EUROPE", label: "Europe" },
-  { key: "AMERICA", label: "America" },
-];
+import { useSite } from "../api/SiteContext";
 
 function Dropdown({ label, children, wide }) {
   return (
@@ -33,10 +26,18 @@ function Dropdown({ label, children, wide }) {
 }
 
 export default function Navbar() {
+  const { company, programs, subjects } = useSite();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [sub, setSub] = useState(null);
   const location = useLocation();
+
+  const contactRegions = [
+    { key: "uk", label: "United Kingdom", short: "UK", code: "gb", to: "/contact-us" },
+    { key: "bangladesh", label: "Bangladesh", short: "Bangladesh", code: "bd", to: "/contact-us?country=bangladesh" },
+    { key: "pakistan", label: "Pakistan", short: "Pakistan", code: "pk", to: "/contact-us?country=pakistan" },
+    { key: "nigeria", label: "Nigeria", short: "Nigeria", code: "ng", to: "/contact-us?country=nigeria" },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -48,7 +49,7 @@ export default function Navbar() {
   useEffect(() => {
     setOpen(false);
     setSub(null);
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -97,7 +98,7 @@ export default function Navbar() {
             : "border-transparent bg-white"
         }`}
       >
-        <div className="container-x flex h-[68px] items-center justify-between gap-4">
+        <div className="container-x flex h-16 items-center justify-between gap-3 sm:h-[72px] sm:gap-4">
           <Logo />
 
           <ul className="hidden items-center lg:flex">
@@ -105,26 +106,11 @@ export default function Navbar() {
               <NavLink to="/" end className={navLink}>Home</NavLink>
             </li>
 
-            <Dropdown label="Countries">
-              <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Study Destinations</p>
-              <div className="grid grid-cols-2 gap-1">
-                {countries.map((c) => (
-                  <Link
-                    key={c.slug}
-                    to={`/study/${c.slug}`}
-                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700"
-                  >
-                    <Flag code={c.code} className="text-base" title={c.name} />
-                    <span className="truncate">{c.name}</span>
-                  </Link>
-                ))}
-              </div>
-              <Link to="/countries" className="mt-2 block rounded-lg bg-brand-50 px-3 py-2 text-center text-sm font-semibold text-brand-700 hover:bg-brand-100">
-                View all countries
-              </Link>
-            </Dropdown>
+            <li>
+              <NavLink to="/study-in-uk" className={navLink}>Study in UK</NavLink>
+            </li>
 
-            <Dropdown label="Courses" wide>
+            <Dropdown label="Course Finder" wide>
               <div className="grid grid-cols-[1fr_1.4fr] gap-4">
                 <div>
                   <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Programmes</p>
@@ -161,63 +147,64 @@ export default function Navbar() {
               </div>
             </Dropdown>
 
-            <Dropdown label="Universities">
-              <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Top Destinations</p>
-              <div className="grid gap-1">
-                {countries.slice(0, 5).map((c) => (
-                  <Link
-                    key={c.slug}
-                    to={`/study/${c.slug}`}
-                    className="flex items-center justify-between rounded-lg px-2 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Flag code={c.code} className="text-base" title={c.name} /> {c.name}
-                    </span>
-                    {c.slug === "uk" && (
-                      <span className="rounded-full bg-gold-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold-600">
-                        Popular
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-              <p className="px-2 pb-2 pt-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Browse by region</p>
-              <div className="grid grid-cols-2 gap-1">
-                {regions.map((r) => (
-                  <Link
-                    key={r.key}
-                    to={`/study?region=${r.key}`}
-                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700"
-                  >
-                    <Icon name="globe" className="h-4 w-4 text-brand-500" />
-                    {r.label}
-                  </Link>
-                ))}
-              </div>
-              <Link to="/study" className="mt-3 block rounded-lg bg-brand-50 px-3 py-2 text-center text-sm font-semibold text-brand-700 hover:bg-brand-100">
-                All universities
-              </Link>
-            </Dropdown>
-
-            <li><NavLink to="/articles" className={navLink}>Articles</NavLink></li>
             <li><NavLink to="/events" className={navLink}>Events</NavLink></li>
             <li><NavLink to="/about-us" className={navLink}>About Us</NavLink></li>
-            <li><NavLink to="/contact-us" className={navLink}>Contact Us</NavLink></li>
+
+            <Dropdown label="Contact Us" wide>
+              <div className="grid grid-cols-[1fr_1.15fr] gap-4">
+                <div>
+                  <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Get in touch</p>
+                  <div className="grid gap-1">
+                    <Link to="/contact-us" className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700">
+                      <Icon name="pin" className="h-4 w-4 text-brand-500" /> Contact page
+                    </Link>
+                    <a href={`tel:${company.phone}`} className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700">
+                      <Icon name="phone" className="h-4 w-4 text-brand-500" /> {company.phone}
+                    </a>
+                    <a href={company.whatsapp} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700">
+                      <Icon name="whatsapp" className="h-4 w-4 text-emerald-500" /> WhatsApp
+                    </a>
+                    <a href={`mailto:${company.email}`} className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700">
+                      <Icon name="mail" className="h-4 w-4 text-brand-500" /> {company.email}
+                    </a>
+                    <Link to="/apply-now" className="mt-1 block rounded-lg bg-brand-50 px-3 py-2 text-center text-sm font-semibold text-brand-700 hover:bg-brand-100">
+                      Book free counselling
+                    </Link>
+                  </div>
+                </div>
+                <div>
+                  <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Our branches</p>
+                  <div className="grid gap-1">
+                    {contactRegions.map((r) => (
+                      <Link
+                        key={r.key}
+                        to={r.to}
+                        className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700"
+                      >
+                        <Flag code={r.code} className="h-7 w-7" title={r.label} />
+                        {r.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Dropdown>
           </ul>
 
           <div className="flex items-center gap-2">
             <Link
               to="/apply-now"
-              className="hidden rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/25 transition hover:shadow-brand-500/40 hover:brightness-110 sm:inline-flex"
+              className="inline-flex rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-3.5 py-2 text-xs font-semibold text-white shadow-md shadow-brand-500/25 transition hover:brightness-110 sm:px-5 sm:py-2.5 sm:text-sm sm:shadow-lg"
             >
               Apply Now
             </Link>
             <button
               onClick={() => setOpen((v) => !v)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-700 lg:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-700 sm:h-11 sm:w-11 lg:hidden"
               aria-label="Toggle menu"
+              aria-expanded={open}
             >
-              <Icon name={open ? "close" : "menu"} className="h-6 w-6" />
+              <Icon name={open ? "close" : "menu"} className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           </div>
         </div>
@@ -225,61 +212,94 @@ export default function Navbar() {
 
       {/* Mobile drawer */}
       {open && (
-        <div className="fixed inset-0 top-0 z-40 lg:hidden">
+        <div className="fixed inset-0 z-[60] lg:hidden">
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-0 h-full w-[84%] max-w-sm overflow-y-auto bg-white p-5 shadow-2xl">
-            <div className="mb-4 flex items-center justify-between">
+          <div className="absolute inset-y-0 right-0 flex w-[min(100%,22rem)] flex-col bg-white shadow-2xl safe-pb">
+            <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
               <Logo />
-              <button onClick={() => setOpen(false)} className="rounded-lg border border-slate-200 p-2" aria-label="Close">
+              <button
+                onClick={() => setOpen(false)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200"
+                aria-label="Close"
+              >
                 <Icon name="close" className="h-5 w-5" />
               </button>
             </div>
-            <MobileLink to="/" label="Home" />
-            <MobileAccordion label="Countries" open={sub === "c"} onToggle={() => setSub(sub === "c" ? null : "c")}>
-              <div className="grid grid-cols-2 gap-1 pb-2">
-                {countries.map((c) => (
-                  <Link key={c.slug} to={`/study/${c.slug}`} className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-600 hover:bg-brand-50">
-                    <Flag code={c.code} className="text-base" title={c.name} /> <span className="truncate">{c.name}</span>
+
+            <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3">
+              <MobileLink to="/" label="Home" />
+              <MobileLink to="/study-in-uk" label="Study in UK" />
+              <MobileAccordion label="Course Finder" open={sub === "p"} onToggle={() => setSub(sub === "p" ? null : "p")}>
+                <div className="grid gap-0.5">
+                  {programs.map((p) => (
+                    <Link
+                      key={p.key}
+                      to={`/study/all/${p.key}/all`}
+                      className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-brand-50"
+                    >
+                      <span>{p.name}</span>
+                      <span className="text-xs text-slate-400">{p.count}</span>
+                    </Link>
+                  ))}
+                  <Link to="/courses" className="rounded-xl px-3 py-2.5 text-sm font-semibold text-brand-600 hover:bg-brand-50">
+                    All courses →
                   </Link>
-                ))}
-              </div>
-              <Link to="/countries" className="block px-2 text-sm font-semibold text-brand-600">View all countries →</Link>
-            </MobileAccordion>
-            <MobileAccordion label="Courses" open={sub === "p"} onToggle={() => setSub(sub === "p" ? null : "p")}>
-              {programs.map((p) => (
-                <Link key={p.key} to={`/study/all/${p.key}/all`} className="flex items-center justify-between rounded-lg px-2 py-2 text-sm text-slate-600 hover:bg-brand-50">
-                  <span>{p.name}</span><span className="text-xs text-slate-400">{p.count}</span>
+                </div>
+              </MobileAccordion>
+              <MobileLink to="/events" label="Events" />
+              <MobileLink to="/about-us" label="About Us" />
+              <MobileAccordion label="Contact Us" open={sub === "c"} onToggle={() => setSub(sub === "c" ? null : "c")}>
+                <Link
+                  to="/contact-us"
+                  className="mb-3 flex items-center gap-2 rounded-xl bg-brand-50 px-3 py-2.5 text-sm font-semibold text-brand-700"
+                >
+                  <Icon name="pin" className="h-4 w-4" /> Contact page
                 </Link>
-              ))}
-              <Link to="/courses" className="block px-2 pt-1 text-sm font-semibold text-brand-600">All courses →</Link>
-            </MobileAccordion>
-            <MobileAccordion label="Universities" open={sub === "u"} onToggle={() => setSub(sub === "u" ? null : "u")}>
-              {countries.slice(0, 5).map((c) => (
-                <Link key={c.slug} to={`/study/${c.slug}`} className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-600 hover:bg-brand-50">
-                  <Flag code={c.code} className="text-base" title={c.name} /> {c.name}
-                  {c.slug === "uk" && <span className="ml-auto rounded-full bg-gold-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-gold-600">Popular</span>}
-                </Link>
-              ))}
-              <div className="mt-1 flex flex-wrap gap-1 px-2">
-                {regions.map((r) => (
-                  <Link key={r.key} to={`/study?region=${r.key}`} className="rounded-lg bg-slate-50 px-2.5 py-1 text-xs text-slate-600 hover:bg-brand-50">{r.label}</Link>
-                ))}
+                <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Branches</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {contactRegions.map((r) => (
+                    <Link
+                      key={r.key}
+                      to={r.to}
+                      className="flex flex-col items-start gap-2 rounded-2xl border border-slate-100 bg-white p-3 shadow-sm transition active:scale-[0.98] hover:border-brand-200 hover:shadow-md"
+                    >
+                      <Flag code={r.code} className="h-9 w-9" title={r.label} />
+                      <span className="font-display text-sm font-bold leading-tight text-ink">{r.short}</span>
+                    </Link>
+                  ))}
+                </div>
+              </MobileAccordion>
+            </div>
+
+            <div className="border-t border-slate-100 bg-slate-50/80 px-4 py-4">
+              <Link
+                to="/apply-now"
+                className="block rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-5 py-3.5 text-center text-sm font-semibold text-white shadow-lg shadow-brand-500/25"
+              >
+                Apply Now
+              </Link>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <a
+                  href={`tel:${company.phone}`}
+                  className="flex flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-2.5 text-[11px] font-semibold text-slate-600"
+                >
+                  <Icon name="phone" className="h-4 w-4 text-brand-500" /> Call
+                </a>
+                <a
+                  href={company.whatsapp}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-2.5 text-[11px] font-semibold text-slate-600"
+                >
+                  <Icon name="whatsapp" className="h-4 w-4 text-emerald-500" /> WhatsApp
+                </a>
+                <a
+                  href={`mailto:${company.email}`}
+                  className="flex flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-2.5 text-[11px] font-semibold text-slate-600"
+                >
+                  <Icon name="mail" className="h-4 w-4 text-brand-500" /> Email
+                </a>
               </div>
-              <Link to="/study" className="block px-2 pt-2 text-sm font-semibold text-brand-600">All universities →</Link>
-            </MobileAccordion>
-            <MobileLink to="/articles" label="Articles" />
-            <MobileLink to="/events" label="Events" />
-            <MobileLink to="/about-us" label="About Us" />
-            <MobileLink to="/contact-us" label="Contact Us" />
-            <Link
-              to="/apply-now"
-              className="mt-4 block rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-5 py-3 text-center text-sm font-semibold text-white shadow-lg"
-            >
-              Apply Now
-            </Link>
-            <div className="mt-6 space-y-2 border-t border-slate-100 pt-4 text-sm text-slate-500">
-              <a href={`tel:${company.phone}`} className="flex items-center gap-2"><Icon name="phone" className="h-4 w-4" /> {company.phone}</a>
-              <a href={`mailto:${company.email}`} className="flex items-center gap-2"><Icon name="mail" className="h-4 w-4" /> {company.email}</a>
             </div>
           </div>
         </div>
@@ -294,7 +314,7 @@ function MobileLink({ to, label }) {
       to={to}
       end={to === "/"}
       className={({ isActive }) =>
-        `block rounded-xl px-3 py-3 text-base font-semibold ${isActive ? "bg-brand-50 text-brand-700" : "text-slate-800"}`
+        `block rounded-xl px-3 py-3 text-[15px] font-semibold ${isActive ? "bg-brand-50 text-brand-700" : "text-slate-800"}`
       }
     >
       {label}
@@ -304,12 +324,17 @@ function MobileLink({ to, label }) {
 
 function MobileAccordion({ label, open, onToggle, children }) {
   return (
-    <div className="border-b border-slate-100">
-      <button onClick={onToggle} className="flex w-full items-center justify-between px-3 py-3 text-base font-semibold text-slate-800">
+    <div className="border-b border-slate-100 last:border-0">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between px-3 py-3 text-[15px] font-semibold text-slate-800"
+        aria-expanded={open}
+      >
         {label}
-        <Icon name="chevron" className={`h-5 w-5 transition-transform ${open ? "rotate-180" : ""}`} />
+        <Icon name="chevron" className={`h-5 w-5 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
-      {open && <div className="pb-2 pl-1">{children}</div>}
+      {open && <div className="pb-3">{children}</div>}
     </div>
   );
 }

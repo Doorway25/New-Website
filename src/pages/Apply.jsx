@@ -1,16 +1,55 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import Icon from "../components/Icon";
-import Reveal from "../components/Reveal";
 import PageHero from "../components/PageHero";
-import { countries, subjects, universities, programs } from "../data/site";
+import Reveal from "../components/Reveal";
+import { useSite } from "../api/SiteContext";
 
 const inputCls =
   "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-ink placeholder:text-slate-400 outline-none transition focus:border-brand-400 focus:ring-4 focus:ring-brand-100";
 
 const years = Array.from({ length: 12 }, (_, i) => String(new Date().getFullYear() + 1 - i));
 
+function resolvePrefill(params, { universityBySlug, universities, countryBySlug, countries }) {
+  const uniParam = params.get("university") || "";
+  const intakeParam = params.get("intake") || "";
+  const countryParam = params.get("country") || "";
+
+  const uni =
+    universityBySlug[uniParam] ||
+    universities.find((u) => u.name.toLowerCase() === uniParam.toLowerCase()) ||
+    null;
+
+  const country =
+    (uni && countryBySlug[uni.country]) ||
+    countryBySlug[countryParam] ||
+    countries.find((c) => c.name.toLowerCase() === countryParam.toLowerCase()) ||
+    null;
+
+  const intakeOptions = uni?.intakes || [];
+  const intake =
+    (intakeParam && intakeOptions.includes(intakeParam) && intakeParam) ||
+    uni?.upcoming?.[0] ||
+    intakeOptions[0] ||
+    intakeParam ||
+    "";
+
+  return {
+    university: uni?.name || "",
+    country: country?.name || "",
+    intake,
+    intakeOptions,
+  };
+}
+
 export default function Apply() {
+  const [searchParams] = useSearchParams();
+  const { countries, countryBySlug, programs, subjects, universities, universityBySlug } = useSite();
+  const prefill = useMemo(
+    () => resolvePrefill(searchParams, { universityBySlug, universities, countryBySlug, countries }),
+    [searchParams, universityBySlug, universities, countryBySlug, countries]
+  );
+
   const cap = useMemo(() => {
     const a = Math.floor(Math.random() * 9) + 3;
     const b = Math.floor(Math.random() * 3) + 1;
@@ -20,11 +59,50 @@ export default function Apply() {
   const [form, setForm] = useState({
     website: "", name: "", email: "", phone: "", nationality: "Bangladeshi",
     qualification: "", passingYear: "", englishTest: "", program: "",
-    course: "", university: "", country: "", answer: "", agree: false,
+    course: "", university: prefill.university, country: prefill.country,
+    intake: prefill.intake, answer: "", agree: false,
   });
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
-  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
+
+  useEffect(() => {
+    if (!prefill.university && !prefill.intake && !prefill.country) return;
+    setForm((f) => ({
+      ...f,
+      university: prefill.university || f.university,
+      country: prefill.country || f.country,
+      intake: prefill.intake || f.intake,
+    }));
+  }, [prefill.university, prefill.intake, prefill.country]);
+
+  const selectedUni = universities.find((u) => u.name === form.university);
+  const intakeOptions = selectedUni?.intakes?.length
+    ? selectedUni.intakes
+    : prefill.intakeOptions.length
+      ? prefill.intakeOptions
+      : Array.from(new Set(universities.flatMap((u) => u.intakes || [])));
+
+  const set = (k) => (e) => {
+    const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    setForm((f) => {
+      if (k === "university") {
+        const next = universities.find((u) => u.name === value);
+        const country = next ? countryBySlug[next.country] : null;
+        const nextIntake =
+          (f.intake && next?.intakes?.includes(f.intake) && f.intake) ||
+          next?.upcoming?.[0] ||
+          next?.intakes?.[0] ||
+          "";
+        return {
+          ...f,
+          university: value,
+          country: country?.name || f.country,
+          intake: nextIntake,
+        };
+      }
+      return { ...f, [k]: value };
+    });
+  };
 
   const submit = (e) => {
     e.preventDefault();
@@ -102,6 +180,9 @@ export default function Apply() {
                     <Field label="Preferred University">
                       <Sel value={form.university} onChange={set("university")} placeholder="Select university" options={universities.map((u) => u.name)} />
                     </Field>
+                    <Field label="Preferred Intake">
+                      <Sel value={form.intake} onChange={set("intake")} placeholder="Select intake" options={intakeOptions} />
+                    </Field>
                     <Field label="Preferred Country">
                       <Sel value={form.country} onChange={set("country")} placeholder="Select country" options={countries.map((c) => c.name)} />
                     </Field>
@@ -114,7 +195,7 @@ export default function Apply() {
                   </Field>
                   <label className="flex items-start gap-3 text-sm text-slate-600">
                     <input type="checkbox" checked={form.agree} onChange={set("agree")} className="mt-0.5 h-5 w-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
-                    <span>I agree to the <a href="#" className="font-semibold text-brand-600 hover:underline">privacy policy</a> and <a href="#" className="font-semibold text-brand-600 hover:underline">terms of service</a>.</span>
+                    <span>I agree to the <Link to="/privacy-policy" className="font-semibold text-brand-600 hover:underline">privacy policy</Link> and <Link to="/terms-and-conditions" className="font-semibold text-brand-600 hover:underline">terms of service</Link>.</span>
                   </label>
                 </div>
 

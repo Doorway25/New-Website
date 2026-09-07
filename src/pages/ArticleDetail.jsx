@@ -3,10 +3,12 @@ import ArticleCard from "../components/ArticleCard";
 import CounsellingSection from "../components/CounsellingSection";
 import Icon from "../components/Icon";
 import Reveal from "../components/Reveal";
-import { articleBySlug, articles, formatDate } from "../data/site";
+import SeoHead from "../components/SeoHead";
+import { useSite } from "../api/SiteContext";
 
 export default function ArticleDetail() {
   const { slug } = useParams();
+  const { articleBySlug, articles, formatDate } = useSite();
   const article = articleBySlug[slug];
 
   if (!article) {
@@ -25,8 +27,16 @@ export default function ArticleDetail() {
 
   return (
     <>
+      <SeoHead
+        seo={article}
+        title={`${article.title} | Education Doorway`}
+        description={article.excerpt}
+        image={article.image}
+        path={`/articles/${article.slug}`}
+        type="article"
+      />
       <section className="relative overflow-hidden bg-brand-950 pb-14 pt-14">
-        <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_30%_20%,rgba(89,141,255,.6),transparent_45%),radial-gradient(circle_at_80%_60%,rgba(240,180,41,.35),transparent_40%)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_30%_20%,rgba(0,178,255,.55),transparent_45%),radial-gradient(circle_at_80%_60%,rgba(79,210,255,.3),transparent_40%)]" />
         <div className="container-x relative max-w-3xl">
           <nav className="flex items-center gap-1.5 text-sm text-slate-400">
             <Link to="/" className="hover:text-white">Home</Link>
@@ -59,10 +69,14 @@ export default function ArticleDetail() {
           </div>
           <div className="p-6 sm:p-9">
             <p className="text-lg font-medium leading-relaxed text-ink">{article.excerpt}</p>
-            <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-slate-600">
-              {article.content.map((p, i) => (
-                <p key={i}>{p}</p>
-              ))}
+            <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-slate-600 article-body">
+              {article.content.map((block, i) =>
+                /<[a-z][\s\S]*>/i.test(block) ? (
+                  <div key={i} className="article-html" dangerouslySetInnerHTML={{ __html: block }} />
+                ) : (
+                  <p key={i}>{block}</p>
+                )
+              )}
             </div>
             <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-brand-50 p-5">
               <div>

@@ -4,7 +4,7 @@ import Icon from "../components/Icon";
 export default function NotFound() {
   return (
     <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-brand-950 px-6 py-20 text-center">
-      <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_30%_30%,rgba(89,141,255,.6),transparent_45%),radial-gradient(circle_at_70%_70%,rgba(240,180,41,.3),transparent_40%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_30%_30%,rgba(0,178,255,.55),transparent_45%),radial-gradient(circle_at_70%_70%,rgba(79,210,255,.3),transparent_40%)]" />
       <div className="relative">
         <p className="font-display text-8xl font-black text-white/90 sm:text-9xl">404</p>
         <h1 className="mt-2 font-display text-2xl font-bold text-white">Page not found</h1>

@@ -3,10 +3,12 @@ import CounsellingSection from "../components/CounsellingSection";
 import EventCard from "../components/EventCard";
 import Icon from "../components/Icon";
 import Reveal from "../components/Reveal";
-import { company, eventBySlug, events, formatDate } from "../data/site";
+import SeoHead from "../components/SeoHead";
+import { useSite } from "../api/SiteContext";
 
 export default function EventDetail() {
   const { slug } = useParams();
+  const { company, eventBySlug, events, formatDate } = useSite();
   const event = eventBySlug[slug];
 
   if (!event) {
@@ -23,11 +25,26 @@ export default function EventDetail() {
 
   const online = event.type === "Online";
   const others = events.filter((e) => e.slug !== event.slug).slice(0, 3);
+  const paragraphs = Array.isArray(event.description)
+    ? event.description
+    : typeof event.description === "string" && event.description.trim()
+      ? event.description.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+      : event.excerpt
+        ? [event.excerpt]
+        : [];
+  const agenda = Array.isArray(event.agenda) ? event.agenda : [];
 
   return (
     <>
+      <SeoHead
+        seo={event}
+        title={`${event.title} | Education Doorway`}
+        description={paragraphs[0] || event.excerpt}
+        image={event.image}
+        path={`/events/${event.slug}`}
+      />
       <section className="relative overflow-hidden bg-brand-950 pb-14 pt-14">
-        <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_30%_20%,rgba(89,141,255,.6),transparent_45%),radial-gradient(circle_at_80%_60%,rgba(240,180,41,.35),transparent_40%)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_30%_20%,rgba(0,178,255,.55),transparent_45%),radial-gradient(circle_at_80%_60%,rgba(79,210,255,.3),transparent_40%)]" />
         <div className="container-x relative max-w-3xl">
           <nav className="flex items-center gap-1.5 text-sm text-slate-400">
             <Link to="/" className="hover:text-white">Home</Link>
@@ -61,18 +78,22 @@ export default function EventDetail() {
             <div className="p-6 sm:p-9">
               <h2 className="font-display text-xl font-bold text-ink">About this event</h2>
               <div className="mt-3 space-y-4 text-[15px] leading-relaxed text-slate-600">
-                {event.description.map((p, i) => (
+                {paragraphs.map((p, i) => (
                   <p key={i}>{p}</p>
                 ))}
               </div>
-              <h3 className="mt-7 font-display text-lg font-bold text-ink">What to expect</h3>
-              <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
-                {event.agenda.map((a) => (
-                  <li key={a} className="flex items-start gap-2 text-sm text-slate-600">
-                    <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" /> {a}
-                  </li>
-                ))}
-              </ul>
+              {agenda.length > 0 && (
+                <>
+                  <h3 className="mt-7 font-display text-lg font-bold text-ink">What to expect</h3>
+                  <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
+                    {agenda.map((a) => (
+                      <li key={a} className="flex items-start gap-2 text-sm text-slate-600">
+                        <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" /> {a}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </div>
           </div>
 

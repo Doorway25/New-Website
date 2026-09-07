@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
-import Icon from "../components/Icon";
-import Reveal from "../components/Reveal";
-import Counter from "../components/Counter";
-import PageHero from "../components/PageHero";
 import CounsellingSection from "../components/CounsellingSection";
-import { company } from "../data/site";
+import Counter from "../components/Counter";
+import Icon from "../components/Icon";
+import PageHero from "../components/PageHero";
+import Reveal from "../components/Reveal";
+import SeoHead from "../components/SeoHead";
+import { useSite } from "../api/SiteContext";
 
 const advantage = [
   { value: 200, suffix: "+", label: "Universities" },
@@ -20,12 +21,20 @@ const values = [
 ];
 
 export default function About() {
+  const { company, pillars, getPage } = useSite();
+  const page = getPage("about-us");
   return (
     <>
+      <SeoHead
+        seo={page}
+        title="About Us | Education Doorway"
+        description="Learn about Education Doorway — trusted study abroad consultants since 2013."
+        path="/about-us"
+      />
       <PageHero
         eyebrow="About Our Agency"
         title="Empowering Your Global Ambitions"
-        subtitle="Abroad Study Consultancy is Bangladesh's premier gateway to international education, bridging talented students with world-class universities."
+        subtitle="Education Doorway is a premier gateway to international education, bridging talented students with world-class universities."
         crumbs={[{ label: "About Us" }]}
       />
 
@@ -39,7 +48,7 @@ export default function About() {
               </p>
               <p className="mt-2 text-lg font-semibold">Years of Excellence</p>
               <p className="mt-4 text-sm text-brand-100">
-                Trusted by families across Bangladesh since {company.since} to turn study-abroad dreams into admission letters.
+                Trusted by families since {company.since} to turn study-abroad dreams into admission letters.
               </p>
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <div className="rounded-xl bg-white/10 p-4">
@@ -47,7 +56,7 @@ export default function About() {
                   <p className="text-xs text-brand-100">Visa Success Rate</p>
                 </div>
                 <div className="rounded-xl bg-white/10 p-4">
-                  <p className="font-display text-2xl font-extrabold">1,500+</p>
+                  <p className="font-display text-2xl font-extrabold">75,000+</p>
                   <p className="text-xs text-brand-100">Students Placed</p>
                 </div>
               </div>
@@ -62,7 +71,7 @@ export default function About() {
             Founded on integrity &amp; a student-first promise
           </h2>
           <p className="mt-4 leading-relaxed text-slate-600">
-            Founded on the principles of integrity and student-first service, Abroad Study has evolved
+            Founded on the principles of integrity and student-first service, Education Doorway has evolved
             into a trusted name for study-abroad aspirants. We don't just process applications; we craft
             futures by providing personalized roadmaps for every student.
           </p>
@@ -76,19 +85,21 @@ export default function About() {
       {/* Mission / Vision / Values */}
       <section className="bg-white py-16">
         <div className="container-x grid gap-5 md:grid-cols-3">
-          {[
-            { t: "Our Mission", d: "To provide honest, transparent and expert guidance to Bangladeshi students, making international education accessible to all.", i: "compass" },
-            { t: "Our Vision", d: "To be the most reliable global education partner, recognized for our commitment to excellence and student success.", i: "target" },
-            { t: "Our Values", d: "Integrity, Student Empowerment and Transparency drive every consultation and application we handle.", i: "spark" },
-          ].map((c, i) => (
-            <Reveal key={c.t} delay={i * 90}>
-              <div className="h-full rounded-2xl border border-slate-100 bg-gradient-to-b from-slate-50 to-white p-7 shadow-sm">
+          {pillars.map((c, i) => (
+            <Reveal key={c.slug} delay={i * 90}>
+              <Link
+                to={`/${c.slug}`}
+                className="group flex h-full flex-col rounded-2xl border border-slate-100 bg-gradient-to-b from-slate-50 to-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-500/10"
+              >
                 <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-white">
-                  <Icon name={c.i} className="h-6 w-6" />
+                  <Icon name={c.icon} className="h-6 w-6" />
                 </span>
-                <h3 className="mt-4 font-display text-xl font-bold text-ink">{c.t}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-500">{c.d}</p>
-              </div>
+                <h3 className="mt-4 font-display text-xl font-bold text-ink group-hover:text-brand-700">{c.title}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-500">{c.short}</p>
+                <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition-transform group-hover:translate-x-0.5">
+                  Learn more <Icon name="arrow" className="h-4 w-4" />
+                </span>
+              </Link>
             </Reveal>
           ))}
         </div>
@@ -97,7 +108,7 @@ export default function About() {
       {/* Advantage stats */}
       <section className="container-x py-16">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl font-extrabold text-ink">The Abroad Study Advantage</h2>
+          <h2 className="font-display text-3xl font-extrabold text-ink">The Education Doorway Advantage</h2>
         </Reveal>
         <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
           {advantage.map((s, i) => (

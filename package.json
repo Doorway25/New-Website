@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "flag-icons": "^7.5.0",
+    "gsap": "^3.15.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-helmet-async": "^3.0.0",
     "react-router-dom": "^7.18.1"
   },
   "devDependencies": {
