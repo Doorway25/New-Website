@@ -6,10 +6,11 @@ Public website, Express API, React admin panel, and PostgreSQL — for managing 
 
 ```
 /
-├── docker-compose.yml   # Local Postgres
-├── backend/             # Express + Prisma API (:4000)
-├── admin/               # React admin panel (:5174)
-└── src/                 # Public Vite website (:5173)
+├── docker-compose.yml      # Local Postgres
+├── backend/                # Express + Prisma API (:4000)
+├── admin/                  # React admin panel (:5174)
+├── src/                    # Public Vite website (:5173)
+└── HOSTINGER_DEPLOY.md     # Production deploy on Hostinger VPS
 ```
 
 ## Prerequisites
@@ -38,12 +39,7 @@ npm run db:seed
 npm run dev            # http://localhost:4000
 ```
 
-Default users (from seed / `.env`):
-
-| Role   | Email                         | Password     | Access                                                |
-| ------ | ----------------------------- | ------------ | ----------------------------------------------------- |
-| Admin  | `admin@educationdoorway.com`  | `Admin123!`  | Full CMS + settings + users                           |
-| Editor | `editor@educationdoorway.com` | `Editor123!` | Content only (no user management; settings read-only) |
+Seed credentials are defined in `backend/.env` / `.env.example` (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, etc.).
 
 ### 3. Public website
 
@@ -62,13 +58,6 @@ cp .env.example .env   # VITE_API_URL=http://localhost:4000
 npm install
 npm run dev            # http://localhost:5174
 ```
-
-Log in with a seed account:
-
-| Role   | Email                         | Password     |
-| ------ | ----------------------------- | ------------ |
-| Admin  | `admin@educationdoorway.com`  | `Admin123!`  |
-| Editor | `editor@educationdoorway.com` | `Editor123!` |
 
 Each entity editor includes an SEO section (meta title/description, Open Graph, canonical, robots, JSON-LD).
 
@@ -96,99 +85,9 @@ Each entity editor includes an SEO section (meta title/description, Open Graph, 
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | backend         | Seeded admin user               |
 | `VITE_API_URL`                   | website + admin | API base URL                    |
 
-## Hostinger VPS deploy (`web.educationdoorway.com`)
+## Production deploy
 
-Recommended hostnames:
-
-| Hostname                     | Serves                                                 |
-| ---------------------------- | ------------------------------------------------------ |
-| `web.educationdoorway.com`   | Public website + `/api` + `/uploads` (proxied to Node) |
-| `admin.educationdoorway.com` | Admin panel (static Vite build)                        |
-
-Before deploy: VPS must be **active** (not suspended), and DNS for those hostnames must point to the VPS IP (`A` record).
-
-1. Install **Node 20+**, **Nginx**, **Certbot**, and **Postgres** (or run Postgres via Docker on the VPS).
-2. Clone the repo and create production env files:
-   - `backend/.env` — `DATABASE_URL`, `JWT_SECRET`, `PORT=4000`, and  
-     `CORS_ORIGIN=https://web.educationdoorway.com,https://admin.educationdoorway.com`
-   - Root `.env` + `admin/.env` — `VITE_API_URL=https://web.educationdoorway.com`  
-     (same origin as the public site so `/api` works without a separate API domain)
-3. Database:
-
-```bash
-cd backend
-npm install
-npx prisma migrate deploy
-npm run db:seed   # once
-```
-
-4. Run the API with **PM2**:
-
-```bash
-cd backend
-npm install -g pm2
-pm2 start src/index.js --name doorway-api
-pm2 save
-pm2 startup
-```
-
-5. Build static apps (with production `VITE_API_URL` set):
-
-```bash
-# website → /var/www/doorway/dist
-npm install && npm run build
-
-# admin → /var/www/doorway/admin/dist
-cd admin && npm install && npm run build
-```
-
-6. Nginx example:
-
-```nginx
-# Public site + API
-server {
-  server_name web.educationdoorway.com;
-  root /var/www/doorway/dist;
-  index index.html;
-  location / {
-    try_files $uri $uri/ /index.html;
-  }
-  location /api/ {
-    proxy_pass http://127.0.0.1:4000/api/;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-  }
-  location /uploads/ {
-    proxy_pass http://127.0.0.1:4000/uploads/;
-  }
-}
-
-# Admin
-server {
-  server_name admin.educationdoorway.com;
-  root /var/www/doorway/admin/dist;
-  index index.html;
-  location / {
-    try_files $uri $uri/ /index.html;
-  }
-}
-```
-
-7. DNS (wherever the domain is managed):
-
-```
-A   web    → <VPS_IP>
-A   admin  → <VPS_IP>
-```
-
-8. SSL:
-
-```bash
-sudo certbot --nginx -d web.educationdoorway.com -d admin.educationdoorway.com
-```
-
-9. After updates: rebuild static assets, `pm2 restart doorway-api`, reload Nginx.
+See **[HOSTINGER_DEPLOY.md](./HOSTINGER_DEPLOY.md)** for the full Hostinger VPS guide (DNS, Nginx, PM2, SSL, updates, removing old projects).
 
 ## Tech stack
 
