@@ -1,175 +1,194 @@
-# Hostinger VPS deploy — Education Doorway
+# Hostinger VPS deploy — New Education Doorway website
 
-Full production guide for deploying this monorepo on a Hostinger VPS (Ubuntu).
+Deploy **this monorepo** (public site + admin CMS + API) on your Hostinger VPS **next to** the projects already running.
 
-| Hostname | Serves |
-| -------- | ------ |
-| `web.educationdoorway.com` | Public website + `/api` + `/uploads` (proxied to Node) |
-| `admin.educationdoorway.com` | Admin CMS (static Vite build) |
-
-Replace `76.13.254.129` with your VPS IP if it changes.
+VPS: `root@76.13.254.129` (`srv1344373.hstgr.cloud`)
 
 ---
 
-## 0. Before you start
+## Current projects on this VPS (keep them)
 
-1. VPS must be **active** (not suspended) in Hostinger.
-2. You can SSH as root:
+| # | Project | Path / how it runs | Domain | Do not touch |
+| - | ------- | ------------------ | ------ | ------------ |
+| 1 | **CRM** (old Nest/Next stack) | `/home/nextbigthing/projects/educationdoorway` → Docker Compose → port **5003** | `https://crm.educationdoorway.com` | Never `docker compose down` here |
+| 2 | **ApplyPartner** | `/var/www/applyPartner/...` → PM2 + Docker | Nginx `applypartners` | Leave PM2 apps running |
 
-```bash
-ssh root@76.13.254.129
+Nginx sites already present:
+
+```text
+applypartners
+crm.educationdoorway.com.conf
 ```
 
-3. DNS for the subdomains must point to this VPS (see [DNS](#1-dns)).
+This guide adds a **3rd project** only:
+
+| New project | Path | Domains |
+| ----------- | ---- | ------- |
+| New website + admin + API | `/var/www/doorway` | `web.educationdoorway.com`, `admin.educationdoorway.com` |
+
+### Ports used (avoid conflicts)
+
+| Port | Used by |
+| ---- | ------- |
+| `3000` | ApplyPartner frontend (PM2) |
+| `5003` | CRM OpenResty |
+| `4000` | **New** doorway API (PM2) — use this |
+| `5432` | System Postgres (for new site DB) — or Docker CRM postgres (internal only) |
+
+---
+
+## Deploy checklist (order)
+
+1. [ ] DNS for `web` + `admin`
+2. [ ] Confirm CRM + ApplyPartner still running
+3. [ ] Install Node / PM2 / Postgres if missing
+4. [ ] Create DB for new site
+5. [ ] Upload project to `/var/www/doorway`
+6. [ ] Backend `.env` + migrate + seed + PM2
+7. [ ] Build website + admin
+8. [ ] Add Nginx site (do **not** remove CRM/apply configs)
+9. [ ] SSL with Certbot
+10. [ ] Smoke test all 3 projects
 
 ---
 
 ## 1. DNS
 
-Wherever `educationdoorway.com` is managed, create:
+Wherever `educationdoorway.com` DNS is managed, add:
 
-```
+```text
 A   web     →  76.13.254.129
 A   admin   →  76.13.254.129
 ```
 
-Optional (if you also want the apex / www on this VPS later):
+Keep CRM DNS as-is (`crm` should already point to this VPS).
 
-```
-A   @       →  76.13.254.129
-A   www     →  76.13.254.129
-```
-
-Wait until DNS resolves before requesting SSL:
+Check:
 
 ```bash
-# from your PC or VPS
-ping web.educationdoorway.com
-ping admin.educationdoorway.com
+ping -c 2 web.educationdoorway.com
+ping -c 2 admin.educationdoorway.com
+ping -c 2 crm.educationdoorway.com
 ```
 
 ---
 
-## 2. Inspect existing projects on the VPS
-
-SSH in, then run:
+## 2. SSH and verify existing projects (do not stop them)
 
 ```bash
-hostname
-df -h /
-free -h
-
-echo "=== /var/www ==="
-ls -la /var/www 2>/dev/null || echo "no /var/www"
-
-echo "=== /home ==="
-ls -la /home 2>/dev/null
-
-echo "=== Docker ==="
-docker ps -a 2>/dev/null || echo "docker not installed"
-docker compose ls 2>/dev/null
-
-echo "=== PM2 ==="
-pm2 list 2>/dev/null || echo "pm2 not installed"
-
-echo "=== Nginx ==="
-ls -la /etc/nginx/sites-enabled 2>/dev/null
-ls -la /etc/nginx/conf.d 2>/dev/null
-
-echo "=== Ports ==="
-ss -tlnp | head -40
+ssh root@76.13.254.129
 ```
 
-Use this to decide what to keep or remove before deploying.
-
----
-
-## 3. Remove an old project (optional)
-
-Only delete what you recognise.
-
-### Docker Compose app
-
 ```bash
-cd /path/to/old-project
-docker compose down -v
-cd ..
-rm -rf /path/to/old-project
-```
+# CRM must stay up
+cd /home/nextbigthing/projects/educationdoorway
+docker compose ps
+curl -I http://127.0.0.1:5003
 
-### PM2 Node app
-
-```bash
+# ApplyPartner must stay up
 pm2 list
-pm2 stop old-app-name
-pm2 delete old-app-name
-pm2 save
-rm -rf /path/to/old-app
+ls /etc/nginx/sites-enabled
 ```
 
-### Nginx site
+Expected:
+
+- CRM containers **Up**, port **5003** returns **200**
+- PM2 shows `applypartner-backend` + `applypartner-frontend` **online**
+- Nginx: `applypartners`, `crm.educationdoorway.com.conf`
+
+If CRM is down, start it again (**only this stack**):
 
 ```bash
-rm -f /etc/nginx/sites-enabled/old-site
-# optional:
-# rm -f /etc/nginx/sites-available/old-site
-nginx -t && systemctl reload nginx
-rm -rf /var/www/old-site
-```
-
-### Unused Postgres database
-
-```bash
-sudo -u postgres psql -c "\l"
-sudo -u postgres psql -c "DROP DATABASE old_db;"
-sudo -u postgres psql -c "DROP USER old_user;"
+cd /home/nextbigthing/projects/educationdoorway
+docker compose up -d
 ```
 
 ---
 
-## 4. Install system packages (Ubuntu)
+## 3. Install packages (skip what is already installed)
 
 ```bash
-apt update && apt upgrade -y
-apt install -y nginx certbot python3-certbot-nginx git curl ufw build-essential
+node -v
+npm -v
+pm2 -v
+nginx -v
+psql --version
+```
 
-# Node.js 20
+If anything is missing:
+
+```bash
+apt update
+apt install -y nginx certbot python3-certbot-nginx git curl build-essential postgresql postgresql-contrib
+
+# Node 20 (only if node is missing / too old)
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 apt install -y nodejs
-node -v
 npm i -g pm2
+```
 
-# PostgreSQL
-apt install -y postgresql postgresql-contrib
+Firewall (safe to re-run):
 
-# Firewall
+```bash
 ufw allow OpenSSH
 ufw allow 'Nginx Full'
 ufw --force enable
-ufw status
 ```
 
 ---
 
-## 5. Create Postgres database
+## 4. Create Postgres database for the NEW site only
 
 ```bash
 sudo -u postgres psql <<'SQL'
-CREATE USER doorway WITH PASSWORD 'CHANGE_ME_STRONG_PASSWORD';
-CREATE DATABASE education_doorway OWNER doorway;
-GRANT ALL PRIVILEGES ON DATABASE education_doorway TO doorway;
-\c education_doorway
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'doorway') THEN
+    CREATE USER doorway WITH PASSWORD 'CHANGE_ME_STRONG_PASSWORD';
+  END IF;
+END
+$$;
+SELECT 'CREATE DATABASE doorway_website OWNER doorway'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'doorway_website')\gexec
+\c doorway_website
 GRANT ALL ON SCHEMA public TO doorway;
 SQL
 ```
 
-Use a strong password and keep it for `DATABASE_URL` below.
+Use a strong password. This DB name (`doorway_website`) is separate from CRM Docker Postgres.
 
 ---
 
-## 6. Upload the project
+## 5. Upload the new project to `/var/www/doorway`
 
-### Option A — Git clone
+**Do not** put files into:
+
+- `/home/nextbigthing/projects/educationdoorway` (CRM)
+- `/var/www/applyPartner` (ApplyPartner)
+
+### Option A — from Windows (zip, recommended)
+
+On your PC (PowerShell), zip without heavy folders:
+
+```powershell
+cd "C:\Users\Thinkbook 15 g4\OneDrive\Desktop"
+Compress-Archive -Path "New Website\*" -DestinationPath "doorway-upload.zip" -Force
+scp "doorway-upload.zip" root@76.13.254.129:/tmp/
+```
+
+On VPS:
+
+```bash
+mkdir -p /var/www/doorway
+cd /var/www/doorway
+apt install -y unzip
+unzip -o /tmp/doorway-upload.zip -d /var/www/doorway
+# remove local node_modules if uploaded; install fresh on server
+rm -rf node_modules admin/node_modules backend/node_modules
+ls -la
+```
+
+### Option B — Git clone
 
 ```bash
 mkdir -p /var/www/doorway
@@ -177,37 +196,22 @@ cd /var/www/doorway
 git clone YOUR_REPO_URL .
 ```
 
-### Option B — Upload from Windows (PowerShell)
+Expected layout:
 
-On your PC (exclude `node_modules` if you can):
-
-```powershell
-scp -r "C:\Users\Thinkbook 15 g4\OneDrive\Desktop\New Website\*" root@76.13.254.129:/var/www/doorway/
-```
-
-Prefer zipping without `node_modules` / `.git` first, then:
-
-```bash
-# on VPS
-mkdir -p /var/www/doorway
-cd /var/www/doorway
-# unzip uploaded archive here
-```
-
-Project layout on server should look like:
-
-```
+```text
 /var/www/doorway/
   backend/
   admin/
   src/
+  public/
   package.json
+  HOSTINGER_DEPLOY.md
   ...
 ```
 
 ---
 
-## 7. Backend environment
+## 6. Backend API (PM2 name: `doorway-api`)
 
 ```bash
 cd /var/www/doorway/backend
@@ -215,68 +219,65 @@ cp .env.example .env
 nano .env
 ```
 
-Example production values:
+Set:
 
 ```env
-DATABASE_URL="postgresql://doorway:CHANGE_ME_STRONG_PASSWORD@127.0.0.1:5432/education_doorway?schema=public"
-JWT_SECRET="replace-with-long-random-string"
 PORT=4000
+DATABASE_URL="postgresql://doorway:CHANGE_ME_STRONG_PASSWORD@127.0.0.1:5432/doorway_website?schema=public"
+JWT_SECRET="replace-with-long-random-string"
+JWT_EXPIRES_IN=7d
 NODE_ENV=production
 CORS_ORIGIN="https://web.educationdoorway.com,https://admin.educationdoorway.com"
 ADMIN_EMAIL="admin@educationdoorway.com"
 ADMIN_PASSWORD="CHANGE_ME_ADMIN_PASSWORD"
+YOUTUBE_API_KEY=
 ```
 
-Install, migrate, seed, start with PM2:
+Then:
 
 ```bash
 cd /var/www/doorway/backend
 npm install
 npx prisma migrate deploy
 npm run db:seed
+
+# start WITHOUT touching applypartner PM2 apps
 pm2 start src/index.js --name doorway-api
 pm2 save
 pm2 startup
-# run the command that `pm2 startup` prints
-```
+# run the command pm2 prints (once)
 
-Health check:
-
-```bash
+pm2 list
 curl http://127.0.0.1:4000/api/health
 ```
 
-Useful PM2 commands:
+`pm2 list` should show **three** apps:
 
-```bash
-pm2 status
-pm2 logs doorway-api
-pm2 restart doorway-api
-```
+- `applypartner-backend` (keep)
+- `applypartner-frontend` (keep)
+- `doorway-api` (new)
 
 ---
 
-## 8. Build public website + admin
-
-API URL for the browsers must be the **public** site origin (same host that proxies `/api`):
+## 7. Build public website + admin
 
 ```bash
 cd /var/www/doorway
 echo 'VITE_API_URL=https://web.educationdoorway.com' > .env
 npm install
 npm run build
-# output: /var/www/doorway/dist
+# → /var/www/doorway/dist
 
 cd /var/www/doorway/admin
 echo 'VITE_API_URL=https://web.educationdoorway.com' > .env
 npm install
 npm run build
-# output: /var/www/doorway/admin/dist
+# → /var/www/doorway/admin/dist
 ```
 
 ---
 
-## 9. Nginx config
+## 8. Nginx — add new site only (do not delete CRM / ApplyPartner)
 
 ```bash
 nano /etc/nginx/sites-available/doorway
@@ -290,7 +291,6 @@ server {
   server_name web.educationdoorway.com;
   root /var/www/doorway/dist;
   index index.html;
-
   client_max_body_size 20M;
 
   location / {
@@ -325,49 +325,67 @@ server {
 }
 ```
 
-Enable and reload:
+Enable **without** removing other sites:
 
 ```bash
 ln -sf /etc/nginx/sites-available/doorway /etc/nginx/sites-enabled/doorway
-rm -f /etc/nginx/sites-enabled/default
-nginx -t
-systemctl reload nginx
+
+# confirm all three still listed
+ls -la /etc/nginx/sites-enabled
+
+nginx -t && systemctl reload nginx
+```
+
+You should see:
+
+```text
+applypartners
+crm.educationdoorway.com.conf
+doorway
 ```
 
 ---
 
-## 10. SSL (Let's Encrypt)
-
-DNS must already point to this VPS:
+## 9. SSL for the new hostnames only
 
 ```bash
 certbot --nginx -d web.educationdoorway.com -d admin.educationdoorway.com
 ```
 
-Auto-renewal is usually installed by Certbot. Test:
+Do **not** revoke or recreate CRM certs unless Certbot asks and you know what you are doing.
+
+---
+
+## 10. Smoke test (all projects)
 
 ```bash
-certbot renew --dry-run
+# New website
+curl -I https://web.educationdoorway.com
+curl -I https://admin.educationdoorway.com
+curl http://127.0.0.1:4000/api/health
+
+# Existing CRM (must still work)
+curl -I https://crm.educationdoorway.com
+curl -I http://127.0.0.1:5003
+
+# PM2
+pm2 list
 ```
 
----
+Browser checks:
 
-## 11. Smoke test checklist
-
-- [ ] `https://web.educationdoorway.com` loads the public site
-- [ ] `https://admin.educationdoorway.com` loads the admin login
-- [ ] Admin can sign in with seeded credentials from `backend/.env`
-- [ ] Universities / images load (`/uploads/...` works)
-- [ ] Contact / counselling form creates a lead
-- [ ] `pm2 status` shows `doorway-api` online
+- [ ] `https://web.educationdoorway.com` — new public site
+- [ ] `https://admin.educationdoorway.com` — new admin login
+- [ ] `https://crm.educationdoorway.com` — CRM still opens
+- [ ] ApplyPartner site still opens
 
 ---
 
-## 12. Deploy updates later
+## 11. Update the new site later
 
 ```bash
 cd /var/www/doorway
-# git pull   OR re-upload changed files
+# upload new files OR git pull
 
 cd /var/www/doorway/backend
 npm install
@@ -381,54 +399,72 @@ cd /var/www/doorway/admin
 npm install && npm run build
 ```
 
-No Nginx change needed unless domains or paths changed.
-
 ---
 
-## 13. Troubleshooting
+## 12. Troubleshooting
 
-| Problem | Check |
-| ------- | ----- |
-| Site not opening | DNS A records → VPS IP; `ufw status`; `systemctl status nginx` |
-| Admin “Failed to fetch” | `VITE_API_URL` at **build** time; rebuild admin; `CORS_ORIGIN` in `backend/.env` |
-| API 502 | `pm2 status`; `curl http://127.0.0.1:4000/api/health`; `pm2 logs doorway-api` |
-| DB errors | `DATABASE_URL`; Postgres running: `systemctl status postgresql` |
-| Uploads 404 | Nginx `/uploads/` proxy; files under `backend/uploads/` |
-| SSL fails | DNS not propagated yet; port 80 open |
+| Problem | Fix |
+| ------- | --- |
+| New site 502 on `/api` | `pm2 restart doorway-api`; `curl http://127.0.0.1:4000/api/health` |
+| Admin “Failed to fetch” | Rebuild admin with `VITE_API_URL=https://web.educationdoorway.com` |
+| CRM 502 again | `cd /home/nextbigthing/projects/educationdoorway && docker compose up -d` |
+| Port 4000 in use | `ss -tlnp \| grep 4000` — change `PORT` in backend `.env` and Nginx `proxy_pass` |
+| Wrong site removed | Never delete `crm.educationdoorway.com.conf` or `applypartners` |
 
 Logs:
 
 ```bash
-pm2 logs doorway-api --lines 100
-journalctl -u nginx -n 50 --no-pager
-tail -n 80 /var/log/nginx/error.log
+pm2 logs doorway-api --lines 80
+tail -n 50 /var/log/nginx/error.log
+cd /home/nextbigthing/projects/educationdoorway && docker compose logs --tail=50
 ```
 
 ---
 
-## 14. Security notes
+## 13. Never do this
 
-- Change default admin password after first login.
-- Use a strong `JWT_SECRET` and DB password.
-- Prefer SSH keys over password login when possible.
-- Keep `backend/.env` out of public git remotes.
-- Restrict UFW to SSH + HTTP/HTTPS only.
+```bash
+# DANGER — kills CRM
+cd /home/nextbigthing/projects/educationdoorway && docker compose down
+
+# DANGER — can kill ApplyPartner
+pm2 delete all
+pm2 stop applypartner-backend
+pm2 stop applypartner-frontend
+
+# DANGER — removes CRM nginx
+rm /etc/nginx/sites-enabled/crm.educationdoorway.com.conf
+```
+
+Only manage the new app with:
+
+```bash
+pm2 restart doorway-api
+pm2 logs doorway-api
+```
 
 ---
 
-## Quick command cheat sheet
+## Quick cheat sheet
 
 ```bash
 ssh root@76.13.254.129
 
-pm2 status
+# new site
 pm2 restart doorway-api
-pm2 logs doorway-api
-
-nginx -t && systemctl reload nginx
-certbot renew --dry-run
-
 cd /var/www/doorway && npm run build
 cd /var/www/doorway/admin && npm run build
-cd /var/www/doorway/backend && npx prisma migrate deploy && pm2 restart doorway-api
+
+# crm (if needed)
+cd /home/nextbigthing/projects/educationdoorway && docker compose up -d
+
+# nginx
+ls /etc/nginx/sites-enabled
+nginx -t && systemctl reload nginx
 ```
+
+After deploy you will have **3** live projects:
+
+1. CRM → `crm.educationdoorway.com`
+2. ApplyPartner → existing domain
+3. New website → `web` + `admin.educationdoorway.com`
