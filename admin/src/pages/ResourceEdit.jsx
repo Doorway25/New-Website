@@ -162,19 +162,18 @@ export default function ResourceEdit({ resourceKey }) {
       const meta = await get(`/api/admin/youtube-meta?id=${encodeURIComponent(id)}`);
       setValues((prev) => {
         const next = applyYoutubeChange(prev, meta.id);
-        const quoteEmpty = !String(prev.quote || "").trim();
-        const textEmpty = !String(prev.text || "").trim();
         const imageIsAuto =
           !prev.image || isYoutubeThumbUrl(prev.image) || prev.image === youtubeThumbUrl(prev.youtubeId);
         return {
           ...next,
           youtubeId: meta.id,
-          quote: quoteEmpty && meta.quote ? meta.quote : prev.quote || meta.quote || "",
-          text: textEmpty && meta.text ? meta.text : prev.text || meta.text || "",
-          image: imageIsAuto && meta.thumbnail ? meta.thumbnail : next.image,
+          // Always use YouTube original title + description when Fetch is clicked
+          quote: meta.quote || meta.title || prev.quote || "",
+          text: meta.text || prev.text || "",
+          image: imageIsAuto && meta.thumbnail ? meta.thumbnail : next.image || meta.thumbnail || "",
         };
       });
-      setMessage("YouTube title & description loaded — review and save");
+      setMessage("YouTube original title & description loaded — review and save");
     } catch (err) {
       setError(err.message || "Could not fetch YouTube details");
     } finally {

@@ -2036,12 +2036,12 @@ td.row-actions {
 }
 
 .youtube-thumb-preview img {
-  width: 140px;
-  height: 79px;
+  width: 160px;
+  height: 90px;
   object-fit: cover;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: #0b1220;
+  background: #f1f5f9;
 }
 
 /* Dashboard */

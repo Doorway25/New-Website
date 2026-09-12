@@ -53,9 +53,9 @@ export default function StoryDetail() {
             {story.role} Story
           </span>
           <h1 className="mt-4 font-display text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
-            {story.name}
+            {story.quote || story.name}
           </h1>
-          <p className="mt-2 text-slate-300">{story.relation}</p>
+          <p className="mt-2 text-slate-300">{story.name}{story.relation ? ` · ${story.relation}` : ""}</p>
         </div>
       </section>
 
@@ -74,22 +74,26 @@ export default function StoryDetail() {
             </div>
           ) : null}
 
-          <div className="grid gap-6 p-6 sm:p-9 md:grid-cols-[1fr_1.4fr]">
-            {/* Image */}
-            <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-brand-500 to-brand-800">
-              <img
-                src={story.image}
-                alt={story.name}
-                onError={(e) => (e.currentTarget.style.display = "none")}
-                className="h-full w-full object-cover"
-              />
-            </div>
+          <div className={`grid gap-6 p-6 sm:p-9 ${story.youtubeId ? "" : "md:grid-cols-[1fr_1.4fr]"}`}>
+            {/* Side image only when there is no embedded video */}
+            {!story.youtubeId ? (
+              <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-brand-500 to-brand-800">
+                <img
+                  src={story.image}
+                  alt={story.name}
+                  onError={(e) => (e.currentTarget.style.display = "none")}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ) : null}
             {/* Text */}
             <div>
               <div className="flex text-gold-500">
                 {Array.from({ length: 5 }).map((_, k) => <Icon key={k} name="star" className="h-4 w-4 fill-current" stroke={0} />)}
               </div>
-              <blockquote className="mt-3 font-display text-xl font-bold leading-snug text-ink">"{story.quote}"</blockquote>
+              {!story.youtubeId ? (
+                <blockquote className="mt-3 font-display text-xl font-bold leading-snug text-ink">"{story.quote}"</blockquote>
+              ) : null}
               <div className="mt-4 space-y-3 text-[15px] leading-relaxed text-slate-600">
                 {story.text.map((p, i) => (
                   <p key={i}>{p}</p>

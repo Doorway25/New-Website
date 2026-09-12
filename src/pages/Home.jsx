@@ -349,7 +349,7 @@ function VideoStories() {
         <SectionHeading
           eyebrow="Video Testimonials"
           title="Hear It From Our Community"
-          subtitle="Watch real stories from guardians, students and university delegates — title and description come from each story in the CMS."
+          subtitle="Watch real stories from guardians, students and university delegates — titles and descriptions from YouTube."
         />
 
         <div className="mt-6 flex flex-wrap justify-center gap-2">

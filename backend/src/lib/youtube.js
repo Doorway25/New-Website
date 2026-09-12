@@ -98,7 +98,7 @@ export async function fetchYoutubeMeta(raw) {
 
   let title = "";
   let description = "";
-  let thumbnail = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  let thumbnail = `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
   let author = "";
 
   const api = await fetchApiSnippet(id).catch(() => null);

@@ -7,9 +7,18 @@ export function mediaUrl(url) {
   return `${API_URL}${url.startsWith("/") ? "" : "/"}${url}`;
 }
 
-export function youtubeThumbUrl(id) {
+export function youtubeThumbUrl(id, quality = "maxresdefault") {
   if (!id) return "";
-  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  // maxresdefault = full 16:9 (no black bars). Falls back in UI if 404.
+  return `https://i.ytimg.com/vi/${id}/${quality}.jpg`;
+}
+
+/** Prefer maxres → sd → hq; hq has letterbox bars on many videos. */
+export function youtubeThumbCandidates(id) {
+  if (!id) return [];
+  return ["maxresdefault", "sddefault", "hqdefault"].map(
+    (q) => `https://i.ytimg.com/vi/${id}/${q}.jpg`
+  );
 }
 
 export async function fetchPublic(path, params = {}) {

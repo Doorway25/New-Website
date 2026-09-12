@@ -246,8 +246,8 @@ export const resources = {
         span: "full",
         hint: "Paste the link, then click Fetch title & description. Quote + body text fill automatically (you can edit after).",
       },
-      { key: "quote", label: "Title / quote", type: "textarea", rows: 3, section: "Content", span: "full" },
-      { key: "text", label: "Description", type: "paragraphs", section: "Content", span: "full", hint: "One paragraph per line" },
+      { key: "quote", label: "YouTube title", type: "textarea", rows: 3, section: "Content", span: "full", hint: "Filled from YouTube when you click Fetch (original video title)" },
+      { key: "text", label: "YouTube description", type: "paragraphs", section: "Content", span: "full", hint: "Filled from YouTube description — one paragraph per line" },
     ],
   },
   branches: {
@@ -657,7 +657,7 @@ export function extractYoutubeId(value) {
 export function youtubeThumbUrl(idOrUrl) {
   const id = extractYoutubeId(idOrUrl);
   if (!id) return "";
-  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  return `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
 }
 
 export function isYoutubeThumbUrl(url) {
