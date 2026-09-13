@@ -33,7 +33,9 @@ export default function ImageUpload({
       ? { maxWidth: 256, quality: 70, kind: "logo" }
       : kind === "thumb"
         ? { maxWidth: 640, quality: 62, kind: "thumb" }
-        : { maxWidth: 960, quality: 64, kind: "cover" };
+        : kind === "hero"
+          ? { maxWidth: 1200, quality: 68, kind: "hero" }
+          : { maxWidth: 960, quality: 64, kind: "cover" };
 
   async function removeCurrentFile() {
     if (!canDelete || !isManagedUpload(value)) return;

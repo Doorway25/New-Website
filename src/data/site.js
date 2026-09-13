@@ -829,6 +829,42 @@ export function formatDate(iso, opts = { day: "numeric", month: "short", year: "
   return new Date(iso).toLocaleDateString("en-GB", opts);
 }
 
+/** Event is upcoming if its calendar date has not ended yet (local end-of-day). */
+export function isUpcomingEvent(event, now = new Date()) {
+  const d = new Date(event?.date);
+  if (Number.isNaN(d.getTime())) return false;
+  const end = new Date(d);
+  end.setHours(23, 59, 59, 999);
+  return end >= now;
+}
+
+export function splitEvents(events = []) {
+  const upcoming = [];
+  const past = [];
+  for (const e of events) {
+    (isUpcomingEvent(e) ? upcoming : past).push(e);
+  }
+  upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
+  past.sort((a, b) => new Date(b.date) - new Date(a.date));
+  return { upcoming, past };
+}
+
+/** Flat list of gallery tiles: cover + gallery images for every event. */
+export function eventGalleryItems(events = []) {
+  const items = [];
+  for (const e of events) {
+    if (e.image) {
+      items.push({ key: `${e.slug}-cover`, src: e.image, title: e.title, slug: e.slug, kind: "cover" });
+    }
+    const gallery = Array.isArray(e.gallery) ? e.gallery : [];
+    gallery.forEach((src, i) => {
+      if (!src) return;
+      items.push({ key: `${e.slug}-g${i}`, src, title: e.title, slug: e.slug, kind: "gallery" });
+    });
+  }
+  return items;
+}
+
 /* ------------------------------------------------------------------ */
 /* Video stories — Guardians, Students & University Delegates          */
 /* ------------------------------------------------------------------ */

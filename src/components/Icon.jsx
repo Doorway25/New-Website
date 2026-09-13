@@ -37,12 +37,13 @@ const paths = {
 export default function Icon({ name, className = "w-6 h-6", stroke = 1.8 }) {
   const d = paths[name];
   if (!d) return null;
+  const filled = name === "facebook" || name === "whatsapp" || stroke === 0;
   return (
     <svg
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={stroke}
+      fill={filled ? "currentColor" : "none"}
+      stroke={filled ? "none" : "currentColor"}
+      strokeWidth={filled ? 0 : stroke}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}

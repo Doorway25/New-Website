@@ -202,7 +202,15 @@ export const resources = {
       { key: "date", label: "Date", type: "datetime", required: true, section: "Basics" },
       { key: "time", label: "Time", required: true, section: "Basics" },
       { key: "location", label: "Location", required: true, section: "Basics" },
-      { key: "image", label: "Cover image", type: "image", section: "Media" },
+      { key: "image", label: "Cover image", type: "image", kind: "hero", section: "Media", hint: "Main poster — shown full on the event page (not cropped)" },
+      {
+        key: "gallery",
+        label: "Event gallery images",
+        type: "gallery",
+        section: "Media",
+        span: "full",
+        hint: "Extra photos for the /events gallery and event detail page",
+      },
       { key: "excerpt", label: "Short excerpt", type: "textarea", rows: 3, section: "Content", hint: "Card / preview text" },
       { key: "description", label: "About this event", type: "textarea", rows: 6, section: "Content", hint: "Blank line between paragraphs" },
       { key: "agenda", label: "What to expect", type: "paragraphs", section: "Agenda", hint: "One agenda item per line" },
@@ -269,6 +277,13 @@ export const resources = {
       { key: "phoneAlt", label: "Phone alt", section: "Contact" },
       { key: "email", label: "Email", required: true, section: "Contact" },
       { key: "hours", label: "Office hours", required: true, section: "Contact" },
+      {
+        key: "facebookUrl",
+        label: "Facebook page link",
+        section: "Contact",
+        span: "full",
+        hint: "Paste the full Facebook URL for this branch (shown as an icon on the website)",
+      },
       { key: "mapQuery", label: "Google Maps query", section: "Location", hint: "Used for the embedded map" },
       { key: "blurb", label: "Page blurb", type: "textarea", rows: 3, section: "Page content", hint: "Hero subtitle & intro" },
       { key: "imageUrl", label: "Branch image", type: "image", section: "Page content" },
@@ -297,6 +312,15 @@ export const resources = {
         options: FLAG_COUNTRIES,
       },
       { key: "place", label: "Place", required: true, section: "Basics", hint: "e.g. University of Manchester, UK" },
+      {
+        key: "imageUrl",
+        label: "Student photo",
+        type: "image",
+        kind: "thumb",
+        section: "Media",
+        span: "full",
+        hint: "Shown in the homepage testimonial circle (falls back to initials if empty)",
+      },
       { key: "text", label: "Text", type: "textarea", rows: 4, required: true, section: "Content", span: "full" },
       { key: "sortOrder", label: "Sort order", type: "number", section: "Publishing" },
       { key: "published", label: "Published", type: "checkbox", section: "Publishing" },
@@ -368,6 +392,32 @@ export const resources = {
       { key: "published", label: "Published", type: "checkbox", section: "Basics" },
     ],
   },
+  pathways: {
+    path: "pathways",
+    label: "UK Pathways",
+    singular: "Pathway",
+    titleKey: "name",
+    subtitleKey: "href",
+    group: "site",
+    seo: false,
+    pageSize: 50,
+    help: "Logos shown under Affiliated Universities on the homepage — “Pathways for UK Universities”.",
+    fields: [
+      { key: "name", label: "Name", required: true, section: "Basics", hint: "e.g. INTO, Study Group, Kaplan" },
+      {
+        key: "imageUrl",
+        label: "Logo",
+        type: "image",
+        kind: "cover",
+        section: "Media",
+        span: "full",
+        hint: "Upload the pathway logo (PNG/WebP with transparent or white background works best)",
+      },
+      { key: "href", label: "Link URL", section: "Basics", hint: "Optional — opens when the logo is clicked" },
+      { key: "sortOrder", label: "Sort order", type: "number", section: "Publishing", hint: "Lower numbers appear first" },
+      { key: "published", label: "Published", type: "checkbox", section: "Publishing" },
+    ],
+  },
 };
 
 export const NAV_GROUPS = [
@@ -408,6 +458,7 @@ export const NAV_GROUPS = [
       { to: "/services", label: "Services", icon: "spark" },
       { to: "/why-us", label: "Why us", icon: "check" },
       { to: "/partners", label: "Affiliated Universities", icon: "users" },
+      { to: "/pathways", label: "UK Pathways", icon: "globe" },
       { to: "/settings", label: "Settings", icon: "settings" },
     ],
   },
@@ -427,6 +478,7 @@ export function emptyValues(resource) {
     if (field.type === "checkbox") values[field.key] = field.key === "published" || field.key === "popular";
     else if (field.type === "number") values[field.key] = field.key === "sortOrder" ? 0 : "";
     else if (field.type === "stringlist" || field.type === "paragraphs" || field.type === "pointlist" || field.type === "richtext") values[field.key] = "";
+    else if (field.type === "gallery") values[field.key] = [];
     else if (field.type === "json") values[field.key] = "";
     else values[field.key] = "";
   }
@@ -551,6 +603,8 @@ export function itemToForm(resource, item) {
     if (raw === undefined || raw === null) continue;
     if (field.type === "stringlist") {
       values[field.key] = Array.isArray(raw) ? raw.join("\n") : String(raw);
+    } else if (field.type === "gallery") {
+      values[field.key] = Array.isArray(raw) ? raw.filter(Boolean) : [];
     } else if (field.type === "paragraphs") {
       values[field.key] = field.key === "content" ? contentToText(raw) : Array.isArray(raw) ? raw.join("\n") : String(raw);
     } else if (field.type === "richtext") {
@@ -589,6 +643,8 @@ export function formToPayload(resource, values) {
         .split(/[,\n]/)
         .map((s) => s.trim())
         .filter(Boolean);
+    } else if (field.type === "gallery") {
+      payload[field.key] = Array.isArray(raw) ? raw.filter(Boolean) : [];
     } else if (field.type === "paragraphs") {
       const lines = String(raw || "")
         .split("\n")

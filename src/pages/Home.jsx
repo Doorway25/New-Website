@@ -1,6 +1,6 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSite } from "../api/SiteContext";
 import ArticleCard from "../components/ArticleCard";
@@ -12,6 +12,8 @@ import Reveal from "../components/Reveal";
 import SectionHeading from "../components/SectionHeading";
 import SeoHead from "../components/SeoHead";
 import StoryCard from "../components/StoryCard";
+import { splitEvents } from "../data/site";
+import { mediaUrl } from "../api/client";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -19,6 +21,27 @@ const trustItems = [
   "Free Counselling", "200+ Universities", "11+ Destinations", "98% Visa Success",
   "75,000+ Students", "Certified Consultants", "Scholarship Guidance",
 ];
+
+function TestimonialAvatar({ name, initials, src }) {
+  const [failed, setFailed] = useState(false);
+  const photo = mediaUrl(src);
+  if (photo && !failed) {
+    return (
+      <img
+        src={photo}
+        alt={name}
+        className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-brand-100"
+        loading="lazy"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return (
+    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-800 text-sm font-bold text-white">
+      {initials}
+    </span>
+  );
+}
 
 export default function Home() {
   const site = useSite();
@@ -38,6 +61,7 @@ export default function Home() {
       <VideoStories />
       <WhyUs />
       <Partners />
+      <Pathways />
       <Testimonials />
       <Programmes />
       <Events />
@@ -434,6 +458,79 @@ function Partners() {
   );
 }
 
+/* ---------------- UK Pathways ---------------- */
+function Pathways() {
+  const { pathways } = useSite();
+  const list = (pathways || []).filter((p) => p.imageUrl || p.name);
+  if (!list.length) return null;
+
+  const row = list.length > 6 ? [...list, ...list] : list;
+
+  return (
+    <section className="border-t border-slate-100 bg-gradient-to-b from-white to-brand-50/40 pb-6 pt-3 sm:pb-8 sm:pt-4">
+      <div className="container-x text-center">
+        <h2 className="font-display text-xl font-extrabold tracking-tight text-ink sm:text-2xl">
+          Pathways for UK Universities
+        </h2>
+      </div>
+
+      {list.length > 6 ? (
+        <div className="relative mt-4 overflow-hidden">
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-white to-transparent sm:w-16" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-white to-transparent sm:w-16" />
+          <div className="flex w-max animate-marquee items-center gap-4 pr-4">
+            {row.map((p, i) => (
+              <PathwayLogo key={`${p.id || p.name}-${i}`} pathway={p} />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="container-x mt-4">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            {list.map((p) => (
+              <PathwayLogo key={p.id || p.name} pathway={p} />
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function PathwayLogo({ pathway }) {
+  const [failed, setFailed] = useState(false);
+  const src = mediaUrl(pathway.imageUrl);
+  const className =
+    "flex h-16 w-32 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-white px-3 py-2 shadow-sm transition hover:border-brand-200 hover:shadow-md sm:h-20 sm:w-40 sm:px-4";
+
+  const inner =
+    src && !failed ? (
+      <img
+        src={src}
+        alt={pathway.name || "Pathway logo"}
+        loading="lazy"
+        decoding="async"
+        className="h-full w-full object-contain"
+        onError={() => setFailed(true)}
+      />
+    ) : (
+      <span className="px-1 text-center text-xs font-bold text-brand-700">{pathway.name}</span>
+    );
+
+  if (pathway.href) {
+    return (
+      <a href={pathway.href} target="_blank" rel="noreferrer" title={pathway.name} className={className}>
+        {inner}
+      </a>
+    );
+  }
+  return (
+    <div title={pathway.name} className={className}>
+      {inner}
+    </div>
+  );
+}
+
 /* ---------------- Testimonials ---------------- */
 function Testimonials() {
   const { testimonials } = useSite();
@@ -465,57 +562,65 @@ function Testimonials() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const heading = "[data-testimonial-heading]";
-      const cards = "[data-card]";
-      const nav = "[data-testimonial-nav]";
+      const heading = sectionRef.current?.querySelector("[data-testimonial-heading]");
+      const cards = gsap.utils.toArray("[data-card]", sectionRef.current);
+      const nav = gsap.utils.toArray("[data-testimonial-nav]", sectionRef.current);
 
-      gsap.set([heading, cards, nav], { autoAlpha: 0 });
-      gsap.set(heading, { y: 36 });
-      gsap.set(cards, { y: 40 });
-      gsap.set(nav, { scale: 0.75 });
+      // Keep content visible by default — only enhance with motion (never leave stuck at opacity 0)
+      if (heading) {
+        gsap.from(heading, {
+          y: 28,
+          opacity: 0.35,
+          duration: 0.7,
+          ease: "power2.out",
+          immediateRender: false,
+          clearProps: "opacity,transform",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 85%",
+            once: true,
+          },
+        });
+      }
 
-      gsap.to(heading, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.75,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 78%",
-          toggleActions: "play none none none",
-        },
-      });
+      if (cards.length) {
+        gsap.from(cards, {
+          y: 28,
+          opacity: 0.35,
+          duration: 0.65,
+          stagger: 0.1,
+          ease: "power2.out",
+          immediateRender: false,
+          clearProps: "opacity,transform",
+          scrollTrigger: {
+            trigger: trackRef.current,
+            start: "top 90%",
+            once: true,
+          },
+        });
+      }
 
-      gsap.to(cards, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.7,
-        stagger: 0.12,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: trackRef.current,
-          start: "top 82%",
-          toggleActions: "play none none none",
-        },
-      });
-
-      gsap.to(nav, {
-        autoAlpha: 1,
-        scale: 1,
-        duration: 0.55,
-        stagger: 0.1,
-        ease: "back.out(1.5)",
-        scrollTrigger: {
-          trigger: trackRef.current,
-          start: "top 82%",
-          toggleActions: "play none none none",
-        },
-      });
+      if (nav.length) {
+        gsap.from(nav, {
+          scale: 0.9,
+          opacity: 0.35,
+          duration: 0.5,
+          stagger: 0.08,
+          ease: "back.out(1.4)",
+          immediateRender: false,
+          clearProps: "opacity,transform",
+          scrollTrigger: {
+            trigger: trackRef.current,
+            start: "top 90%",
+            once: true,
+          },
+        });
+      }
 
       requestAnimationFrame(() => ScrollTrigger.refresh());
     }, sectionRef);
     return () => ctx.revert();
-  }, []);
+  }, [testimonials.length]);
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden bg-brand-950 py-8 sm:py-10 lg:py-12">
@@ -552,7 +657,7 @@ function Testimonials() {
               </div>
               <blockquote className="mt-3 flex-1 text-sm leading-relaxed text-slate-600">"{t.text}"</blockquote>
               <figcaption className="mt-5 flex items-center gap-3 border-t border-slate-100 pt-4">
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-800 text-sm font-bold text-white">{t.initials}</span>
+                <TestimonialAvatar name={t.name} initials={t.initials} src={t.imageUrl || t.image} />
                 <div>
                   <p className="text-sm font-bold text-ink">{t.name}</p>
                   <p className="flex items-center gap-1.5 text-xs text-slate-500">
@@ -619,26 +724,84 @@ function Articles() {
 /* ---------------- Events ---------------- */
 function Events() {
   const { events } = useSite();
+  const { upcoming, past } = splitEvents(events);
+  const upcomingList = upcoming.slice(0, 2);
+  const pastOne = past[0];
+  const hasUpcoming = upcomingList.length > 0;
+  const hasPastColumn = Boolean(pastOne);
+
+  // Prefer 2 upcoming + 1 past column. If no upcoming, show up to 3 past.
+  const pastOnly = !hasUpcoming && past.length > 0;
+  const pastOnlyList = past.slice(0, 3);
+
   return (
     <section className="bg-gradient-to-b from-brand-50 to-white pt-8 pb-4 sm:pt-10 sm:pb-5 lg:pt-12 lg:pb-6">
       <div className="container-x">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
-        <SectionHeading center={false} eyebrow="What's On"
-          title={<>Upcoming <span className="text-brand-500">Events</span></>}
-          subtitle="Join our fairs, webinars and workshops to meet universities and get expert guidance." />
-        <Reveal>
-          <Link to="/events" className="inline-flex shrink-0 items-center gap-2 rounded-full border border-brand-200 px-5 py-2.5 text-sm font-semibold text-brand-600 transition hover:bg-brand-50">
-            View All Events <Icon name="arrow" className="h-4 w-4" />
-          </Link>
-        </Reveal>
-      </div>
-      <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {events.slice(0, 3).map((e, i) => (
-          <Reveal key={e.slug} delay={i * 80}>
-            <EventCard event={e} />
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+          <SectionHeading
+            center={false}
+            eyebrow="What's On"
+            title={
+              <>
+                {pastOnly ? "Past" : "Upcoming"} <span className="text-brand-500">Events</span>
+              </>
+            }
+            subtitle={
+              pastOnly
+                ? "No upcoming events right now — see recent fairs and webinars below."
+                : "Join our fairs, webinars and workshops to meet universities and get expert guidance."
+            }
+          />
+          <Reveal>
+            <Link
+              to="/events"
+              className="inline-flex shrink-0 items-center gap-2 rounded-full border border-brand-200 px-5 py-2.5 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
+            >
+              View All Events <Icon name="arrow" className="h-4 w-4" />
+            </Link>
           </Reveal>
-        ))}
-      </div>
+        </div>
+
+        {pastOnly ? (
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {pastOnlyList.map((e, i) => (
+              <Reveal key={e.slug} delay={i * 80}>
+                <EventCard event={e} />
+              </Reveal>
+            ))}
+          </div>
+        ) : !hasUpcoming && !hasPastColumn ? (
+          <p className="mt-6 rounded-2xl border border-dashed border-brand-200 bg-white px-6 py-10 text-center text-slate-500">
+            New events will appear here soon.
+          </p>
+        ) : (
+          <div className="mt-6 grid gap-5 lg:grid-cols-3">
+            <div className={`grid gap-5 sm:grid-cols-2 ${hasPastColumn ? "lg:col-span-2" : "lg:col-span-3 lg:grid-cols-3"}`}>
+              {upcomingList.map((e, i) => (
+                <Reveal key={e.slug} delay={i * 80}>
+                  <EventCard event={e} />
+                </Reveal>
+              ))}
+            </div>
+
+            {hasPastColumn ? (
+              <Reveal delay={160} className="flex flex-col">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Past event</p>
+                  <Link to="/events?tab=past" className="text-xs font-semibold text-brand-600 hover:underline">
+                    View all
+                  </Link>
+                </div>
+                <div className="relative flex-1">
+                  <span className="pointer-events-none absolute -left-1 top-3 z-10 rotate-[-8deg] rounded-md bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow">
+                    Past
+                  </span>
+                  <EventCard event={pastOne} />
+                </div>
+              </Reveal>
+            ) : null}
+          </div>
+        )}
       </div>
     </section>
   );

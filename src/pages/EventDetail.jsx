@@ -67,12 +67,12 @@ export default function EventDetail() {
       <section className="container-x -mt-8 relative z-10 pb-8">
         <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
           <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-xl shadow-brand-950/5">
-            <div className="h-56 overflow-hidden bg-gradient-to-br from-brand-500 to-brand-800 sm:h-72">
+            <div className="bg-slate-50">
               <img
                 src={event.image}
                 alt={event.title}
                 onError={(e) => (e.currentTarget.style.display = "none")}
-                className="h-full w-full object-cover"
+                className="mx-auto block h-auto w-full object-contain"
               />
             </div>
             <div className="p-6 sm:p-9">
@@ -94,6 +94,24 @@ export default function EventDetail() {
                   </ul>
                 </>
               )}
+              {Array.isArray(event.gallery) && event.gallery.length > 0 ? (
+                <>
+                  <h3 className="mt-7 font-display text-lg font-bold text-ink">Event gallery</h3>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {event.gallery.map((src, i) => (
+                      <a
+                        key={`${src}-${i}`}
+                        href={src}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50"
+                      >
+                        <img src={src} alt={`${event.title} photo ${i + 1}`} className="h-auto w-full object-contain" loading="lazy" />
+                      </a>
+                    ))}
+                  </div>
+                </>
+              ) : null}
             </div>
           </div>
 

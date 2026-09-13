@@ -62,10 +62,16 @@ function toParagraphs(value) {
 function mapEvent(e) {
   if (!e) return e;
   const local = fallback.eventBySlug?.[e.slug];
+  const gallery = Array.isArray(e.gallery)
+    ? e.gallery.map((url) => resolveImage(url)).filter(Boolean)
+    : Array.isArray(local?.gallery)
+      ? local.gallery
+      : [];
   return {
     ...e,
     description: toParagraphs(e.description),
     agenda: Array.isArray(e.agenda) ? e.agenda : [],
+    gallery,
     image: resolveImage(e.image, local?.image),
   };
 }
@@ -133,6 +139,7 @@ function mapBranch(b) {
   if (!b) return b;
   const local = fallback.branchBySlug[b.slug] || {};
   const img = b.image || b.imageUrl || local.image || null;
+  const facebookUrl = String(b.facebookUrl || local.facebookUrl || "").trim();
   return {
     ...b,
     image: resolveImage(img, local.image),
@@ -140,6 +147,7 @@ function mapBranch(b) {
     details: Array.isArray(b.details) && b.details.length ? b.details : local.details || [],
     blurb: b.blurb || local.blurb || "",
     head: b.head === true || local.head === true,
+    facebookUrl: /^https?:\/\//i.test(facebookUrl) ? facebookUrl : "",
   };
 }
 
@@ -164,6 +172,7 @@ export function SiteProvider({ children }) {
     services: fallback.services,
     whyUs: fallback.whyUs,
     partners: fallback.partners,
+    pathways: [],
     pages: {},
   });
 
@@ -173,12 +182,12 @@ export function SiteProvider({ children }) {
     async function load() {
       try {
         const [home, uniPage, articlePage, eventPage, storyPage, branches, pages] = await Promise.all([
-          fetchPublic("/home"),
-          fetchPublic("/universities", { pageSize: 500 }),
-          fetchPublic("/articles", { pageSize: 100 }),
-          fetchPublic("/events", { pageSize: 100 }),
-          fetchPublic("/stories", { pageSize: 100 }),
-          fetchPublic("/branches"),
+          fetchPublic("/home").catch(() => null),
+          fetchPublic("/universities", { pageSize: 500 }).catch(() => ({ items: [] })),
+          fetchPublic("/articles", { pageSize: 100 }).catch(() => ({ items: [] })),
+          fetchPublic("/events", { pageSize: 100 }).catch(() => ({ items: [] })),
+          fetchPublic("/stories", { pageSize: 100 }).catch(() => ({ items: [] })),
+          fetchPublic("/branches").catch(() => []),
           Promise.all(
             ["home", "about-us", "contact-us", "apply-now", "study", "countries", "articles", "events", "stories"].map((slug) =>
               fetchPublic(`/pages/${slug}`).catch(() => null)
@@ -193,31 +202,43 @@ export function SiteProvider({ children }) {
           if (p?.slug) pageMap[p.slug] = p;
         });
 
-        const subjectsRaw = home.subjects || [];
+        const subjectsRaw = home?.subjects || [];
         const universities = (uniPage.items || []).map(mapUniversity);
+        const branchList = Array.isArray(branches) ? branches : [];
 
         setState({
           ready: true,
           fromApi: true,
-          company: settingsToCompany(home.settings),
-          stats: home.settings?.stats || fallback.stats,
-          countries: home.countries?.length ? home.countries.map(mapCountry) : fallback.countries,
-          programs: home.programs?.length ? home.programs : fallback.programs,
+          company: settingsToCompany(home?.settings),
+          stats: home?.settings?.stats || fallback.stats,
+          countries: home?.countries?.length ? home.countries.map(mapCountry) : fallback.countries,
+          programs: home?.programs?.length ? home.programs : fallback.programs,
           subjects: mapSubjects(subjectsRaw),
           popularSubjects: mapPopularSubjects(subjectsRaw),
           universities: universities.length ? universities : fallback.universities,
           articles: articlePage.items?.length ? articlePage.items.map(mapArticle) : fallback.articles,
           events: eventPage.items?.length ? eventPage.items.map(mapEvent) : fallback.events,
           stories: storyPage.items?.length ? storyPage.items.map(mapStory) : fallback.stories,
-          storyCategories: home.storyCategories?.length ? home.storyCategories : fallback.storyCategories,
-          branches: branches?.length ? branches.map(mapBranch) : fallback.branches,
-          pillars: home.pillars?.length ? home.pillars : fallback.pillars,
-          testimonials: home.testimonials?.length ? home.testimonials : fallback.testimonials,
-          services: home.services?.length ? home.services : fallback.services,
-          whyUs: home.whyUs?.length ? home.whyUs : fallback.whyUs,
-          partners: home.partners?.length
+          storyCategories: home?.storyCategories?.length ? home.storyCategories : fallback.storyCategories,
+          branches: branchList.length ? branchList.map(mapBranch) : fallback.branches,
+          pillars: home?.pillars?.length ? home.pillars : fallback.pillars,
+          testimonials: home?.testimonials?.length
+            ? home.testimonials.map((t) => ({
+                ...t,
+                imageUrl: resolveImage(t.imageUrl || t.image),
+              }))
+            : fallback.testimonials,
+          services: home?.services?.length ? home.services : fallback.services,
+          whyUs: home?.whyUs?.length ? home.whyUs : fallback.whyUs,
+          partners: home?.partners?.length
             ? home.partners.map((p) => (typeof p === "string" ? p : p.slug))
             : fallback.partners,
+          pathways: Array.isArray(home?.pathways)
+            ? home.pathways.map((p) => ({
+                ...p,
+                imageUrl: resolveImage(p.imageUrl),
+              }))
+            : [],
           pages: pageMap,
         });
       } catch {

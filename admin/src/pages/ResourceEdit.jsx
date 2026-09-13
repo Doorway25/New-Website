@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { API_URL, get, post, put } from "../api";
 import ImageUpload from "../components/ImageUpload";
+import GalleryUpload from "../components/GalleryUpload";
 import RichTextEditor from "../components/RichTextEditor";
 import { SeoFields } from "../components/SeoFields";
 import {
@@ -290,6 +291,7 @@ function fieldClassName(field, extra = "") {
   const full =
     field.span === "full" ||
     field.type === "image" ||
+    field.type === "gallery" ||
     field.type === "richtext" ||
     field.type === "textarea" ||
     field.type === "paragraphs" ||
@@ -325,6 +327,19 @@ function Field({ field, value, values, onChange, universityOptions = [], onUseYo
             Use YouTube thumbnail
           </button>
         ) : null}
+      </div>
+    );
+  }
+
+  if (field.type === "gallery") {
+    return (
+      <div className={fieldClassName(field)}>
+        <GalleryUpload
+          label={field.label}
+          value={Array.isArray(value) ? value : []}
+          hint={field.hint || undefined}
+          onChange={(urls) => onChange(field.key, urls)}
+        />
       </div>
     );
   }

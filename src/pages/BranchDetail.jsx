@@ -135,12 +135,18 @@ export default function BranchDetail() {
   );
 
   const WHATSAPP_NUMBER = "+44 7939 983 493";
+  const companyFacebookRaw =
+    company?.socials?.find((s) => /facebook/i.test(s.label || s.icon || ""))?.href || "";
+  const facebookHref = [branch.facebookUrl, companyFacebookRaw].find((u) => /^https?:\/\//i.test(String(u || "").trim())) || "";
 
   const info = [
     { icon: "pin", title: "Address", text: branch.address },
     { icon: "phone", title: "Phone / WhatsApp", text: branch.phone, href: `tel:${branch.phone}`, extra: `${WHATSAPP_NUMBER} (WhatsApp)`, extraHref: `tel:+447939983493` },
     { icon: "mail", title: "Email", text: branch.email, href: `mailto:${branch.email}` },
     { icon: "clock", title: "Office Hours", text: branch.hours },
+    ...(facebookHref
+      ? [{ icon: "facebook", title: "Facebook", text: "Visit Facebook page", href: facebookHref }]
+      : []),
   ];
 
   return (
@@ -226,6 +232,16 @@ export default function BranchDetail() {
               <a href={`tel:${branch.phone}`} className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                 <Icon name="phone" className="h-4 w-4" /> Call Branch
               </a>
+              {facebookHref ? (
+                <a
+                  href={facebookHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#1877F2] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110"
+                >
+                  <Icon name="facebook" className="h-4 w-4" /> Facebook
+                </a>
+              ) : null}
             </div>
 
             <div className="mt-6 overflow-hidden rounded-2xl border border-slate-100">

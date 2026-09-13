@@ -44,8 +44,12 @@ const REGION_BANNER = {
 };
 
 export default function Contact() {
-  const { branches, getPage } = useSite();
+  const { branches, getPage, company } = useSite();
+
   const page = getPage("contact-us");
+  const companyFacebookRaw =
+    company?.socials?.find((s) => /facebook/i.test(s.label || s.icon || ""))?.href || "";
+  const companyFacebook = /^https?:\/\//i.test(companyFacebookRaw) ? companyFacebookRaw : "";
   const [searchParams, setSearchParams] = useSearchParams();
   const initial = searchParams.get("country") || "uk";
   const [active, setActive] = useState(
@@ -202,18 +206,43 @@ export default function Contact() {
                           <Icon name="whatsapp" className="h-4 w-4 shrink-0" />
                           +44 7939 983 493 (WhatsApp)
                         </p>
+                        {(b.facebookUrl || companyFacebook) ? (
+                          <a
+                            href={b.facebookUrl || companyFacebook}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-2 font-medium text-[#1877F2] hover:underline"
+                          >
+                            <Icon name="facebook" className="h-4 w-4 shrink-0" />
+                            Facebook page
+                          </a>
+                        ) : null}
                         <p className="flex items-center gap-2">
                           <Icon name="clock" className="h-4 w-4 shrink-0 text-brand-400" />
                           {b.hours}
                         </p>
                       </div>
 
-                      <Link
-                        to={`/branch/${b.slug}`}
-                        className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition group-hover:gap-2"
-                      >
-                        View full branch page <Icon name="arrow" className="h-4 w-4" />
-                      </Link>
+                      <div className="mt-5 flex items-center justify-between gap-3">
+                        <Link
+                          to={`/branch/${b.slug}`}
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition group-hover:gap-2"
+                        >
+                          View full branch page <Icon name="arrow" className="h-4 w-4" />
+                        </Link>
+                        {(b.facebookUrl || companyFacebook) ? (
+                          <a
+                            href={b.facebookUrl || companyFacebook}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={`${b.city} Facebook page`}
+                            title="Facebook"
+                            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1877F2] text-white shadow-sm transition hover:brightness-110"
+                          >
+                            <Icon name="facebook" className="h-5 w-5" />
+                          </a>
+                        ) : null}
+                      </div>
                     </div>
                   </article>
                 </Reveal>

@@ -173,6 +173,7 @@ model Event {
   time            String
   location        String
   image           String?
+  gallery         String[] @default([])
   excerpt         String?
   description     String?  @db.Text
   agenda          String[]
@@ -250,6 +251,7 @@ model Branch {
   phoneAlt        String?
   email           String
   hours           String
+  facebookUrl     String?
   mapQuery        String?
   blurb           String?
   imageUrl        String?
@@ -301,6 +303,7 @@ model Testimonial {
   code      String
   place     String
   text      String   @db.Text
+  imageUrl  String?
   sortOrder Int      @default(0)
   published Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -332,6 +335,17 @@ model WhyUs {
 model Partner {
   id        String   @id @default(cuid())
   slug      String   @unique
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Pathway {
+  id        String   @id @default(cuid())
+  name      String
+  imageUrl  String?
+  href      String?
   sortOrder Int      @default(0)
   published Boolean  @default(true)
   createdAt DateTime @default(now())

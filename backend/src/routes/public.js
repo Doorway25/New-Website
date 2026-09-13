@@ -47,6 +47,7 @@ const EVENT_LIST_SELECT = {
   time: true,
   location: true,
   image: true,
+  gallery: true,
   excerpt: true,
 };
 
@@ -62,6 +63,7 @@ const BRANCH_LIST_SELECT = {
   phoneAlt: true,
   email: true,
   hours: true,
+  facebookUrl: true,
   mapQuery: true,
   blurb: true,
   imageUrl: true,
@@ -81,7 +83,7 @@ router.get(
 router.get(
   "/home",
   asyncHandler(async (_req, res) => {
-    const [settings, countries, programs, subjects, testimonials, services, whyUs, partners, pillars, storyCategories] =
+    const [settings, countries, programs, subjects, testimonials, services, whyUs, partners, pathways, pillars, storyCategories] =
       await Promise.all([
         prisma.siteSetting.findUnique({ where: { key: "main" } }),
         prisma.country.findMany({
@@ -108,10 +110,11 @@ router.get(
         prisma.service.findMany({ where: { published: true }, orderBy: { sortOrder: "asc" } }),
         prisma.whyUs.findMany({ where: { published: true }, orderBy: { sortOrder: "asc" } }),
         prisma.partner.findMany({ where: { published: true }, orderBy: { sortOrder: "asc" } }),
+        prisma.pathway.findMany({ where: { published: true }, orderBy: { sortOrder: "asc" } }),
         prisma.pillar.findMany({ where: { published: true }, orderBy: { sortOrder: "asc" } }),
         prisma.storyCategory.findMany({ orderBy: { sortOrder: "asc" } }),
       ]);
-    cachePublic(res, 90);
+    cachePublic(res, 15);
     res.json({
       settings,
       countries,
@@ -121,6 +124,7 @@ router.get(
       services,
       whyUs,
       partners,
+      pathways,
       pillars,
       storyCategories,
     });
@@ -274,7 +278,8 @@ router.get(
 router.get(
   "/branches",
   asyncHandler(async (_req, res) => {
-    cachePublic(res, 120);
+    // Short cache so admin Facebook/link edits show quickly on the site
+    cachePublic(res, 10);
     res.json(
       await prisma.branch.findMany({
         where: { published: true },

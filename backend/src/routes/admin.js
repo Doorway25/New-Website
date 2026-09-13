@@ -739,7 +739,7 @@ mountCrud("articles", prisma.article, {
 
 mountCrud("events", prisma.event, {
   fields: [
-    "slug", "title", "type", "date", "time", "location", "image",
+    "slug", "title", "type", "date", "time", "location", "image", "gallery",
     "excerpt", "description", "agenda",
   ],
   search: ["title", "location", "slug"],
@@ -766,7 +766,7 @@ mountCrud("stories", prisma.story, {
 mountCrud("branches", prisma.branch, {
   fields: [
     "slug", "city", "country", "code", "head", "address", "phone", "phoneAlt",
-    "email", "hours", "mapQuery", "blurb", "imageUrl", "details",
+    "email", "hours", "facebookUrl", "mapQuery", "blurb", "imageUrl", "details",
   ],
   search: ["city", "country", "slug"],
   orderBy: { sortOrder: "asc" },
@@ -779,7 +779,7 @@ mountCrud("pillars", prisma.pillar, {
 });
 
 mountCrud("testimonials", prisma.testimonial, {
-  fields: ["initials", "name", "code", "place", "text"],
+  fields: ["initials", "name", "code", "place", "text", "imageUrl"],
   search: ["name", "place"],
   orderBy: { sortOrder: "asc" },
   seo: false,
@@ -802,6 +802,13 @@ mountCrud("why-us", prisma.whyUs, {
 mountCrud("partners", prisma.partner, {
   fields: ["slug"],
   search: ["slug"],
+  orderBy: { sortOrder: "asc" },
+  seo: false,
+});
+
+mountCrud("pathways", prisma.pathway, {
+  fields: ["name", "imageUrl", "href"],
+  search: ["name"],
   orderBy: { sortOrder: "asc" },
   seo: false,
 });
