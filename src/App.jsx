@@ -14,6 +14,7 @@ import Articles from "./pages/Articles";
 import ArticleDetail from "./pages/ArticleDetail";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
+import EventGalleryAlbum from "./pages/EventGalleryAlbum";
 import Stories from "./pages/Stories";
 import StoryDetail from "./pages/StoryDetail";
 import About from "./pages/About";
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/articles" element={<Articles />} />
           <Route path="/articles/:slug" element={<ArticleDetail />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/events/gallery/:albumKey" element={<EventGalleryAlbum />} />
           <Route path="/events/:slug" element={<EventDetail />} />
           <Route path="/stories" element={<Stories />} />
           <Route path="/stories/:category" element={<Stories />} />

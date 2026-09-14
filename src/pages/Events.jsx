@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import CounsellingSection from "../components/CounsellingSection";
 import EventCard from "../components/EventCard";
+import Icon from "../components/Icon";
 import PageHero from "../components/PageHero";
 import Reveal from "../components/Reveal";
 import { useSite } from "../api/SiteContext";
-import { albumGalleryItems, splitEvents } from "../data/site";
+import { splitEvents } from "../data/site";
 
 const TABS = [
   { id: "upcoming", label: "Upcoming" },
@@ -20,8 +21,6 @@ export default function Events() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get("tab");
   const active = TAB_IDS.has(tabFromUrl) ? tabFromUrl : "upcoming";
-  const albumFromUrl = searchParams.get("album") || "";
-  const [lightbox, setLightbox] = useState(null);
 
   function setActive(id) {
     const next = {};
@@ -29,21 +28,11 @@ export default function Events() {
     setSearchParams(next, { replace: true });
   }
 
-  function setAlbumFilter(key) {
-    const next = { tab: "gallery" };
-    if (key) next.album = key;
-    setSearchParams(next, { replace: true });
-  }
-
   const { upcoming, past } = useMemo(() => splitEvents(events), [events]);
-  const albums = useMemo(() => eventAlbums || [], [eventAlbums]);
-  const gallery = useMemo(() => albumGalleryItems(albums), [albums]);
-  const albumTabs = useMemo(() => [{ key: "", name: "All" }, ...albums], [albums]);
-
-  const visibleGallery = useMemo(() => {
-    if (!albumFromUrl) return gallery;
-    return gallery.filter((item) => item.albumKey === albumFromUrl);
-  }, [gallery, albumFromUrl]);
+  const albums = useMemo(
+    () => (eventAlbums || []).filter((a) => Array.isArray(a.images) && a.images.length > 0),
+    [eventAlbums]
+  );
 
   const list = useMemo(() => {
     if (active === "upcoming") return upcoming;
@@ -56,7 +45,7 @@ export default function Events() {
     active === "gallery"
       ? {
           title: "Event Gallery",
-          subtitle: "Photos from Open Days, Assessment Days, Expos and more — organised by album.",
+          subtitle: "Browse albums from Open Days, Assessment Days, Expos and more — open any album to see every photo.",
         }
       : active === "past"
         ? {
@@ -95,62 +84,18 @@ export default function Events() {
         </div>
 
         {active === "gallery" ? (
-          gallery.length === 0 ? (
+          albums.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center text-slate-500">
               No gallery photos yet. Upload images under Admin → Event Gallery albums.
             </p>
           ) : (
-            <>
-              <div className="mb-8 flex flex-wrap justify-center gap-2">
-                {albumTabs.map((album) => (
-                  <button
-                    key={album.key || "all"}
-                    type="button"
-                    onClick={() => setAlbumFilter(album.key)}
-                    className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition sm:text-sm ${
-                      albumFromUrl === album.key
-                        ? "bg-brand-100 text-brand-800 ring-1 ring-brand-300"
-                        : "border border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700"
-                    }`}
-                  >
-                    {album.name}
-                  </button>
-                ))}
-              </div>
-
-              {!albumFromUrl ? (
-                <div className="space-y-10">
-                  {albums.map((album) => {
-                    const items = gallery.filter((g) => g.albumKey === album.key);
-                    if (!items.length) return null;
-                    return (
-                      <div key={album.key}>
-                        <h2 className="mb-4 font-display text-xl font-bold text-ink sm:text-2xl">{album.name}</h2>
-                        <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
-                          {items.map((item, i) => (
-                            <Reveal key={item.key} delay={(i % 6) * 40} className="mb-4 break-inside-avoid">
-                              <GalleryTile item={item} onOpen={setLightbox} />
-                            </Reveal>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : visibleGallery.length === 0 ? (
-                <p className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center text-slate-500">
-                  No photos in this album yet.
-                </p>
-              ) : (
-                <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
-                  {visibleGallery.map((item, i) => (
-                    <Reveal key={item.key} delay={(i % 6) * 40} className="mb-4 break-inside-avoid">
-                      <GalleryTile item={item} onOpen={setLightbox} />
-                    </Reveal>
-                  ))}
-                </div>
-              )}
-            </>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {albums.map((album, i) => (
+                <Reveal key={album.key} delay={(i % 3) * 70}>
+                  <AlbumPreviewCard album={album} />
+                </Reveal>
+              ))}
+            </div>
           )
         ) : list.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center text-slate-500">
@@ -169,53 +114,42 @@ export default function Events() {
         )}
       </section>
 
-      {lightbox ? (
-        <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-brand-950/80 p-4"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setLightbox(null)}
-        >
-          <div
-            className="relative max-h-[90vh] w-full max-w-4xl overflow-auto rounded-2xl bg-white p-3 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img src={lightbox.src} alt={lightbox.title} className="mx-auto max-h-[75vh] w-full object-contain" />
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 px-1">
-              <div>
-                <p className="font-display text-lg font-bold text-ink">{lightbox.title}</p>
-                {lightbox.albumName ? (
-                  <p className="text-sm text-slate-500">{lightbox.albumName}</p>
-                ) : null}
-              </div>
-              <button
-                type="button"
-                onClick={() => setLightbox(null)}
-                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
       <CounsellingSection />
     </>
   );
 }
 
-function GalleryTile({ item, onOpen }) {
+function AlbumPreviewCard({ album }) {
+  const cover = album.images?.[0];
+  const count = album.images?.length || 0;
+
   return (
-    <button
-      type="button"
-      onClick={() => onOpen(item)}
-      className="group relative block w-full overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-lg"
+    <Link
+      to={`/events/gallery/${encodeURIComponent(album.key)}`}
+      className="group relative block aspect-[4/3] overflow-hidden rounded-2xl border border-slate-100 bg-slate-900 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-500/15"
     >
-      <img src={item.src} alt={item.title} loading="lazy" className="block w-full object-contain" />
-      <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-950/80 to-transparent px-3 pb-3 pt-10 text-left text-sm font-semibold text-white opacity-0 transition group-hover:opacity-100">
-        {item.title}
-      </span>
-    </button>
+      {cover ? (
+        <img
+          src={cover}
+          alt={album.name}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-700 to-brand-950" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-brand-950/90 via-brand-950/35 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5">
+        <div>
+          <h2 className="font-display text-xl font-bold text-white sm:text-2xl">{album.name}</h2>
+          <p className="mt-1 text-xs font-medium text-white/75">
+            {count} photo{count === 1 ? "" : "s"}
+          </p>
+        </div>
+        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-brand-700 shadow-lg transition group-hover:bg-gold-400 group-hover:text-brand-950">
+          View all <Icon name="arrow" className="h-3.5 w-3.5" />
+        </span>
+      </div>
+    </Link>
   );
 }
