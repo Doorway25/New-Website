@@ -1,4 +1,4 @@
-﻿-- CreateTable
+-- CreateTable
 CREATE TABLE "EventAlbum" (
     "id" TEXT NOT NULL,
     "key" TEXT NOT NULL,
