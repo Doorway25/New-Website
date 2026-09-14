@@ -100,8 +100,8 @@ export default function GalleryUpload({
         ))}
 
         <label className={`image-drop gallery-add ${uploading ? "busy" : ""}`}>
-          <strong>{uploading ? "Uploading…" : "Add images"}</strong>
-          <span>JPG, PNG, WebP · multiple allowed</span>
+          <strong>{uploading ? "Uploading…" : urls.length ? "Add more images" : "Add images"}</strong>
+          <span>JPG, PNG, WebP · multiple allowed · keeps existing photos</span>
           <input type="file" accept="image/*" multiple hidden disabled={uploading} onChange={onFiles} />
         </label>
       </div>

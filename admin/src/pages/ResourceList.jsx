@@ -197,9 +197,11 @@ export default function ResourceList({ resourceKey }) {
             </p>
           ) : null}
         </div>
-        <Link className="btn primary" to={newHref}>
-          New {resource.singular.toLowerCase()}
-        </Link>
+        {!resource.hideCreate ? (
+          <Link className="btn primary" to={newHref}>
+            New {resource.singular.toLowerCase()}
+          </Link>
+        ) : null}
       </header>
 
       {filterTabs ? (
@@ -299,7 +301,9 @@ export default function ResourceList({ resourceKey }) {
                 ? [item.displayCountry?.toUpperCase(), item.displayCity, `Order ${item.sortOrder ?? 0}`]
                     .filter(Boolean)
                     .join(" · ")
-                : item[resource.subtitleKey] || "";
+                : resource.path === "event-albums"
+                  ? `${Array.isArray(item.images) ? item.images.length : 0} photo${(item.images || []).length === 1 ? "" : "s"}`
+                  : item[resource.subtitleKey] || "";
               return (
                 <tr key={item.id}>
                   <td data-label={partnerMode ? "University" : "Name"}>
@@ -333,9 +337,9 @@ export default function ResourceList({ resourceKey }) {
                   <td className="row-actions" data-label="Actions">
                     <div className="row-actions-inner">
                       <Link className="action-edit" to={`/${resource.path}/${item.id}`}>
-                        Edit
+                        {resource.editLabel || "Edit"}
                       </Link>
-                      {canDelete && (
+                      {canDelete && !resource.hideDelete && (
                         <button type="button" className="link danger" onClick={() => onDelete(item.id, title)}>
                           Delete
                         </button>

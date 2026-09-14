@@ -266,9 +266,17 @@ export default function ResourceEdit({ resourceKey }) {
             <Link to={`/${resource.path}`}>{resource.label}</Link>
           </p>
           <h1>
-            {isNew ? `New ${resource.singular.toLowerCase()}` : `Edit ${resource.singular.toLowerCase()}`}
+            {isNew
+              ? `New ${resource.singular.toLowerCase()}`
+              : resource.path === "event-albums"
+                ? `Add photos · ${values.name || resource.singular}`
+                : `Edit ${resource.singular.toLowerCase()}`}
           </h1>
-          <p className="muted">{resource.help || "Fields match what visitors see on the public website."}</p>
+          <p className="muted">
+            {resource.path === "event-albums" && !isNew
+              ? "Upload new images below. Old photos stay in the album — Save when finished."
+              : resource.help || "Fields match what visitors see on the public website."}
+          </p>
         </div>
       </header>
 
@@ -293,11 +301,15 @@ export default function ResourceEdit({ resourceKey }) {
                   onUseYoutubeThumb={field.key === "youtubeId" ? useYoutubeThumb : undefined}
                   onFetchYoutube={field.key === "youtubeId" ? fetchYoutubeDetails : undefined}
                   fetchingYoutube={fetchingYoutube}
+                  readOnly={!!field.readOnlyOnEdit && !isNew}
                   slugManual={slugManual}
                   slugSourceLabel={slugSourceLabel}
                   slugTargetLabel={slugTargetLabel}
                   onSyncSlug={
-                    slugTarget && field.key === slugTarget && field.type !== "university-slug"
+                    slugTarget &&
+                    field.key === slugTarget &&
+                    field.type !== "university-slug" &&
+                    !(field.readOnlyOnEdit && !isNew)
                       ? syncSlugFromTitle
                       : undefined
                   }
@@ -365,6 +377,7 @@ function Field({
   onUseYoutubeThumb,
   onFetchYoutube,
   fetchingYoutube,
+  readOnly = false,
   slugManual,
   slugSourceLabel,
   slugTargetLabel,
@@ -373,6 +386,8 @@ function Field({
   const common = {
     id: field.key,
     required: !!field.required,
+    readOnly: !!readOnly,
+    disabled: !!readOnly,
   };
 
   const hint = field.hint ? <small className="field-hint">{field.hint}</small> : null;
