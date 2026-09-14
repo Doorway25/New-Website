@@ -259,7 +259,7 @@ export default function Leads() {
               return (
                 <Fragment key={lead.id}>
                   <tr className={open ? "is-open" : ""}>
-                    <td>
+                    <td data-label="Lead">
                       <button
                         type="button"
                         className="lead-name-btn"
@@ -273,14 +273,14 @@ export default function Leads() {
                         )}
                       </button>
                     </td>
-                    <td className="muted">
+                    <td className="muted" data-label="Contact">
                       <div>{lead.email || "—"}</div>
                       <div>{lead.phone || ""}</div>
                     </td>
-                    <td>
+                    <td data-label="Type">
                       <span className="type-pill">{formatType(lead.type)}</span>
                     </td>
-                    <td>
+                    <td data-label="Status">
                       <div className="status-cell">
                         <span className={`status-pill status-${lead.status}`}>{lead.status}</span>
                         <select
@@ -296,16 +296,20 @@ export default function Leads() {
                         </select>
                       </div>
                     </td>
-                    <td className="muted">{formatWhen(lead.createdAt)}</td>
-                    <td className="row-actions">
-                      <button type="button" className="link" onClick={() => setOpenId(open ? "" : lead.id)}>
-                        {open ? "Hide" : "View"}
-                      </button>
-                      {canDelete && (
-                        <button type="button" className="link danger" onClick={() => onDelete(lead.id, lead.name)}>
-                          Delete
+                    <td className="muted" data-label="Created">
+                      {formatWhen(lead.createdAt)}
+                    </td>
+                    <td className="row-actions" data-label="Actions">
+                      <div className="row-actions-inner">
+                        <button type="button" className="link" onClick={() => setOpenId(open ? "" : lead.id)}>
+                          {open ? "Hide" : "View"}
                         </button>
-                      )}
+                        {canDelete && (
+                          <button type="button" className="link danger" onClick={() => onDelete(lead.id, lead.name)}>
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                   {open && (

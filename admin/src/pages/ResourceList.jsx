@@ -302,7 +302,7 @@ export default function ResourceList({ resourceKey }) {
                 : item[resource.subtitleKey] || "";
               return (
                 <tr key={item.id}>
-                  <td>
+                  <td data-label={partnerMode ? "University" : "Name"}>
                     <Link className="table-title partner-row-title" to={`/${resource.path}/${item.id}`}>
                       {partnerMode ? (
                         <span className="partner-list-cell">
@@ -320,23 +320,27 @@ export default function ResourceList({ resourceKey }) {
                       )}
                     </Link>
                   </td>
-                  <td className="muted">{String(subtitle)}</td>
+                  <td className="muted" data-label={partnerMode ? "Country" : "Details"}>
+                    {String(subtitle)}
+                  </td>
                   {showPublished && (
-                    <td>
+                    <td data-label="Status">
                       <span className={`badge ${item.published ? "ok" : ""}`}>
                         {item.published ? "Published" : "Draft"}
                       </span>
                     </td>
                   )}
-                  <td className="row-actions">
-                    <Link className="action-edit" to={`/${resource.path}/${item.id}`}>
-                      Edit
-                    </Link>
-                    {canDelete && (
-                      <button type="button" className="link danger" onClick={() => onDelete(item.id, title)}>
-                        Delete
-                      </button>
-                    )}
+                  <td className="row-actions" data-label="Actions">
+                    <div className="row-actions-inner">
+                      <Link className="action-edit" to={`/${resource.path}/${item.id}`}>
+                        Edit
+                      </Link>
+                      {canDelete && (
+                        <button type="button" className="link danger" onClick={() => onDelete(item.id, title)}>
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

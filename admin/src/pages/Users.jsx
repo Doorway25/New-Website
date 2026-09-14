@@ -152,8 +152,8 @@ function UsersInner() {
           <tbody>
             {items.map((u) => (
               <tr key={u.id}>
-                <td>{u.email}</td>
-                <td>
+                <td data-label="Email">{u.email}</td>
+                <td data-label="Name">
                   {editingId === u.id ? (
                     <input
                       value={edit.name}
@@ -163,7 +163,7 @@ function UsersInner() {
                     u.name
                   )}
                 </td>
-                <td>
+                <td data-label="Role">
                   {editingId === u.id ? (
                     <select value={edit.role} onChange={(e) => setEdit((x) => ({ ...x, role: e.target.value }))}>
                       <option value="editor">editor</option>
@@ -173,7 +173,7 @@ function UsersInner() {
                     u.role
                   )}
                 </td>
-                <td>
+                <td data-label="Active">
                   {editingId === u.id ? (
                     <input
                       type="checkbox"
@@ -184,41 +184,43 @@ function UsersInner() {
                     <span className={`badge ${u.active ? "ok" : ""}`}>{u.active ? "Yes" : "No"}</span>
                   )}
                 </td>
-                <td className="row-actions">
-                  {editingId === u.id ? (
-                    <>
-                      <input
-                        type="password"
-                        placeholder="New password (optional)"
-                        value={edit.password || ""}
-                        onChange={(e) => setEdit((x) => ({ ...x, password: e.target.value }))}
-                      />
-                      <button type="button" className="link" onClick={() => onSaveEdit(u.id)}>
-                        Save
-                      </button>
-                      <button type="button" className="link" onClick={() => setEditingId(null)}>
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        className="link"
-                        onClick={() => {
-                          setEditingId(u.id);
-                          setEdit({ name: u.name, role: u.role, active: u.active, password: "" });
-                        }}
-                      >
-                        Edit
-                      </button>
-                      {u.id !== me?.id && (
-                        <button type="button" className="link danger" onClick={() => onDelete(u.id, u.email)}>
-                          Delete
+                <td className="row-actions" data-label="Actions">
+                  <div className="row-actions-inner">
+                    {editingId === u.id ? (
+                      <>
+                        <input
+                          type="password"
+                          placeholder="New password (optional)"
+                          value={edit.password || ""}
+                          onChange={(e) => setEdit((x) => ({ ...x, password: e.target.value }))}
+                        />
+                        <button type="button" className="link" onClick={() => onSaveEdit(u.id)}>
+                          Save
                         </button>
-                      )}
-                    </>
-                  )}
+                        <button type="button" className="link" onClick={() => setEditingId(null)}>
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className="link"
+                          onClick={() => {
+                            setEditingId(u.id);
+                            setEdit({ name: u.name, role: u.role, active: u.active, password: "" });
+                          }}
+                        >
+                          Edit
+                        </button>
+                        {u.id !== me?.id && (
+                          <button type="button" className="link danger" onClick={() => onDelete(u.id, u.email)}>
+                            Delete
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
