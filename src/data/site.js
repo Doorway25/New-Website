@@ -849,18 +849,33 @@ export function splitEvents(events = []) {
   return { upcoming, past };
 }
 
-/** Flat list of gallery tiles: cover + gallery images for every event. */
+/** Flat list of gallery tiles from Event Gallery albums (not per-event images). */
+export function albumGalleryItems(albums = []) {
+  const items = [];
+  for (const album of albums) {
+    const images = Array.isArray(album.images) ? album.images : [];
+    images.forEach((src, i) => {
+      if (!src) return;
+      items.push({
+        key: `${album.key || album.id}-g${i}`,
+        src,
+        title: album.name,
+        albumKey: album.key,
+        albumName: album.name,
+        kind: "album",
+      });
+    });
+  }
+  return items;
+}
+
+/** @deprecated Prefer albumGalleryItems — kept for older imports */
 export function eventGalleryItems(events = []) {
   const items = [];
   for (const e of events) {
     if (e.image) {
       items.push({ key: `${e.slug}-cover`, src: e.image, title: e.title, slug: e.slug, kind: "cover" });
     }
-    const gallery = Array.isArray(e.gallery) ? e.gallery : [];
-    gallery.forEach((src, i) => {
-      if (!src) return;
-      items.push({ key: `${e.slug}-g${i}`, src, title: e.title, slug: e.slug, kind: "gallery" });
-    });
   }
   return items;
 }

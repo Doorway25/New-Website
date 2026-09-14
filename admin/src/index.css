@@ -2260,8 +2260,41 @@ td.row-actions {
 .youtube-input-row input { flex: 1; min-width: 0; }
 .youtube-input-row .btn { white-space: nowrap; flex-shrink: 0; }
 
+.slug-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.slug-input-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.slug-input-row .btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.slug-auto-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0f766e;
+  background: #e6f7f3;
+  vertical-align: middle;
+}
+
 @media (max-width: 720px) {
   .youtube-input-row { flex-direction: column; }
+  .slug-input-row { flex-direction: column; }
+  .slug-input-row .btn { width: 100%; min-height: 44px; }
 }
 
 .gallery-upload .gallery-grid {

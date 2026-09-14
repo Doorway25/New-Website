@@ -62,17 +62,19 @@ function toParagraphs(value) {
 function mapEvent(e) {
   if (!e) return e;
   const local = fallback.eventBySlug?.[e.slug];
-  const gallery = Array.isArray(e.gallery)
-    ? e.gallery.map((url) => resolveImage(url)).filter(Boolean)
-    : Array.isArray(local?.gallery)
-      ? local.gallery
-      : [];
   return {
     ...e,
     description: toParagraphs(e.description),
     agenda: Array.isArray(e.agenda) ? e.agenda : [],
-    gallery,
     image: resolveImage(e.image, local?.image),
+  };
+}
+
+function mapEventAlbum(a) {
+  if (!a) return a;
+  return {
+    ...a,
+    images: Array.isArray(a.images) ? a.images.map((url) => resolveImage(url)).filter(Boolean) : [],
   };
 }
 
@@ -173,6 +175,7 @@ export function SiteProvider({ children }) {
     whyUs: fallback.whyUs,
     partners: fallback.partners,
     pathways: [],
+    eventAlbums: [],
     pages: {},
   });
 
@@ -181,13 +184,14 @@ export function SiteProvider({ children }) {
 
     async function load() {
       try {
-        const [home, uniPage, articlePage, eventPage, storyPage, branches, pages] = await Promise.all([
+        const [home, uniPage, articlePage, eventPage, storyPage, branches, albumPage, pages] = await Promise.all([
           fetchPublic("/home").catch(() => null),
           fetchPublic("/universities", { pageSize: 500 }).catch(() => ({ items: [] })),
           fetchPublic("/articles", { pageSize: 100 }).catch(() => ({ items: [] })),
           fetchPublic("/events", { pageSize: 100 }).catch(() => ({ items: [] })),
           fetchPublic("/stories", { pageSize: 100 }).catch(() => ({ items: [] })),
           fetchPublic("/branches").catch(() => []),
+          fetchPublic("/event-albums").catch(() => ({ items: [] })),
           Promise.all(
             ["home", "about-us", "contact-us", "apply-now", "study", "countries", "articles", "events", "stories"].map((slug) =>
               fetchPublic(`/pages/${slug}`).catch(() => null)
@@ -238,6 +242,9 @@ export function SiteProvider({ children }) {
                 ...p,
                 imageUrl: resolveImage(p.imageUrl),
               }))
+            : [],
+          eventAlbums: Array.isArray(albumPage?.items)
+            ? albumPage.items.map(mapEventAlbum)
             : [],
           pages: pageMap,
         });

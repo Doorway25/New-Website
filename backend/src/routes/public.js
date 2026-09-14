@@ -47,7 +47,6 @@ const EVENT_LIST_SELECT = {
   time: true,
   location: true,
   image: true,
-  gallery: true,
   excerpt: true,
 };
 
@@ -247,6 +246,40 @@ router.get(
     });
     if (!item) throw new HttpError(404, "Event not found");
     res.json(item);
+  })
+);
+
+router.get(
+  "/event-albums",
+  asyncHandler(async (_req, res) => {
+    const defaults = [
+      { key: "openday", name: "Openday", sortOrder: 1 },
+      { key: "assessmentday", name: "Assessmentday", sortOrder: 2 },
+      { key: "application-week", name: "Application week", sortOrder: 3 },
+      { key: "expo", name: "Expo", sortOrder: 4 },
+      { key: "pre-departure", name: "Pre-departure", sortOrder: 5 },
+      { key: "office-memories", name: "Office Memories", sortOrder: 6 },
+    ];
+    for (const album of defaults) {
+      await prisma.eventAlbum.upsert({
+        where: { key: album.key },
+        create: { ...album, images: [], published: true },
+        update: { name: album.name, sortOrder: album.sortOrder },
+      });
+    }
+    const items = await prisma.eventAlbum.findMany({
+      where: { published: true },
+      orderBy: { sortOrder: "asc" },
+      select: {
+        id: true,
+        key: true,
+        name: true,
+        images: true,
+        sortOrder: true,
+      },
+    });
+    cachePublic(res, 60);
+    res.json({ items });
   })
 );
 

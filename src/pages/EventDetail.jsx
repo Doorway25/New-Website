@@ -94,24 +94,6 @@ export default function EventDetail() {
                   </ul>
                 </>
               )}
-              {Array.isArray(event.gallery) && event.gallery.length > 0 ? (
-                <>
-                  <h3 className="mt-7 font-display text-lg font-bold text-ink">Event gallery</h3>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    {event.gallery.map((src, i) => (
-                      <a
-                        key={`${src}-${i}`}
-                        href={src}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50"
-                      >
-                        <img src={src} alt={`${event.title} photo ${i + 1}`} className="h-auto w-full object-contain" loading="lazy" />
-                      </a>
-                    ))}
-                  </div>
-                </>
-              ) : null}
             </div>
           </div>
 

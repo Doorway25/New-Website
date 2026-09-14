@@ -778,24 +778,18 @@ function Events() {
             New events will appear here soon.
           </p>
         ) : (
-          <div className="mt-6 grid gap-5 lg:grid-cols-3">
+          <div className="mt-6 grid items-start gap-5 lg:grid-cols-3">
             <div className={`grid gap-5 sm:grid-cols-2 ${hasPastColumn ? "lg:col-span-2" : "lg:col-span-3 lg:grid-cols-3"}`}>
               {upcomingList.map((e, i) => (
-                <Reveal key={e.slug} delay={i * 80}>
+                <Reveal key={e.slug} delay={i * 80} className="h-full">
                   <EventCard event={e} />
                 </Reveal>
               ))}
             </div>
 
             {hasPastColumn ? (
-              <Reveal delay={160} className="flex flex-col">
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Past event</p>
-                  <Link to="/events?tab=past" className="text-xs font-semibold text-brand-600 hover:underline">
-                    View all
-                  </Link>
-                </div>
-                <div className="relative flex-1">
+              <Reveal delay={160} className="h-full">
+                <div className="relative h-full">
                   <span className="pointer-events-none absolute -left-1 top-3 z-10 rotate-[-8deg] rounded-md bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow">
                     Past
                   </span>

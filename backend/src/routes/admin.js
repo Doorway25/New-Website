@@ -266,7 +266,7 @@ router.post(
 router.get(
   "/dashboard",
   asyncHandler(async (_req, res) => {
-    const [universities, articles, events, stories, branches, leads, countries, pages, recentLeads] =
+    const [universities, articles, events, stories, branches, leads, countries, pages, eventAlbums, recentLeads] =
       await Promise.all([
         prisma.university.count(),
         prisma.article.count(),
@@ -276,6 +276,7 @@ router.get(
         prisma.lead.count({ where: { status: "new" } }),
         prisma.country.count(),
         prisma.page.count(),
+        prisma.eventAlbum.count().catch(() => 0),
         prisma.lead.findMany({
           orderBy: { createdAt: "desc" },
           take: 6,
@@ -298,6 +299,7 @@ router.get(
       leads,
       countries,
       pages,
+      "event-albums": eventAlbums,
       recentLeads,
     });
   })
@@ -843,7 +845,7 @@ mountCrud("articles", prisma.article, {
 
 mountCrud("events", prisma.event, {
   fields: [
-    "slug", "title", "type", "date", "time", "location", "image", "gallery",
+    "slug", "title", "type", "date", "time", "location", "image",
     "excerpt", "description", "agenda",
   ],
   search: ["title", "location", "slug"],
@@ -913,6 +915,54 @@ mountCrud("partners", prisma.partner, {
 mountCrud("pathways", prisma.pathway, {
   fields: ["name", "imageUrl", "href"],
   search: ["name"],
+  orderBy: { sortOrder: "asc" },
+  seo: false,
+});
+
+const DEFAULT_EVENT_ALBUMS = [
+  { key: "openday", name: "Openday", sortOrder: 1 },
+  { key: "assessmentday", name: "Assessmentday", sortOrder: 2 },
+  { key: "application-week", name: "Application week", sortOrder: 3 },
+  { key: "expo", name: "Expo", sortOrder: 4 },
+  { key: "pre-departure", name: "Pre-departure", sortOrder: 5 },
+  { key: "office-memories", name: "Office Memories", sortOrder: 6 },
+];
+
+async function ensureDefaultEventAlbums() {
+  for (const album of DEFAULT_EVENT_ALBUMS) {
+    await prisma.eventAlbum.upsert({
+      where: { key: album.key },
+      create: {
+        key: album.key,
+        name: album.name,
+        sortOrder: album.sortOrder,
+        images: [],
+        published: true,
+      },
+      update: {
+        name: album.name,
+        sortOrder: album.sortOrder,
+      },
+    });
+  }
+}
+
+// Ensure default albums before CRUD list handler
+router.get(
+  "/event-albums",
+  asyncHandler(async (_req, _res, next) => {
+    try {
+      await ensureDefaultEventAlbums();
+    } catch {
+      /* migrate may not have run yet */
+    }
+    next();
+  })
+);
+
+mountCrud("event-albums", prisma.eventAlbum, {
+  fields: ["key", "name", "images"],
+  search: ["name", "key"],
   orderBy: { sortOrder: "asc" },
   seo: false,
 });

@@ -6,6 +6,7 @@ import GalleryUpload from "../components/GalleryUpload";
 import RichTextEditor from "../components/RichTextEditor";
 import { SeoFields } from "../components/SeoFields";
 import {
+  autoSlugTargetField,
   emptyValues,
   extractYoutubeId,
   flagImageUrl,
@@ -13,6 +14,8 @@ import {
   isYoutubeThumbUrl,
   itemToForm,
   resources,
+  slugify,
+  slugSourceField,
   youtubeThumbUrl,
 } from "../resources";
 
@@ -51,10 +54,19 @@ export default function ResourceEdit({ resourceKey }) {
   const [message, setMessage] = useState("");
   const [fetchingYoutube, setFetchingYoutube] = useState(false);
   const [universityOptions, setUniversityOptions] = useState([]);
+  /** When true, slug no longer follows the title (user edited it, or editing existing). */
+  const [slugManual, setSlugManual] = useState(!isNew);
 
   const sections = useMemo(() => groupFields(resource.fields), [resource]);
   const hasYoutube = resource.fields.some((f) => f.key === "youtubeId");
   const needsUniversities = resource.fields.some((f) => f.type === "university-slug");
+  const editableSlug = useMemo(() => !!autoSlugTargetField(resource), [resource]);
+  const slugTarget = useMemo(() => autoSlugTargetField(resource), [resource]);
+  const slugSource = useMemo(() => slugSourceField(resource), [resource]);
+  const slugSourceLabel =
+    resource.fields.find((f) => f.key === slugSource)?.label || "Title";
+  const slugTargetLabel =
+    resource.fields.find((f) => f.key === slugTarget)?.label || "Slug";
 
   useEffect(() => {
     if (!needsUniversities) return;
@@ -112,12 +124,16 @@ export default function ResourceEdit({ resourceKey }) {
         next.countrySlug = countrySlug;
       }
       setValues(next);
+      setSlugManual(false);
       setLoading(false);
       return;
     }
     setLoading(true);
     get(`/api/admin/${resource.path}/${id}`)
-      .then((item) => setValues(itemToForm(resource, item)))
+      .then((item) => {
+        setValues(itemToForm(resource, item));
+        setSlugManual(true);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [resourceKey, id, isNew, resource, searchParams]);
@@ -141,7 +157,29 @@ export default function ResourceEdit({ resourceKey }) {
       });
       return;
     }
+    if (editableSlug && slugTarget && key === slugTarget) {
+      setSlugManual(true);
+      setValues((prev) => ({ ...prev, [slugTarget]: value }));
+      return;
+    }
+    if (editableSlug && slugTarget && slugSource && key === slugSource && !slugManual) {
+      setValues((prev) => ({
+        ...prev,
+        [key]: value,
+        [slugTarget]: slugify(value),
+      }));
+      return;
+    }
     setValues((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function syncSlugFromTitle() {
+    if (!editableSlug || !slugTarget || !slugSource) return;
+    setSlugManual(false);
+    setValues((prev) => ({
+      ...prev,
+      [slugTarget]: slugify(prev[slugSource]),
+    }));
   }
 
   function useYoutubeThumb() {
@@ -188,7 +226,15 @@ export default function ResourceEdit({ resourceKey }) {
     setMessage("");
     setSaving(true);
     try {
-      const payload = formToPayload(resource, values);
+      const nextValues =
+        editableSlug &&
+        slugTarget &&
+        slugSource &&
+        !String(values[slugTarget] || "").trim()
+          ? { ...values, [slugTarget]: slugify(values[slugSource]) }
+          : values;
+      if (nextValues !== values) setValues(nextValues);
+      const payload = formToPayload(resource, nextValues);
       if (isNew) {
         const created = await post(`/api/admin/${resource.path}`, payload);
         setMessage("Created");
@@ -247,6 +293,14 @@ export default function ResourceEdit({ resourceKey }) {
                   onUseYoutubeThumb={field.key === "youtubeId" ? useYoutubeThumb : undefined}
                   onFetchYoutube={field.key === "youtubeId" ? fetchYoutubeDetails : undefined}
                   fetchingYoutube={fetchingYoutube}
+                  slugManual={slugManual}
+                  slugSourceLabel={slugSourceLabel}
+                  slugTargetLabel={slugTargetLabel}
+                  onSyncSlug={
+                    slugTarget && field.key === slugTarget && field.type !== "university-slug"
+                      ? syncSlugFromTitle
+                      : undefined
+                  }
                 />
               ))}
             </div>
@@ -302,13 +356,60 @@ function fieldClassName(field, extra = "") {
   return ["field-block", full ? "span-full" : "", extra].filter(Boolean).join(" ");
 }
 
-function Field({ field, value, values, onChange, universityOptions = [], onUseYoutubeThumb, onFetchYoutube, fetchingYoutube }) {
+function Field({
+  field,
+  value,
+  values,
+  onChange,
+  universityOptions = [],
+  onUseYoutubeThumb,
+  onFetchYoutube,
+  fetchingYoutube,
+  slugManual,
+  slugSourceLabel,
+  slugTargetLabel,
+  onSyncSlug,
+}) {
   const common = {
     id: field.key,
     required: !!field.required,
   };
 
   const hint = field.hint ? <small className="field-hint">{field.hint}</small> : null;
+
+  if (onSyncSlug && (field.key === "slug" || field.key === "key") && field.type !== "university-slug") {
+    return (
+      <label className={fieldClassName(field, "slug-field")}>
+        <span className="field-label">
+          {field.label || slugTargetLabel}
+          {!slugManual ? <span className="slug-auto-tag">Auto</span> : null}
+        </span>
+        <div className="slug-input-row">
+          <input
+            {...common}
+            type="text"
+            className="mono"
+            value={value ?? ""}
+            placeholder="generated-from-title"
+            onChange={(e) => onChange(field.key, e.target.value)}
+          />
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={onSyncSlug}
+            title={`Regenerate from ${slugSourceLabel}`}
+          >
+            From {slugSourceLabel}
+          </button>
+        </div>
+        {hint || (
+          <small className="field-hint">
+            Fills automatically from {slugSourceLabel.toLowerCase()}. Edit anytime to rename.
+          </small>
+        )}
+      </label>
+    );
+  }
 
   if (field.type === "image") {
     return (

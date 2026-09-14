@@ -51,6 +51,44 @@ export function flagImageUrl(code, width = 80) {
   return `https://flagcdn.com/w${width}/${c}.png`;
 }
 
+/** URL-safe slug from a title/name (editable afterward in admin). */
+export function slugify(value) {
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 80);
+}
+
+/** True when the resource has a free-text slug (not university picker). */
+export function hasEditableSlug(resource) {
+  return resource.fields.some((f) => f.key === "slug" && f.type !== "university-slug");
+}
+
+/** Field that stores the auto URL/key (`slug` or programs/albums `key`). */
+export function autoSlugTargetField(resource) {
+  if (hasEditableSlug(resource)) return "slug";
+  if (resource.fields.some((f) => f.key === "key") && (resource.titleKey === "name" || resource.path === "event-albums")) {
+    return "key";
+  }
+  return null;
+}
+
+/** Field that drives auto slug (title / name / city). */
+export function slugSourceField(resource) {
+  if (!autoSlugTargetField(resource)) return null;
+  const preferred = resource.titleKey;
+  if (preferred && preferred !== "slug" && preferred !== "key" && resource.fields.some((f) => f.key === preferred)) {
+    return preferred;
+  }
+  for (const candidate of ["title", "name", "city"]) {
+    if (resource.fields.some((f) => f.key === candidate)) return candidate;
+  }
+  return null;
+}
+
 export const resources = {
   pages: {
     path: "pages",
@@ -61,8 +99,13 @@ export const resources = {
     group: "content",
     seo: true,
     fields: [
-      { key: "slug", label: "Slug", required: true },
       { key: "title", label: "Title", required: true },
+      {
+        key: "slug",
+        label: "Slug",
+        required: true,
+        hint: "Auto-filled from title — edit only if you need a custom URL",
+      },
       { key: "subtitle", label: "Subtitle" },
       { key: "eyebrow", label: "Eyebrow" },
       { key: "body", label: "Body", type: "richtext" },
@@ -79,8 +122,14 @@ export const resources = {
     group: "study",
     seo: true,
     fields: [
-      { key: "slug", label: "Slug", required: true, section: "Basics", hint: "URL key, e.g. uk" },
       { key: "name", label: "Name", required: true, section: "Basics" },
+      {
+        key: "slug",
+        label: "Slug",
+        required: true,
+        section: "Basics",
+        hint: "Auto-filled from name (e.g. United Kingdom → united-kingdom) — edit if needed",
+      },
       { key: "flag", label: "Flag emoji", section: "Basics" },
       { key: "code", label: "Flag code (e.g. gb)", required: true, section: "Basics" },
       { key: "region", label: "Region", required: true, section: "Basics", hint: "Shown on country cards" },
@@ -99,8 +148,13 @@ export const resources = {
     group: "study",
     seo: false,
     fields: [
-      { key: "key", label: "Key", required: true },
       { key: "name", label: "Name", required: true },
+      {
+        key: "key",
+        label: "Key",
+        required: true,
+        hint: "Auto-filled from name — edit only if you need a custom key",
+      },
       { key: "count", label: "Course count label" },
       { key: "blurb", label: "Blurb", type: "textarea", rows: 3 },
       { key: "sortOrder", label: "Sort order", type: "number" },
@@ -137,8 +191,14 @@ export const resources = {
       ],
     },
     fields: [
-      { key: "slug", label: "Slug", required: true, section: "Basics" },
       { key: "name", label: "Name", required: true, section: "Basics" },
+      {
+        key: "slug",
+        label: "Slug",
+        required: true,
+        section: "Basics",
+        hint: "Auto-filled from name — edit only if you need a custom URL",
+      },
       {
         key: "countrySlug",
         label: "Country",
@@ -175,8 +235,14 @@ export const resources = {
     group: "content",
     seo: true,
     fields: [
-      { key: "slug", label: "Slug", required: true, section: "Basics" },
       { key: "title", label: "Title", required: true, section: "Basics" },
+      {
+        key: "slug",
+        label: "Slug",
+        required: true,
+        section: "Basics",
+        hint: "Auto-filled from title — edit only if you need a custom URL",
+      },
       { key: "category", label: "Category", required: true, section: "Basics", hint: "Filter chip on Articles page" },
       { key: "date", label: "Publish date", type: "datetime", required: true, section: "Basics" },
       { key: "readTime", label: "Read time (min)", type: "number", required: true, section: "Basics" },
@@ -196,21 +262,19 @@ export const resources = {
     group: "content",
     seo: false,
     fields: [
-      { key: "slug", label: "Slug", required: true, section: "Basics" },
       { key: "title", label: "Title", required: true, section: "Basics" },
+      {
+        key: "slug",
+        label: "Slug",
+        required: true,
+        section: "Basics",
+        hint: "Auto-filled from title — edit only if you need a custom URL",
+      },
       { key: "type", label: "Type", required: true, section: "Basics", hint: "In-person or Online" },
       { key: "date", label: "Date", type: "datetime", required: true, section: "Basics" },
       { key: "time", label: "Time", required: true, section: "Basics" },
       { key: "location", label: "Location", required: true, section: "Basics" },
       { key: "image", label: "Cover image", type: "image", kind: "hero", section: "Media", hint: "Main poster — shown full on the event page (not cropped)" },
-      {
-        key: "gallery",
-        label: "Event gallery images",
-        type: "gallery",
-        section: "Media",
-        span: "full",
-        hint: "Extra photos for the /events gallery and event detail page",
-      },
       { key: "excerpt", label: "Short excerpt", type: "textarea", rows: 3, section: "Content", hint: "Card / preview text" },
       { key: "description", label: "About this event", type: "textarea", rows: 6, section: "Content", hint: "Blank line between paragraphs" },
       { key: "agenda", label: "What to expect", type: "paragraphs", section: "Agenda", hint: "One agenda item per line" },
@@ -242,8 +306,14 @@ export const resources = {
       guardian: "https://www.youtube.com/playlist?list=PLdfCE6eITZIc",
     },
     fields: [
-      { key: "slug", label: "Slug", required: true, section: "Basics" },
       { key: "name", label: "Name", required: true, section: "Basics" },
+      {
+        key: "slug",
+        label: "Slug",
+        required: true,
+        section: "Basics",
+        hint: "Auto-filled from name — edit only if you need a custom URL",
+      },
       { key: "roleKey", label: "Category", required: true, type: "select", section: "Basics", options: [
         { value: "delegate", label: "Delegate" },
         { value: "student", label: "Student" },
@@ -273,8 +343,14 @@ export const resources = {
     group: "site",
     seo: true,
     fields: [
-      { key: "slug", label: "Slug", required: true, section: "Basics" },
       { key: "city", label: "City", required: true, section: "Basics" },
+      {
+        key: "slug",
+        label: "Slug",
+        required: true,
+        section: "Basics",
+        hint: "Auto-filled from city — edit only if you need a custom URL",
+      },
       { key: "country", label: "Country", required: true, section: "Basics" },
       { key: "code", label: "Flag code", required: true, section: "Basics", hint: "e.g. gb, bd" },
       { key: "head", label: "Head office", type: "checkbox", section: "Basics" },
@@ -424,6 +500,37 @@ export const resources = {
       { key: "published", label: "Published", type: "checkbox", section: "Publishing" },
     ],
   },
+  "event-albums": {
+    path: "event-albums",
+    label: "Event Gallery",
+    singular: "Album",
+    titleKey: "name",
+    subtitleKey: "key",
+    group: "content",
+    seo: false,
+    pageSize: 50,
+    help: "Album-wise photos for the Events → Gallery tab (Open Day, Expo, etc.). Not part of individual event create.",
+    fields: [
+      { key: "name", label: "Album name", required: true, section: "Basics", hint: "e.g. Openday, Assessmentday, Expo" },
+      {
+        key: "key",
+        label: "Key",
+        required: true,
+        section: "Basics",
+        hint: "Auto-filled from name — edit only if needed",
+      },
+      {
+        key: "images",
+        label: "Album photos",
+        type: "gallery",
+        section: "Photos",
+        span: "full",
+        hint: "Upload event-related photos for this album — shown on the public Events Gallery tab",
+      },
+      { key: "sortOrder", label: "Sort order", type: "number", section: "Publishing", hint: "Lower numbers appear first" },
+      { key: "published", label: "Published", type: "checkbox", section: "Publishing" },
+    ],
+  },
 };
 
 export const NAV_GROUPS = [
@@ -452,6 +559,7 @@ export const NAV_GROUPS = [
       { to: "/pages", label: "Pages", icon: "file" },
       { to: "/articles", label: "Articles", icon: "article" },
       { to: "/events", label: "Events", icon: "calendar" },
+      { to: "/event-albums", label: "Event Gallery", icon: "spark" },
       { to: "/stories", label: "Stories", icon: "star" },
     ],
   },
