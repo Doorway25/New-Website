@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { API_URL, del, get } from "../api";
+import { API_URL, del, get, post } from "../api";
 import { useAuth } from "../auth";
 import { hasPublished, resources } from "../resources";
 
@@ -28,6 +28,10 @@ export default function ResourceList({ resourceKey }) {
   const [error, setError] = useState("");
   const [query, setQuery] = useState(q);
   const [uniBySlug, setUniBySlug] = useState({});
+  const [playlistUrl, setPlaylistUrl] = useState("");
+  const [syncRole, setSyncRole] = useState("delegate");
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState("");
 
   async function load() {
     setError("");
@@ -53,6 +57,16 @@ export default function ResourceList({ resourceKey }) {
   useEffect(() => {
     setQuery(q);
   }, [q, resourceKey]);
+
+  useEffect(() => {
+    if (!resource.playlistSync) return;
+    const defaults = resource.playlistDefaults || {};
+    const role = filterValue || syncRole || "delegate";
+    setSyncRole(role === "" ? "delegate" : role);
+    setPlaylistUrl(defaults[role === "" ? "delegate" : role] || "");
+    setSyncMessage("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resourceKey, filterValue, resource.playlistSync]);
 
   useEffect(() => {
     if (!partnerMode) {
@@ -83,6 +97,30 @@ export default function ResourceList({ resourceKey }) {
       load();
     } catch (err) {
       setError(err.message);
+    }
+  }
+
+  async function onSyncPlaylist(e) {
+    e.preventDefault();
+    if (!resource.playlistSync) return;
+    setError("");
+    setSyncMessage("");
+    setSyncing(true);
+    try {
+      const result = await post("/api/admin/stories/sync-playlist", {
+        roleKey: syncRole,
+        playlistUrl,
+      });
+      setSyncMessage(
+        `Synced ${syncRole}: ${result.created} new, ${result.updated} updated` +
+          (result.skipped ? `, ${result.skipped} skipped` : "") +
+          (result.playlistTitle ? ` · ${result.playlistTitle}` : "")
+      );
+      load();
+    } catch (err) {
+      setError(err.message || "Playlist sync failed");
+    } finally {
+      setSyncing(false);
     }
   }
 
@@ -182,6 +220,43 @@ export default function ResourceList({ resourceKey }) {
             );
           })}
         </div>
+      ) : null}
+
+      {resource.playlistSync ? (
+        <form className="panel playlist-sync" onSubmit={onSyncPlaylist}>
+          <div className="panel-head">
+            <strong>Publish YouTube playlist</strong>
+            <p className="muted">Paste a playlist URL to import all videos as stories for that category.</p>
+          </div>
+          <div className="playlist-sync-row">
+            <label>
+              Category
+              <select value={syncRole} onChange={(e) => {
+                const role = e.target.value;
+                setSyncRole(role);
+                setPlaylistUrl(resource.playlistDefaults?.[role] || "");
+              }}>
+                <option value="delegate">Delegate</option>
+                <option value="student">Student</option>
+                <option value="guardian">Guardian</option>
+              </select>
+            </label>
+            <label className="grow">
+              Playlist URL
+              <input
+                type="url"
+                value={playlistUrl}
+                onChange={(e) => setPlaylistUrl(e.target.value)}
+                placeholder="https://www.youtube.com/playlist?list=..."
+                required
+              />
+            </label>
+            <button type="submit" className="btn primary" disabled={syncing}>
+              {syncing ? "Syncing…" : "Sync playlist"}
+            </button>
+          </div>
+          {syncMessage ? <p className="ok">{syncMessage}</p> : null}
+        </form>
       ) : null}
 
       <form className="toolbar" onSubmit={onSearch}>

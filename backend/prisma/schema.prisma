@@ -198,6 +198,7 @@ model StoryCategory {
   short           String?
   icon            String?
   blurb           String?
+  youtubePlaylistId String?
   sortOrder       Int      @default(0)
   metaTitle       String?
   metaDescription String?

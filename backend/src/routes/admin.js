@@ -10,7 +10,7 @@ import { prisma } from "../lib/prisma.js";
 import { SEO_FIELDS, paginate, pick } from "../lib/utils.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { asyncHandler, HttpError } from "../middleware/error.js";
-import { fetchYoutubeMeta } from "../lib/youtube.js";
+import { fetchYoutubeMeta, fetchPlaylistVideos } from "../lib/youtube.js";
 
 const router = Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -156,6 +156,110 @@ router.get(
     } catch (err) {
       throw new HttpError(err.status || 502, err.message || "YouTube lookup failed");
     }
+  })
+);
+
+function slugify(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 60);
+}
+
+router.post(
+  "/stories/sync-playlist",
+  asyncHandler(async (req, res) => {
+    const roleKey = String(req.body?.roleKey || "").trim().toLowerCase();
+    const playlistRaw = String(req.body?.playlistUrl || req.body?.playlistId || "").trim();
+    if (!["delegate", "student", "guardian"].includes(roleKey)) {
+      throw new HttpError(400, "roleKey must be delegate, student, or guardian");
+    }
+    if (!playlistRaw) throw new HttpError(400, "YouTube playlist URL required");
+
+    const category = await prisma.storyCategory.findUnique({ where: { key: roleKey } });
+    if (!category) throw new HttpError(404, "Story category not found — seed categories first");
+
+    let playlist;
+    try {
+      playlist = await fetchPlaylistVideos(playlistRaw);
+    } catch (err) {
+      throw new HttpError(err.status || 502, err.message || "Playlist lookup failed");
+    }
+
+    const playlistId = playlist.playlistId;
+    await prisma.storyCategory.update({
+      where: { key: roleKey },
+      data: { youtubePlaylistId: playlistId },
+    });
+
+    const roleLabel = roleKey.charAt(0).toUpperCase() + roleKey.slice(1);
+    const created = [];
+    const updated = [];
+    const skipped = [];
+
+    for (let i = 0; i < playlist.videoIds.length; i++) {
+      const youtubeId = playlist.videoIds[i];
+      let meta;
+      try {
+        meta = await fetchYoutubeMeta(youtubeId);
+      } catch {
+        skipped.push(youtubeId);
+        continue;
+      }
+
+      const quote = meta.title || meta.quote || `YouTube video ${youtubeId}`;
+      const text = Array.isArray(meta.paragraphs) && meta.paragraphs.length ? meta.paragraphs : [quote];
+      const image = meta.thumbnail || `https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`;
+      const name = (quote.split(/[-|:–—]/)[0] || quote).trim().slice(0, 80) || roleLabel;
+      const baseSlug = slugify(`${roleKey}-${name}`) || `${roleKey}-${youtubeId.toLowerCase()}`;
+      const slug = `${baseSlug}-${youtubeId.slice(0, 6).toLowerCase()}`;
+
+      const existing = await prisma.story.findFirst({ where: { youtubeId } });
+      const payload = {
+        name,
+        role: roleLabel,
+        roleKey,
+        relation: playlist.title || null,
+        image,
+        youtubeId,
+        quote,
+        text,
+        published: true,
+      };
+
+      if (existing) {
+        await prisma.story.update({
+          where: { id: existing.id },
+          data: payload,
+        });
+        updated.push(existing.slug);
+      } else {
+        // ensure unique slug
+        let uniqueSlug = slug;
+        let n = 1;
+        while (await prisma.story.findUnique({ where: { slug: uniqueSlug } })) {
+          uniqueSlug = `${slug}-${n++}`;
+        }
+        await prisma.story.create({
+          data: { slug: uniqueSlug, ...payload },
+        });
+        created.push(uniqueSlug);
+      }
+    }
+
+    res.json({
+      ok: true,
+      roleKey,
+      playlistId,
+      playlistTitle: playlist.title,
+      total: playlist.videoIds.length,
+      created: created.length,
+      updated: updated.length,
+      skipped: skipped.length,
+      createdSlugs: created,
+      updatedSlugs: updated,
+    });
   })
 );
 
@@ -749,7 +853,7 @@ mountCrud("events", prisma.event, {
 });
 
 mountCrud("story-categories", prisma.storyCategory, {
-  fields: ["key", "label", "short", "icon", "blurb"],
+  fields: ["key", "label", "short", "icon", "blurb", "youtubePlaylistId"],
   search: ["label", "key"],
   orderBy: { sortOrder: "asc" },
   published: false,

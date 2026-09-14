@@ -11,8 +11,6 @@ const TABS = [
   { id: "upcoming", label: "Upcoming" },
   { id: "past", label: "Past" },
   { id: "gallery", label: "Gallery" },
-  { id: "in-person", label: "In-person" },
-  { id: "online", label: "Online" },
 ];
 
 const TAB_IDS = new Set(TABS.map((t) => t.id));
@@ -36,10 +34,8 @@ export default function Events() {
     if (active === "upcoming") return upcoming;
     if (active === "past") return past;
     if (active === "gallery") return [];
-    if (active === "in-person") return events.filter((e) => e.type === "In-person");
-    if (active === "online") return events.filter((e) => e.type === "Online");
     return upcoming;
-  }, [active, events, upcoming, past]);
+  }, [active, upcoming, past]);
 
   const hero =
     active === "gallery"

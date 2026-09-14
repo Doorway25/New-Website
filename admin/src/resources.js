@@ -235,6 +235,12 @@ export const resources = {
         { value: "guardian", label: "Guardian" },
       ],
     },
+    playlistSync: true,
+    playlistDefaults: {
+      delegate: "https://www.youtube.com/playlist?list=PLE4zxKdPQf64",
+      student: "https://www.youtube.com/playlist?list=PLXHb83fGA3Ms",
+      guardian: "https://www.youtube.com/playlist?list=PLdfCE6eITZIc",
+    },
     fields: [
       { key: "slug", label: "Slug", required: true, section: "Basics" },
       { key: "name", label: "Name", required: true, section: "Basics" },

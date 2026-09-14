@@ -871,11 +871,12 @@ export function eventGalleryItems(events = []) {
 
 export const storyCategories = [
   {
-    key: "guardian",
-    label: "Guardian Stories",
-    short: "Guardian Says",
-    icon: "users",
-    blurb: "Parents share why they trusted us with their child's study-abroad journey.",
+    key: "delegate",
+    label: "Delegate Stories",
+    short: "Delegate Says",
+    icon: "globe",
+    blurb: "University representatives on partnering with Education Doorway.",
+    youtubePlaylistId: "PLE4zxKdPQf64",
   },
   {
     key: "student",
@@ -883,13 +884,15 @@ export const storyCategories = [
     short: "Student Says",
     icon: "cap",
     blurb: "Students talk about their journey from application to campus abroad.",
+    youtubePlaylistId: "PLXHb83fGA3Ms",
   },
   {
-    key: "delegate",
-    label: "Delegate Stories",
-    short: "Delegate Says",
-    icon: "globe",
-    blurb: "University representatives on partnering with Education Doorway.",
+    key: "guardian",
+    label: "Guardian Stories",
+    short: "Guardian Says",
+    icon: "users",
+    blurb: "Parents share why they trusted us with their child's study-abroad journey.",
+    youtubePlaylistId: "PLdfCE6eITZIc",
   },
 ];
 

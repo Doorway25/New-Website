@@ -15,7 +15,12 @@ export default function Stories() {
   const navigate = useNavigate();
   const { stories, storyCategories, storyCategoryByKey, getPage } = useSite();
   const seoPage = getPage("stories");
-  const tabs = [{ key: "all", label: "All Stories" }, ...storyCategories.map((c) => ({ key: c.key, label: c.label }))];
+  const tabs = [
+    { key: "all", label: "All Stories" },
+    ...[...storyCategories]
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+      .map((c) => ({ key: c.key, label: c.short || c.label })),
+  ];
   const active = category && storyCategoryByKey[category] ? category : "all";
 
   const [page, setPage] = useState(1);

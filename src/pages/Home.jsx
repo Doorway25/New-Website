@@ -360,7 +360,10 @@ function Services() {
 /* ---------------- Video stories ---------------- */
 function VideoStories() {
   const { stories, storyCategories } = useSite();
-  const featured = storyCategories
+  const orderedCategories = [...(storyCategories || [])].sort(
+    (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+  );
+  const featured = orderedCategories
     .map((c) => stories.find((s) => s.roleKey === c.key))
     .filter(Boolean)
     .slice(0, 3);
@@ -377,7 +380,13 @@ function VideoStories() {
         />
 
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          {storyCategories.map((c) => (
+          <Link
+            to="/stories"
+            className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-500/25"
+          >
+            All stories
+          </Link>
+          {orderedCategories.map((c) => (
             <Link
               key={c.key}
               to={`/stories/${c.key}`}
@@ -386,12 +395,6 @@ function VideoStories() {
               {c.short || c.label}
             </Link>
           ))}
-          <Link
-            to="/stories"
-            className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-500/25"
-          >
-            All stories
-          </Link>
         </div>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

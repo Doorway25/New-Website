@@ -144,3 +144,90 @@ export async function fetchYoutubeMeta(raw) {
     watchUrl: `https://www.youtube.com/watch?v=${id}`,
   };
 }
+
+export function extractPlaylistId(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  if (/^PL[\w-]{10,}$/i.test(raw)) return raw;
+  try {
+    const url = new URL(raw);
+    const list = url.searchParams.get("list");
+    if (list && /^PL[\w-]+$/i.test(list)) return list;
+  } catch {
+    // not a URL
+  }
+  const m = raw.match(/(PL[\w-]{10,})/i);
+  return m?.[1] || null;
+}
+
+async function fetchPlaylistViaApi(playlistId) {
+  const key = process.env.YOUTUBE_API_KEY;
+  if (!key) return null;
+  const ids = [];
+  let pageToken = "";
+  do {
+    const url = new URL("https://www.googleapis.com/youtube/v3/playlistItems");
+    url.searchParams.set("part", "contentDetails,snippet");
+    url.searchParams.set("playlistId", playlistId);
+    url.searchParams.set("maxResults", "50");
+    url.searchParams.set("key", key);
+    if (pageToken) url.searchParams.set("pageToken", pageToken);
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    for (const item of data.items || []) {
+      const id = item?.contentDetails?.videoId || item?.snippet?.resourceId?.videoId;
+      if (id) ids.push(id);
+    }
+    pageToken = data.nextPageToken || "";
+  } while (pageToken);
+  return ids;
+}
+
+async function scrapePlaylistPage(playlistId) {
+  const res = await fetch(`https://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; EducationDoorwayBot/1.0)",
+      "Accept-Language": "en-US,en;q=0.9",
+    },
+  });
+  if (!res.ok) return { title: "", videoIds: [] };
+  const html = await res.text();
+  const titleMatch = html.match(/property="og:title" content="([^"]+)"/);
+  const title = titleMatch?.[1] ? decodeJsonString(titleMatch[1].replace(/&amp;/g, "&")) : "";
+  const ids = [];
+  const seen = new Set();
+  for (const match of html.matchAll(/"videoId":"([a-zA-Z0-9_-]{11})"/g)) {
+    const id = match[1];
+    if (seen.has(id)) continue;
+    seen.add(id);
+    ids.push(id);
+  }
+  return { title, videoIds: ids };
+}
+
+/** List video IDs in a YouTube playlist (API key preferred; HTML scrape fallback). */
+export async function fetchPlaylistVideos(raw) {
+  const playlistId = extractPlaylistId(raw);
+  if (!playlistId) {
+    const err = new Error("Invalid YouTube playlist URL or ID");
+    err.status = 400;
+    throw err;
+  }
+
+  let title = "";
+  let videoIds = (await fetchPlaylistViaApi(playlistId).catch(() => null)) || [];
+  if (!videoIds.length) {
+    const scraped = await scrapePlaylistPage(playlistId);
+    title = scraped.title || "";
+    videoIds = scraped.videoIds || [];
+  }
+
+  if (!videoIds.length) {
+    const err = new Error("No videos found in this playlist");
+    err.status = 404;
+    throw err;
+  }
+
+  return { playlistId, title, videoIds };
+}
