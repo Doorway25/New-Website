@@ -82,7 +82,7 @@ router.get(
 router.get(
   "/home",
   asyncHandler(async (_req, res) => {
-    const [settings, countries, programs, subjects, testimonials, services, whyUs, partners, pathways, pillars, storyCategories] =
+    const [settings, countries, programs, subjects, testimonials, services, whyUs, partners, pathways, pillars, storyCategories, team] =
       await Promise.all([
         prisma.siteSetting.findUnique({ where: { key: "main" } }),
         prisma.country.findMany({
@@ -112,6 +112,7 @@ router.get(
         prisma.pathway.findMany({ where: { published: true }, orderBy: { sortOrder: "asc" } }),
         prisma.pillar.findMany({ where: { published: true }, orderBy: { sortOrder: "asc" } }),
         prisma.storyCategory.findMany({ orderBy: { sortOrder: "asc" } }),
+        prisma.teamMember.findMany({ where: { published: true }, orderBy: { sortOrder: "asc" } }).catch(() => []),
       ]);
     cachePublic(res, 15);
     res.json({
@@ -126,6 +127,7 @@ router.get(
       pathways,
       pillars,
       storyCategories,
+      team,
     });
   })
 );
@@ -348,6 +350,30 @@ router.get(
       where: { slug: req.params.slug, published: true },
     });
     if (!item) throw new HttpError(404, "Pillar not found");
+    res.json(item);
+  })
+);
+
+router.get(
+  "/team",
+  asyncHandler(async (_req, res) => {
+    const items = await prisma.teamMember.findMany({
+      where: { published: true },
+      orderBy: { sortOrder: "asc" },
+    });
+    cachePublic(res, 30);
+    res.json({ items });
+  })
+);
+
+router.get(
+  "/team/:slug",
+  asyncHandler(async (req, res) => {
+    const item = await prisma.teamMember.findFirst({
+      where: { slug: req.params.slug, published: true },
+    });
+    if (!item) throw new HttpError(404, "Team member not found");
+    cachePublic(res, 30);
     res.json(item);
   })
 );

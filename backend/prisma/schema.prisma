@@ -365,6 +365,22 @@ model EventAlbum {
   updatedAt DateTime @updatedAt
 }
 
+/** About Us → Our Team members */
+model TeamMember {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  roleKey     String
+  roleLabel   String
+  bio         String?  @db.Text
+  imageUrl    String?
+  linkedinUrl String?
+  sortOrder   Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Lead {
   id        String   @id @default(cuid())
   type      String   @default("counselling")

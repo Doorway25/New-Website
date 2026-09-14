@@ -78,6 +78,18 @@ function mapEventAlbum(a) {
   };
 }
 
+function mapTeamMember(m) {
+  if (!m) return m;
+  const linkedinUrl = String(m.linkedinUrl || "").trim();
+  return {
+    ...m,
+    imageUrl: resolveImage(m.imageUrl || m.image),
+    linkedinUrl: /^https?:\/\//i.test(linkedinUrl) ? linkedinUrl : "",
+    bio: m.bio || "",
+    roleLabel: m.roleLabel || m.roleKey || "",
+  };
+}
+
 function mapArticle(a) {
   if (!a) return a;
   const local = fallback.articleBySlug?.[a.slug];
@@ -176,6 +188,7 @@ export function SiteProvider({ children }) {
     partners: fallback.partners,
     pathways: [],
     eventAlbums: [],
+    team: fallback.team || [],
     pages: {},
   });
 
@@ -246,6 +259,7 @@ export function SiteProvider({ children }) {
           eventAlbums: Array.isArray(albumPage?.items)
             ? albumPage.items.map(mapEventAlbum)
             : [],
+          team: Array.isArray(home?.team) ? home.team.map(mapTeamMember) : fallback.team || [],
           pages: pageMap,
         });
       } catch {
@@ -268,6 +282,7 @@ export function SiteProvider({ children }) {
     const storyCategoryByKey = Object.fromEntries(state.storyCategories.map((c) => [c.key, c]));
     const branchBySlug = Object.fromEntries(state.branches.map((b) => [b.slug, b]));
     const pillarBySlug = Object.fromEntries(state.pillars.map((p) => [p.slug, p]));
+    const teamBySlug = Object.fromEntries(state.team.map((m) => [m.slug, m]));
 
     return {
       ...state,
@@ -279,6 +294,7 @@ export function SiteProvider({ children }) {
       storyCategoryByKey,
       branchBySlug,
       pillarBySlug,
+      teamBySlug,
       monogram: fallback.monogram,
       gradientFor: fallback.gradientFor,
       formatDate: fallback.formatDate,

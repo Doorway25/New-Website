@@ -891,6 +891,14 @@ mountCrud("testimonials", prisma.testimonial, {
   seo: false,
 });
 
+mountCrud("team", prisma.teamMember, {
+  fields: ["slug", "name", "roleKey", "roleLabel", "bio", "imageUrl", "linkedinUrl"],
+  search: ["name", "slug", "roleLabel", "roleKey"],
+  orderBy: { sortOrder: "asc" },
+  seo: false,
+  filters: ["roleKey"],
+});
+
 mountCrud("services", prisma.service, {
   fields: ["icon", "title", "text"],
   search: ["title"],

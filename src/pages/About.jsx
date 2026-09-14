@@ -5,7 +5,9 @@ import Icon from "../components/Icon";
 import PageHero from "../components/PageHero";
 import Reveal from "../components/Reveal";
 import SeoHead from "../components/SeoHead";
+import TeamMemberCard from "../components/TeamMemberCard";
 import { useSite } from "../api/SiteContext";
+import { groupTeamByRole } from "../data/site";
 
 const advantage = [
   { value: 200, suffix: "+", label: "Universities" },
@@ -21,8 +23,12 @@ const values = [
 ];
 
 export default function About() {
-  const { company, pillars, getPage } = useSite();
+  const { company, pillars, team, getPage } = useSite();
   const page = getPage("about-us");
+  const groups = groupTeamByRole(team || []);
+  const leadership = groups.filter((g) => !g.separate);
+  const marketing = groups.find((g) => g.separate);
+
   return (
     <>
       <SeoHead
@@ -38,7 +44,6 @@ export default function About() {
         crumbs={[{ label: "About Us" }]}
       />
 
-      {/* Intro */}
       <section className="container-x grid items-center gap-10 py-16 lg:grid-cols-2">
         <Reveal>
           <div className="relative">
@@ -82,7 +87,6 @@ export default function About() {
         </Reveal>
       </section>
 
-      {/* Mission / Vision / Values */}
       <section className="bg-white py-16">
         <div className="container-x grid gap-5 md:grid-cols-3">
           {pillars.map((c, i) => (
@@ -105,30 +109,87 @@ export default function About() {
         </div>
       </section>
 
-      {/* Advantage stats */}
       <section className="container-x py-16">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl font-extrabold text-ink">The Education Doorway Advantage</h2>
+        <Reveal className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-brand-50 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-brand-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-gold-500" /> Our Team
+            </span>
+            <h2 className="font-display text-3xl font-extrabold text-ink">
+              Meet the people guiding your journey
+            </h2>
+            <p className="mt-2 max-w-2xl text-slate-500">
+              Directors, country managers and managers dedicated to honest advice and strong student outcomes.
+            </p>
+          </div>
+          <Link
+            to="/team"
+            className="inline-flex shrink-0 items-center gap-2 rounded-full border border-brand-200 px-5 py-2.5 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
+          >
+            View all team <Icon name="arrow" className="h-4 w-4" />
+          </Link>
         </Reveal>
-        <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {advantage.map((s, i) => (
-            <Reveal key={s.label} delay={i * 80}>
-              <div className="rounded-2xl border border-slate-100 bg-white p-6 text-center shadow-sm">
-                <Counter to={s.value} suffix={s.suffix} className="font-display text-3xl font-extrabold text-brand-600 sm:text-4xl" />
-                <p className="mt-1 text-sm font-medium text-slate-500">{s.label}</p>
+
+        {!groups.length ? (
+          <p className="mt-8 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-slate-500">
+            Team profiles will appear here once added in the admin panel.
+          </p>
+        ) : (
+          <div className="mt-10 space-y-12">
+            {leadership.map((group) => (
+              <div key={group.key}>
+                <h3 className="font-display text-xl font-bold text-ink">{group.label}</h3>
+                <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {group.members.map((member, i) => (
+                    <Reveal key={member.slug} delay={(i % 3) * 70}>
+                      <TeamMemberCard member={member} compact />
+                    </Reveal>
+                  ))}
+                </div>
               </div>
-            </Reveal>
-          ))}
-        </div>
-        <p className="mt-3 text-center text-xs text-slate-400">*Terms &amp; Conditions applied.</p>
+            ))}
+
+            {marketing ? (
+              <div className="rounded-3xl border border-brand-100 bg-gradient-to-b from-brand-50/70 to-white p-6 sm:p-8">
+                <h3 className="font-display text-xl font-bold text-ink">{marketing.label}</h3>
+                <p className="mt-1 text-sm text-slate-500">Campaigns, content and student outreach.</p>
+                <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {marketing.members.map((member, i) => (
+                    <Reveal key={member.slug} delay={(i % 3) * 70}>
+                      <TeamMemberCard member={member} compact />
+                    </Reveal>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        )}
       </section>
 
-      {/* Values detail */}
       <section className="bg-white py-16">
-        <div className="container-x grid gap-5 md:grid-cols-3">
+        <div className="container-x">
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <h2 className="font-display text-3xl font-extrabold text-ink">The Education Doorway Advantage</h2>
+          </Reveal>
+          <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {advantage.map((s, i) => (
+              <Reveal key={s.label} delay={i * 80}>
+                <div className="rounded-2xl border border-slate-100 bg-white p-6 text-center shadow-sm">
+                  <Counter to={s.value} suffix={s.suffix} className="font-display text-3xl font-extrabold text-brand-600 sm:text-4xl" />
+                  <p className="mt-1 text-sm font-medium text-slate-500">{s.label}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <p className="mt-3 text-center text-xs text-slate-400">*Terms &amp; Conditions applied.</p>
+        </div>
+      </section>
+
+      <section className="container-x py-16">
+        <div className="grid gap-5 md:grid-cols-3">
           {values.map((v, i) => (
             <Reveal key={v.title} delay={i * 80}>
-              <div className="flex h-full gap-4 rounded-2xl border border-slate-100 p-6">
+              <div className="flex h-full gap-4 rounded-2xl border border-slate-100 bg-white p-6">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
                   <Icon name={v.icon} className="h-6 w-6" />
                 </span>
@@ -140,7 +201,7 @@ export default function About() {
             </Reveal>
           ))}
         </div>
-        <div className="container-x mt-10 text-center">
+        <div className="mt-10 text-center">
           <Link to="/apply-now" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-7 py-3.5 font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:brightness-110">
             Start Your Journey <Icon name="arrow" className="h-5 w-5" />
           </Link>

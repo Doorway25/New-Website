@@ -17,6 +17,8 @@ import EventDetail from "./pages/EventDetail";
 import Stories from "./pages/Stories";
 import StoryDetail from "./pages/StoryDetail";
 import About from "./pages/About";
+import Team from "./pages/Team";
+import TeamDetail from "./pages/TeamDetail";
 import Contact from "./pages/Contact";
 import BranchDetail from "./pages/BranchDetail";
 import Pillar from "./pages/Pillar";
@@ -47,6 +49,8 @@ export default function App() {
           <Route path="/stories/:category" element={<Stories />} />
           <Route path="/story/:slug" element={<StoryDetail />} />
           <Route path="/about-us" element={<About />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/team/:slug" element={<TeamDetail />} />
           <Route path="/mission" element={<Pillar />} />
           <Route path="/vision" element={<Pillar />} />
           <Route path="/values" element={<Pillar />} />

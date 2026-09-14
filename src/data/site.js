@@ -23,6 +23,24 @@ export const company = {
   ],
 };
 
+/** Our Team role groups for About Us + /team */
+export const TEAM_ROLE_GROUPS = [
+  { key: "director-founder", label: "Director / Founder" },
+  { key: "country-manager", label: "Country Manager" },
+  { key: "managers", label: "Managers" },
+  { key: "marketing", label: "Marketing team", separate: true },
+];
+
+export const team = [];
+export const teamBySlug = {};
+
+export function groupTeamByRole(members = []) {
+  return TEAM_ROLE_GROUPS.map((group) => ({
+    ...group,
+    members: members.filter((m) => m.roleKey === group.key),
+  })).filter((g) => g.members.length > 0);
+}
+
 export const branches = [
   {
     slug: "london",

@@ -157,6 +157,21 @@ export default function ResourceEdit({ resourceKey }) {
       });
       return;
     }
+    if (key === "roleKey" && resourceKey === "team") {
+      const fromOptions =
+        resource.fields.find((f) => f.key === "roleKey")?.options?.find((o) => o.value === value)?.label || "";
+      setValues((prev) => {
+        const options = resource.fields.find((f) => f.key === "roleKey")?.options || [];
+        const prevLabel = options.find((o) => o.value === prev.roleKey)?.label || "";
+        const synced = !prev.roleLabel || prev.roleLabel === prevLabel;
+        return {
+          ...prev,
+          roleKey: value,
+          roleLabel: synced ? fromOptions : prev.roleLabel,
+        };
+      });
+      return;
+    }
     if (editableSlug && slugTarget && key === slugTarget) {
       setSlugManual(true);
       setValues((prev) => ({ ...prev, [slugTarget]: value }));

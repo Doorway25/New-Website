@@ -11,6 +11,7 @@ gsap.registerPlugin(ScrollTrigger);
 const quickLinks = [
   { label: "Home", to: "/" },
   { label: "About Us", to: "/about-us" },
+  { label: "Our Team", to: "/team" },
   { label: "Study in UK", to: "/study-in-uk" },
   { label: "Course Finder", to: "/courses" },
   { label: "Contact Us", to: "/contact-us" },

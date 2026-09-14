@@ -31,6 +31,16 @@ export const FLAG_COUNTRIES = [
   { value: "nl", label: "Netherlands" },
 ];
 
+/** Our Team role groups (About + /team pages) */
+export const TEAM_ROLE_OPTIONS = [
+  { value: "director-founder", label: "Director / Founder" },
+  { value: "country-manager", label: "Country Manager" },
+  { value: "managers", label: "Managers" },
+  { value: "marketing", label: "Marketing team" },
+];
+
+export const TEAM_ROLE_LABEL = Object.fromEntries(TEAM_ROLE_OPTIONS.map((r) => [r.value, r.label]));
+
 /** Country slugs used by universities / public Study tabs */
 export const UNIVERSITY_COUNTRY_OPTIONS = [
   { value: "uk", label: "UK" },
@@ -408,6 +418,75 @@ export const resources = {
       { key: "published", label: "Published", type: "checkbox", section: "Publishing" },
     ],
   },
+  team: {
+    path: "team",
+    label: "Our Team",
+    singular: "Team member",
+    titleKey: "name",
+    subtitleKey: "roleLabel",
+    group: "site",
+    seo: false,
+    pageSize: 50,
+    help: "Shown on About Us and the /team page. Add photo, short bio and LinkedIn for each person.",
+    filterTabs: {
+      param: "roleKey",
+      options: [{ value: "", label: "All" }, ...TEAM_ROLE_OPTIONS],
+    },
+    fields: [
+      { key: "name", label: "Name", required: true, section: "Basics" },
+      {
+        key: "slug",
+        label: "Slug",
+        required: true,
+        section: "Basics",
+        hint: "Auto-filled from name — used for the individual profile URL (/team/your-slug)",
+      },
+      {
+        key: "roleKey",
+        label: "Role group",
+        required: true,
+        type: "select",
+        section: "Basics",
+        options: TEAM_ROLE_OPTIONS,
+        hint: "Director / Founder, Country Manager, Managers, or Marketing team",
+      },
+      {
+        key: "roleLabel",
+        label: "Role title",
+        required: true,
+        section: "Basics",
+        hint: "Shown on the card (e.g. Founder & Director, Country Manager — UK)",
+      },
+      {
+        key: "imageUrl",
+        label: "Photo",
+        type: "image",
+        kind: "thumb",
+        section: "Profile",
+        span: "full",
+        hint: "Square or portrait headshot works best",
+      },
+      {
+        key: "bio",
+        label: "Short bio",
+        type: "textarea",
+        rows: 5,
+        required: true,
+        section: "Profile",
+        span: "full",
+        hint: "Shown on cards and the individual profile page",
+      },
+      {
+        key: "linkedinUrl",
+        label: "LinkedIn profile URL",
+        section: "Profile",
+        span: "full",
+        hint: "Full LinkedIn URL, e.g. https://www.linkedin.com/in/…",
+      },
+      { key: "sortOrder", label: "Sort order", type: "number", section: "Publishing", hint: "Lower numbers appear first within the role group" },
+      { key: "published", label: "Published", type: "checkbox", section: "Publishing" },
+    ],
+  },
   services: {
     path: "services",
     label: "Services",
@@ -579,6 +658,7 @@ export const NAV_GROUPS = [
     label: "Site",
     items: [
       { to: "/branches", label: "Branches", icon: "pin" },
+      { to: "/team", label: "Our Team", icon: "users" },
       { to: "/testimonials", label: "Testimonials", icon: "quote" },
       { to: "/services", label: "Services", icon: "spark" },
       { to: "/why-us", label: "Why us", icon: "check" },
