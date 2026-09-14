@@ -8,10 +8,10 @@ VPS: `root@76.13.254.129` (`srv1344373.hstgr.cloud`)
 
 ## Current projects on this VPS (keep them)
 
-| # | Project | Path / how it runs | Domain | Do not touch |
-| - | ------- | ------------------ | ------ | ------------ |
-| 1 | **CRM** (old Nest/Next stack) | `/home/nextbigthing/projects/educationdoorway` → Docker Compose → port **5003** | `https://crm.educationdoorway.com` | Never `docker compose down` here |
-| 2 | **ApplyPartner** | `/var/www/applyPartner/...` → PM2 + Docker | Nginx `applypartners` | Leave PM2 apps running |
+| #   | Project                       | Path / how it runs                                                              | Domain                             | Do not touch                     |
+| --- | ----------------------------- | ------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------- |
+| 1   | **CRM** (old Nest/Next stack) | `/home/nextbigthing/projects/educationdoorway` → Docker Compose → port **5003** | `https://crm.educationdoorway.com` | Never `docker compose down` here |
+| 2   | **ApplyPartner**              | `/var/www/applyPartner/...` → PM2 + Docker                                      | Nginx `applypartners`              | Leave PM2 apps running           |
 
 Nginx sites already present:
 
@@ -22,17 +22,17 @@ crm.educationdoorway.com.conf
 
 This guide adds a **3rd project** only:
 
-| New project | Path | Domains |
-| ----------- | ---- | ------- |
+| New project               | Path               | Domains                                                  |
+| ------------------------- | ------------------ | -------------------------------------------------------- |
 | New website + admin + API | `/var/www/doorway` | `web.educationdoorway.com`, `admin.educationdoorway.com` |
 
 ### Ports used (avoid conflicts)
 
-| Port | Used by |
-| ---- | ------- |
-| `3000` | ApplyPartner frontend (PM2) |
-| `5003` | CRM OpenResty |
-| `4000` | **New** doorway API (PM2) — use this |
+| Port   | Used by                                                                    |
+| ------ | -------------------------------------------------------------------------- |
+| `3000` | ApplyPartner frontend (PM2)                                                |
+| `5003` | CRM OpenResty                                                              |
+| `4000` | **New** doorway API (PM2) — use this                                       |
 | `5432` | System Postgres (for new site DB) — or Docker CRM postgres (internal only) |
 
 ---
@@ -524,13 +524,13 @@ Ask if you want this Actions file added to the repo.
 
 ## 12. Troubleshooting
 
-| Problem | Fix |
-| ------- | --- |
-| New site 502 on `/api` | `pm2 restart doorway-api`; `curl http://127.0.0.1:4000/api/health` |
-| Admin “Failed to fetch” | Rebuild admin with `VITE_API_URL=https://web.educationdoorway.com` |
-| CRM 502 again | `cd /home/nextbigthing/projects/educationdoorway && docker compose up -d` |
-| Port 4000 in use | `ss -tlnp \| grep 4000` — change `PORT` in backend `.env` and Nginx `proxy_pass` |
-| Wrong site removed | Never delete `crm.educationdoorway.com.conf` or `applypartners` |
+| Problem                 | Fix                                                                              |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| New site 502 on `/api`  | `pm2 restart doorway-api`; `curl http://127.0.0.1:4000/api/health`               |
+| Admin “Failed to fetch” | Rebuild admin with `VITE_API_URL=https://web.educationdoorway.com`               |
+| CRM 502 again           | `cd /home/nextbigthing/projects/educationdoorway && docker compose up -d`        |
+| Port 4000 in use        | `ss -tlnp \| grep 4000` — change `PORT` in backend `.env` and Nginx `proxy_pass` |
+| Wrong site removed      | Never delete `crm.educationdoorway.com.conf` or `applypartners`                  |
 
 Logs:
 
@@ -539,32 +539,6 @@ pm2 logs doorway-api --lines 80
 tail -n 50 /var/log/nginx/error.log
 cd /home/nextbigthing/projects/educationdoorway && docker compose logs --tail=50
 ```
-
----
-
-## 13. Never do this
-
-```bash
-# DANGER — kills CRM
-cd /home/nextbigthing/projects/educationdoorway && docker compose down
-
-# DANGER — can kill ApplyPartner
-pm2 delete all
-pm2 stop applypartner-backend
-pm2 stop applypartner-frontend
-
-# DANGER — removes CRM nginx
-rm /etc/nginx/sites-enabled/crm.educationdoorway.com.conf
-```
-
-Only manage the new app with:
-
-```bash
-pm2 restart doorway-api
-pm2 logs doorway-api
-```
-
----
 
 ## Quick cheat sheet
 
@@ -576,16 +550,4 @@ pm2 restart doorway-api
 cd /var/www/doorway && npm run build
 cd /var/www/doorway/admin && npm run build
 
-# crm (if needed)
-cd /home/nextbigthing/projects/educationdoorway && docker compose up -d
-
-# nginx
-ls /etc/nginx/sites-enabled
-nginx -t && systemctl reload nginx
 ```
-
-After deploy you will have **3** live projects:
-
-1. CRM → `crm.educationdoorway.com`
-2. ApplyPartner → existing domain
-3. New website → `web` + `admin.educationdoorway.com`
