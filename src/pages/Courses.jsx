@@ -5,6 +5,7 @@ import Icon from "../components/Icon";
 import PageHero from "../components/PageHero";
 import Pagination from "../components/Pagination";
 import Reveal from "../components/Reveal";
+import SeoHead from "../components/SeoHead";
 import { useSite } from "../api/SiteContext";
 
 const SUBJECT_PAGE_SIZE = 12;
@@ -20,7 +21,8 @@ const programIcons = {
 };
 
 export default function Courses() {
-  const { programs, subjects } = useSite();
+  const { programs, subjects, getPage } = useSite();
+  const seoPage = getPage("courses");
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(subjects.length / SUBJECT_PAGE_SIZE));
   const current = Math.min(page, totalPages);
@@ -28,10 +30,19 @@ export default function Courses() {
 
   return (
     <>
+      <SeoHead
+        seo={seoPage}
+        title="Course Finder | Education Doorway"
+        description="Find your course and academic level across our global university network."
+        path="/courses"
+      />
       <PageHero
-        eyebrow="Course Finder"
-        title="Find Your Course"
-        subtitle="Select your academic level to view relevant university options across our global network."
+        eyebrow={seoPage?.eyebrow || "Course Finder"}
+        title={seoPage?.title || "Find Your Course"}
+        subtitle={
+          seoPage?.subtitle ||
+          "Select your academic level to view relevant university options across our global network."
+        }
         crumbs={[{ label: "Course Finder" }]}
       />
 

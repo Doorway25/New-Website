@@ -4,12 +4,14 @@ import CounsellingSection from "../components/CounsellingSection";
 import PageHero from "../components/PageHero";
 import Pagination from "../components/Pagination";
 import Reveal from "../components/Reveal";
+import SeoHead from "../components/SeoHead";
 import { useSite } from "../api/SiteContext";
 
 const PAGE_SIZE = 6;
 
 export default function Articles() {
-  const { articles } = useSite();
+  const { articles, getPage } = useSite();
+  const seoPage = getPage("articles");
   const categories = useMemo(
     () => ["All", ...Array.from(new Set(articles.map((a) => a.category)))],
     [articles]
@@ -29,10 +31,19 @@ export default function Articles() {
 
   return (
     <>
+      <SeoHead
+        seo={seoPage}
+        title="Articles & Study Abroad Guides | Education Doorway"
+        description="Expert tips on applications, visas, scholarships and life abroad."
+        path="/articles"
+      />
       <PageHero
-        eyebrow="Articles"
-        title="Insights & Study Abroad Guides"
-        subtitle="Expert tips on applications, visas, scholarships and life abroad to guide every step of your journey."
+        eyebrow={seoPage?.eyebrow || "Articles"}
+        title={seoPage?.title || "Insights & Study Abroad Guides"}
+        subtitle={
+          seoPage?.subtitle ||
+          "Expert tips on applications, visas, scholarships and life abroad to guide every step of your journey."
+        }
         crumbs={[{ label: "Articles" }]}
       />
       <section className="container-x -mt-8 relative z-10 pb-8">

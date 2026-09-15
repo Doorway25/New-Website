@@ -22,6 +22,45 @@ const BASIC_FIELDS = [
   { key: "whatsapp", label: "WhatsApp link" },
 ];
 
+const SEO_FIELDS = [
+  {
+    key: "googleAnalyticsId",
+    label: "Google Analytics (GA4)",
+    placeholder: "G-XXXXXXXXXX",
+    hint: "Measurement ID from Google Analytics → Admin → Data streams.",
+  },
+  {
+    key: "googleTagManagerId",
+    label: "Google Tag Manager",
+    placeholder: "GTM-XXXXXXX",
+    hint: "Container ID. Prefer GTM if you manage GA and Pixel inside Tag Manager.",
+  },
+  {
+    key: "googleSiteVerification",
+    label: "Google Search Console verification",
+    placeholder: "Verification meta content value",
+    hint: "Paste only the content= value from the HTML meta tag Google gives you.",
+  },
+  {
+    key: "facebookPixelId",
+    label: "Facebook / Meta Pixel",
+    placeholder: "123456789012345",
+    hint: "Pixel ID from Meta Events Manager.",
+  },
+  {
+    key: "bingSiteVerification",
+    label: "Bing Webmaster verification",
+    placeholder: "Verification meta content value",
+    hint: "Paste only the content= value from Bing’s msvalidate.01 meta tag.",
+  },
+  {
+    key: "microsoftClarityId",
+    label: "Microsoft Clarity",
+    placeholder: "xxxxxxxxxx",
+    hint: "Project ID from clarity.microsoft.com (heatmaps & session insights).",
+  },
+];
+
 function socialsToForm(socials) {
   const list = Array.isArray(socials) ? socials : [];
   const byIcon = Object.fromEntries(list.map((s) => [s.icon || s.label?.toLowerCase(), s]));
@@ -119,7 +158,7 @@ export default function Settings() {
     <div className="page">
       <header className="page-header">
         <h1>Settings</h1>
-        <p className="muted">Site-wide contact and brand details.</p>
+        <p className="muted">Brand, contact, and SEO / analytics connections.</p>
       </header>
 
       {!isAdmin && (
@@ -223,6 +262,32 @@ export default function Settings() {
                     />
                   </label>
                 </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel">
+            <div className="panel-head">
+              <h2>SEO & tracking connections</h2>
+              <p className="muted">
+                Connect Google Analytics, Tag Manager, Search Console, Meta Pixel, Bing, and Clarity.
+                Values are injected on the public website after save. Page titles and meta still come from{" "}
+                <strong>Pages</strong> SEO fields.
+              </p>
+            </div>
+            <div className="form-grid">
+              {SEO_FIELDS.map((field) => (
+                <label key={field.key} className="span-2">
+                  <span>{field.label}</span>
+                  <input
+                    type="text"
+                    placeholder={field.placeholder}
+                    value={values[field.key] ?? ""}
+                    disabled={!isAdmin}
+                    onChange={(e) => setValues((v) => ({ ...v, [field.key]: e.target.value }))}
+                  />
+                  {field.hint ? <span className="field-hint muted">{field.hint}</span> : null}
+                </label>
               ))}
             </div>
           </section>

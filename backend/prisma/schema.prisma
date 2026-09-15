@@ -19,22 +19,28 @@ model AdminUser {
 }
 
 model SiteSetting {
-  id        String   @id @default(cuid())
-  key       String   @unique @default("main")
-  name      String
-  short     String
-  tagline   String
-  since     Int
-  phone     String
-  phoneAlt  String?
-  email     String
-  hours     String
-  address   String
-  whatsapp  String
-  socials   Json
-  stats     Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                      String   @id @default(cuid())
+  key                     String   @unique @default("main")
+  name                    String
+  short                   String
+  tagline                 String
+  since                   Int
+  phone                   String
+  phoneAlt                String?
+  email                   String
+  hours                   String
+  address                 String
+  whatsapp                String
+  socials                 Json
+  stats                   Json
+  googleAnalyticsId       String?
+  googleTagManagerId      String?
+  googleSiteVerification  String?
+  facebookPixelId         String?
+  bingSiteVerification    String?
+  microsoftClarityId      String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 }
 
 model Page {

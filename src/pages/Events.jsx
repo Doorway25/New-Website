@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import CounsellingSection from "../components/CounsellingSection";
 import EventCard from "../components/EventCard";
 import Icon from "../components/Icon";
 import PageHero from "../components/PageHero";
 import Reveal from "../components/Reveal";
+import SeoHead from "../components/SeoHead";
 import { useSite } from "../api/SiteContext";
 import { splitEvents } from "../data/site";
 
@@ -17,7 +18,8 @@ const TABS = [
 const TAB_IDS = new Set(TABS.map((t) => t.id));
 
 export default function Events() {
-  const { events, eventAlbums } = useSite();
+  const { events, eventAlbums, getPage } = useSite();
+  const seoPage = getPage("events");
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get("tab");
   const active = TAB_IDS.has(tabFromUrl) ? tabFromUrl : "upcoming";
@@ -53,14 +55,28 @@ export default function Events() {
             subtitle: "Look back at our recent education fairs, webinars and campus sessions.",
           }
         : {
-            title: "Upcoming Events & Webinars",
-            subtitle: "Join our education fairs, webinars and workshops to meet universities and get expert guidance.",
+            title: seoPage?.title || "Upcoming Events & Webinars",
+            subtitle:
+              seoPage?.subtitle ||
+              "Join our education fairs, webinars and workshops to meet universities and get expert guidance.",
           };
 
   return (
     <>
+      <SeoHead
+        seo={seoPage}
+        title={
+          active === "gallery"
+            ? "Event Gallery | Education Doorway"
+            : active === "past"
+              ? "Past Events | Education Doorway"
+              : "Events & Webinars | Education Doorway"
+        }
+        description={hero.subtitle}
+        path={active === "upcoming" ? "/events" : `/events?tab=${active}`}
+      />
       <PageHero
-        eyebrow="Events"
+        eyebrow={seoPage?.eyebrow || "Events"}
         title={hero.title}
         subtitle={hero.subtitle}
         crumbs={[{ label: "Events" }]}

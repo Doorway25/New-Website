@@ -4,6 +4,7 @@ import CounsellingSection from "../components/CounsellingSection";
 import Flag from "../components/Flag";
 import Icon from "../components/Icon";
 import Reveal from "../components/Reveal";
+import SeoHead from "../components/SeoHead";
 import { useSite } from "../api/SiteContext";
 import { buildUniversityDetails } from "../data/universityDetails";
 import NotFound from "./NotFound";
@@ -58,6 +59,13 @@ export default function University() {
 
   return (
     <>
+      <SeoHead
+        seo={uni}
+        title={`${uni.name} | Education Doorway`}
+        description={uni.overview || `Study at ${uni.name} with Education Doorway guidance.`}
+        path={`/university/${uni.slug}`}
+        image={uni.imageUrl || uni.logoUrl}
+      />
       {/* Hero */}
       <section className={`relative overflow-hidden bg-gradient-to-br ${grad} pb-20 pt-14`}>
         {uni.imageUrl ? (

@@ -108,13 +108,14 @@ export const resources = {
     subtitleKey: "slug",
     group: "content",
     seo: true,
+    help: "SEO + titles for main site routes. Use these slugs: home, about-us, contact-us, apply-now, study (university finder), countries, courses (course finder), articles, events, stories, study-in-uk, team.",
     fields: [
       { key: "title", label: "Title", required: true },
       {
         key: "slug",
         label: "Slug",
         required: true,
-        hint: "Auto-filled from title — edit only if you need a custom URL",
+        hint: "Must match the frontend URL key (e.g. courses, events, study) — do not invent random slugs",
       },
       { key: "subtitle", label: "Subtitle" },
       { key: "eyebrow", label: "Eyebrow" },
@@ -270,7 +271,7 @@ export const resources = {
     titleKey: "title",
     subtitleKey: "location",
     group: "content",
-    seo: false,
+    seo: true,
     fields: [
       { key: "title", label: "Title", required: true, section: "Basics" },
       {

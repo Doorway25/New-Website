@@ -580,7 +580,19 @@ router.put(
     const data = pick(req.body || {}, [
       "name", "short", "tagline", "since", "phone", "phoneAlt", "email",
       "hours", "address", "whatsapp", "socials", "stats",
+      "googleAnalyticsId", "googleTagManagerId", "googleSiteVerification",
+      "facebookPixelId", "bingSiteVerification", "microsoftClarityId",
     ]);
+    for (const key of [
+      "googleAnalyticsId",
+      "googleTagManagerId",
+      "googleSiteVerification",
+      "facebookPixelId",
+      "bingSiteVerification",
+      "microsoftClarityId",
+    ]) {
+      if (data[key] != null) data[key] = String(data[key]).trim() || null;
+    }
     const settings = await prisma.siteSetting.upsert({
       where: { key: "main" },
       create: { key: "main", ...data },

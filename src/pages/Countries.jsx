@@ -4,17 +4,28 @@ import Flag from "../components/Flag";
 import Icon from "../components/Icon";
 import PageHero from "../components/PageHero";
 import Reveal from "../components/Reveal";
+import SeoHead from "../components/SeoHead";
 import { useSite } from "../api/SiteContext";
 
 export default function Countries() {
-  const { countries, countUniversities } = useSite();
+  const { countries, countUniversities, getPage } = useSite();
+  const seoPage = getPage("countries");
 
   return (
     <>
+      <SeoHead
+        seo={seoPage}
+        title="Study Destinations | Education Doorway"
+        description="Explore top study destinations trusted by thousands of students every year."
+        path="/countries"
+      />
       <PageHero
-        eyebrow="Countries"
-        title="View All Countries"
-        subtitle="Explore top study destinations trusted by thousands of Bangladeshi students every year."
+        eyebrow={seoPage?.eyebrow || "Countries"}
+        title={seoPage?.title || "View All Countries"}
+        subtitle={
+          seoPage?.subtitle ||
+          "Explore top study destinations trusted by thousands of Bangladeshi students every year."
+        }
         crumbs={[{ label: "Countries" }]}
       />
       <section className="container-x -mt-8 relative z-10 pb-8">

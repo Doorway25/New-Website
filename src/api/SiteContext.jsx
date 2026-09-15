@@ -21,6 +21,27 @@ function settingsToCompany(settings) {
   };
 }
 
+function settingsToSeoIntegrations(settings) {
+  if (!settings) {
+    return {
+      googleAnalyticsId: "",
+      googleTagManagerId: "",
+      googleSiteVerification: "",
+      facebookPixelId: "",
+      bingSiteVerification: "",
+      microsoftClarityId: "",
+    };
+  }
+  return {
+    googleAnalyticsId: settings.googleAnalyticsId || "",
+    googleTagManagerId: settings.googleTagManagerId || "",
+    googleSiteVerification: settings.googleSiteVerification || "",
+    facebookPixelId: settings.facebookPixelId || "",
+    bingSiteVerification: settings.bingSiteVerification || "",
+    microsoftClarityId: settings.microsoftClarityId || "",
+  };
+}
+
 function resolveImage(url, fallbackUrl) {
   if (isBrokenRemoteImage(url)) return mediaUrl(fallbackUrl) || fallbackUrl || "";
   return mediaUrl(url) || url || "";
@@ -190,6 +211,7 @@ export function SiteProvider({ children }) {
     eventAlbums: [],
     team: fallback.team || [],
     pages: {},
+    seoIntegrations: settingsToSeoIntegrations(null),
   });
 
   useEffect(() => {
@@ -206,7 +228,7 @@ export function SiteProvider({ children }) {
           fetchPublic("/branches").catch(() => []),
           fetchPublic("/event-albums").catch(() => ({ items: [] })),
           Promise.all(
-            ["home", "about-us", "contact-us", "apply-now", "study", "countries", "articles", "events", "stories"].map((slug) =>
+            ["home", "about-us", "contact-us", "apply-now", "study", "countries", "courses", "articles", "events", "stories", "study-in-uk", "team"].map((slug) =>
               fetchPublic(`/pages/${slug}`).catch(() => null)
             )
           ),
@@ -228,6 +250,7 @@ export function SiteProvider({ children }) {
           fromApi: true,
           company: settingsToCompany(home?.settings),
           stats: home?.settings?.stats || fallback.stats,
+          seoIntegrations: settingsToSeoIntegrations(home?.settings),
           countries: home?.countries?.length ? home.countries.map(mapCountry) : fallback.countries,
           programs: home?.programs?.length ? home.programs : fallback.programs,
           subjects: mapSubjects(subjectsRaw),

@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import FloatingWhatsApp from "./components/FloatingWhatsApp";
+import TrackingScripts from "./components/TrackingScripts";
 
 import Home from "./pages/Home";
 import Countries from "./pages/Countries";
@@ -30,6 +31,7 @@ import NotFound from "./pages/NotFound";
 export default function App() {
   return (
     <div className="flex min-h-screen flex-col">
+      <TrackingScripts />
       <ScrollToTop />
       <Navbar />
       <main className="flex-1">
