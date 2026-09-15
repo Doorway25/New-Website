@@ -271,7 +271,7 @@ export const resources = {
     titleKey: "title",
     subtitleKey: "location",
     group: "content",
-    seo: true,
+    seo: false,
     fields: [
       { key: "title", label: "Title", required: true, section: "Basics" },
       {
