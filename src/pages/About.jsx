@@ -9,6 +9,11 @@ import TeamMemberCard from "../components/TeamMemberCard";
 import { useSite } from "../api/SiteContext";
 import { groupTeamByRole } from "../data/site";
 
+const ABOUT_MARKETING_VIDEO = {
+  id: "i7BkXJpSWO0",
+  list: "PLT7QjAckrQ4M",
+};
+
 const advantage = [
   { value: 200, suffix: "+", label: "Universities" },
   { value: 10000, suffix: "+", label: "Success Stories" },
@@ -23,10 +28,12 @@ const values = [
 ];
 
 export default function About() {
-  const { company, pillars, team, getPage } = useSite();
+  const { pillars, team, getPage } = useSite();
   const page = getPage("about-us");
   const groups = groupTeamByRole(team || []);
-  const leadership = groups.filter((g) => !g.separate);
+  const director = groups.find((g) => g.key === "director-founder");
+  const countryManager = groups.find((g) => g.key === "country-manager");
+  const managers = groups.find((g) => g.key === "managers");
   const marketing = groups.find((g) => g.separate);
 
   return (
@@ -46,25 +53,17 @@ export default function About() {
 
       <section className="container-x grid items-center gap-10 py-16 lg:grid-cols-2">
         <Reveal>
-          <div className="relative">
-            <div className="rounded-3xl bg-gradient-to-br from-brand-600 to-brand-900 p-8 text-white shadow-xl">
-              <p className="font-display text-6xl font-extrabold text-gold-400">
-                <Counter to={company ? 11 : 11} suffix="+" />
-              </p>
-              <p className="mt-2 text-lg font-semibold">Years of Excellence</p>
-              <p className="mt-4 text-sm text-brand-100">
-                Trusted by families since {company.since} to turn study-abroad dreams into admission letters.
-              </p>
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-white/10 p-4">
-                  <p className="font-display text-2xl font-extrabold">98%</p>
-                  <p className="text-xs text-brand-100">Visa Success Rate</p>
-                </div>
-                <div className="rounded-xl bg-white/10 p-4">
-                  <p className="font-display text-2xl font-extrabold">75,000+</p>
-                  <p className="text-xs text-brand-100">Students Placed</p>
-                </div>
-              </div>
+          <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-brand-950 shadow-xl shadow-brand-900/20">
+            <div className="aspect-video w-full">
+              <iframe
+                title="Education Doorway — About us video"
+                src={`https://www.youtube.com/embed/${ABOUT_MARKETING_VIDEO.id}?list=${ABOUT_MARKETING_VIDEO.list}&autoplay=1&mute=1&loop=1&playsinline=1&rel=0&modestbranding=1&controls=1`}
+                className="h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                loading="eager"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
             </div>
           </div>
         </Reveal>
@@ -136,18 +135,20 @@ export default function About() {
           </p>
         ) : (
           <div className="mt-10 space-y-12">
-            {leadership.map((group) => (
-              <div key={group.key}>
-                <h3 className="font-display text-xl font-bold text-ink">{group.label}</h3>
-                <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {group.members.map((member, i) => (
-                    <Reveal key={member.slug} delay={(i % 3) * 70}>
-                      <TeamMemberCard member={member} compact />
-                    </Reveal>
-                  ))}
-                </div>
+            {director ? (
+              <TeamRoleBlock group={director} cols="sm:grid-cols-2 lg:grid-cols-3" />
+            ) : null}
+
+            {countryManager || managers ? (
+              <div className="grid gap-10 lg:grid-cols-2 lg:gap-8">
+                {countryManager ? (
+                  <TeamRoleBlock group={countryManager} cols="sm:grid-cols-1" />
+                ) : null}
+                {managers ? (
+                  <TeamRoleBlock group={managers} cols="sm:grid-cols-1" />
+                ) : null}
               </div>
-            ))}
+            ) : null}
 
             {marketing ? (
               <div className="rounded-3xl border border-brand-100 bg-gradient-to-b from-brand-50/70 to-white p-6 sm:p-8">
@@ -222,6 +223,21 @@ function Feature({ icon, title, text }) {
       <div>
         <p className="text-sm font-bold text-ink">{title}</p>
         <p className="text-xs text-slate-500">{text}</p>
+      </div>
+    </div>
+  );
+}
+
+function TeamRoleBlock({ group, cols = "sm:grid-cols-2 lg:grid-cols-3" }) {
+  return (
+    <div>
+      <h3 className="font-display text-xl font-bold text-ink">{group.label}</h3>
+      <div className={`mt-5 grid gap-5 ${cols}`}>
+        {group.members.map((member, i) => (
+          <Reveal key={member.slug} delay={(i % 3) * 70}>
+            <TeamMemberCard member={member} compact />
+          </Reveal>
+        ))}
       </div>
     </div>
   );

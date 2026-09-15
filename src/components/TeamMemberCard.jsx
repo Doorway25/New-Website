@@ -49,7 +49,7 @@ export default function TeamMemberCard({ member, compact = false }) {
               target="_blank"
               rel="noreferrer"
               aria-label={`${member.name} on LinkedIn`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-brand-300 hover:text-brand-700"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#0A66C2] text-white shadow-sm shadow-[#0A66C2]/30 transition hover:bg-[#004182] hover:shadow-md"
               onClick={(e) => e.stopPropagation()}
             >
               <Icon name="linkedin" className="h-4 w-4" />

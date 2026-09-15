@@ -10,7 +10,9 @@ import { groupTeamByRole } from "../data/site";
 export default function Team() {
   const { team } = useSite();
   const groups = groupTeamByRole(team || []);
-  const leadership = groups.filter((g) => !g.separate);
+  const director = groups.find((g) => g.key === "director-founder");
+  const countryManager = groups.find((g) => g.key === "country-manager");
+  const managers = groups.find((g) => g.key === "managers");
   const marketing = groups.find((g) => g.separate);
 
   return (
@@ -34,9 +36,18 @@ export default function Team() {
           </p>
         ) : (
           <div className="space-y-14">
-            {leadership.map((group) => (
-              <TeamGroup key={group.key} group={group} />
-            ))}
+            {director ? <TeamGroup group={director} /> : null}
+
+            {countryManager || managers ? (
+              <div className="grid gap-12 lg:grid-cols-2 lg:gap-8 lg:items-start">
+                {countryManager ? (
+                  <TeamGroup group={countryManager} cols="sm:grid-cols-1" />
+                ) : null}
+                {managers ? (
+                  <TeamGroup group={managers} cols="sm:grid-cols-1" />
+                ) : null}
+              </div>
+            ) : null}
 
             {marketing ? (
               <div className="rounded-3xl border border-brand-100 bg-gradient-to-b from-brand-50/80 to-white p-6 sm:p-8">
@@ -61,7 +72,7 @@ export default function Team() {
   );
 }
 
-function TeamGroup({ group }) {
+function TeamGroup({ group, cols = "sm:grid-cols-2 lg:grid-cols-3" }) {
   return (
     <div>
       <Reveal>
@@ -70,7 +81,7 @@ function TeamGroup({ group }) {
           {group.members.length} team member{group.members.length === 1 ? "" : "s"}
         </p>
       </Reveal>
-      <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className={`mt-6 grid gap-5 ${cols}`}>
         {group.members.map((member, i) => (
           <Reveal key={member.slug} delay={(i % 3) * 70}>
             <TeamMemberCard member={member} />
