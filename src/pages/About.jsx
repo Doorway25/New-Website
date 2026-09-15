@@ -135,17 +135,16 @@ export default function About() {
           </p>
         ) : (
           <div className="mt-10 space-y-12">
-            {director ? (
-              <TeamRoleBlock group={director} cols="sm:grid-cols-2 lg:grid-cols-3" />
-            ) : null}
-
-            {countryManager || managers ? (
-              <div className="grid gap-10 lg:grid-cols-2 lg:gap-8">
+            {director || countryManager || managers ? (
+              <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3 lg:gap-6 lg:items-start">
+                {director ? (
+                  <TeamRoleBlock group={director} cols="grid-cols-1" />
+                ) : null}
                 {countryManager ? (
-                  <TeamRoleBlock group={countryManager} cols="sm:grid-cols-1" />
+                  <TeamRoleBlock group={countryManager} cols="grid-cols-1" />
                 ) : null}
                 {managers ? (
-                  <TeamRoleBlock group={managers} cols="sm:grid-cols-1" />
+                  <TeamRoleBlock group={managers} cols="grid-cols-1" />
                 ) : null}
               </div>
             ) : null}
