@@ -46,6 +46,12 @@ function serializeEditorHtml(root) {
     }
   });
   clone.querySelectorAll(".rt-selected").forEach((n) => n.classList.remove("rt-selected"));
+  // Drop empty spacer paragraphs left after inserts (causes big gaps on the public site)
+  clone.querySelectorAll("p").forEach((p) => {
+    const text = (p.textContent || "").replace(/\u00a0/g, " ").trim();
+    const html = (p.innerHTML || "").replace(/&nbsp;/gi, "").replace(/<br\s*\/?>/gi, "").trim();
+    if (!text && !html) p.remove();
+  });
   return normalizeHtml(clone.innerHTML);
 }
 
@@ -78,7 +84,8 @@ function infographicFigureHtml(url, width = 100) {
 export default function RichTextEditor({ label, value = "", onChange, required = false }) {
   const ref = useRef(null);
   const fileRef = useRef(null);
-  const lastEmitted = useRef(normalizeHtml(value));
+  // Sentinel so the first sync always writes value → DOM (editor mounts after load with content already set)
+  const lastEmitted = useRef(null);
   const skipSync = useRef(false);
   const blockId = useId();
   const [uploading, setUploading] = useState(false);
@@ -106,8 +113,9 @@ export default function RichTextEditor({ label, value = "", onChange, required =
     }
 
     const next = normalizeHtml(value);
-    if (next === lastEmitted.current) return;
-    if (next === normalizeHtml(el.innerHTML)) {
+    const current = normalizeHtml(el.innerHTML);
+    if (lastEmitted.current !== null && next === lastEmitted.current && next === current) return;
+    if (next === current) {
       lastEmitted.current = next;
       return;
     }
@@ -215,7 +223,7 @@ export default function RichTextEditor({ label, value = "", onChange, required =
     const raw = window.prompt("Paste YouTube link or video ID");
     if (!raw) return;
     const id = extractYoutubeId(raw);
-    if (!id || !/^[a-zA-Z0-9_-]{6,20}$/.test(id)) {
+    if (!id || !/^[a-zA-Z0-9_-]{11}$/.test(id)) {
       window.alert("Could not read a YouTube video from that link.");
       return;
     }
@@ -324,7 +332,7 @@ export default function RichTextEditor({ label, value = "", onChange, required =
       /youtube\.com\//i.test(text) ||
       (/^[a-zA-Z0-9_-]{11}$/.test(text) && text === id);
 
-    if (id && /^[a-zA-Z0-9_-]{6,20}$/.test(id) && looksLikeYoutube) {
+    if (id && /^[a-zA-Z0-9_-]{11}$/.test(id) && looksLikeYoutube) {
       e.preventDefault();
       insertHtml(youtubeFigureHtml(id));
     }

@@ -926,29 +926,32 @@ export function formToPayload(resource, values) {
 export function extractYoutubeId(value) {
   const raw = String(value || "").trim();
   if (!raw) return null;
-  if (/^[a-zA-Z0-9_-]{6,20}$/.test(raw)) return raw;
   try {
-    const url = new URL(raw);
-    if (url.hostname.includes("youtu.be")) {
+    const url = new URL(raw.startsWith("http") ? raw : `https://${raw}`);
+    const host = url.hostname.replace(/^www\./, "");
+    if (host === "youtu.be" || host.endsWith(".youtu.be")) {
       const id = url.pathname.split("/").filter(Boolean)[0];
-      return id || null;
+      return /^[a-zA-Z0-9_-]{11}$/.test(id || "") ? id : null;
     }
-    const v = url.searchParams.get("v");
-    if (v) return v;
-    const embed = url.pathname.match(/\/embed\/([^/?]+)/);
-    if (embed?.[1]) return embed[1];
-    const shorts = url.pathname.match(/\/shorts\/([^/?]+)/);
-    if (shorts?.[1]) return shorts[1];
+    if (host.includes("youtube")) {
+      const v = url.searchParams.get("v");
+      if (/^[a-zA-Z0-9_-]{11}$/.test(v || "")) return v;
+      const embed = url.pathname.match(/\/(?:embed|shorts|live)\/([^/?]+)/);
+      if (embed?.[1] && /^[a-zA-Z0-9_-]{11}$/.test(embed[1])) return embed[1];
+    }
   } catch {
     // not a URL
   }
-  return raw;
+  // Bare video ID only (exactly 11 chars — never words like "Location")
+  if (/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
+  return null;
 }
 
 export function youtubeThumbUrl(idOrUrl) {
   const id = extractYoutubeId(idOrUrl);
   if (!id) return "";
-  return `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
+  // hqdefault is reliably available; maxresdefault often 404s as a gray stub
+  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 }
 
 export function isYoutubeThumbUrl(url) {
