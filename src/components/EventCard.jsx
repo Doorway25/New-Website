@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Icon from "./Icon";
 import { formatDate } from "../data/site";
+import { CardMedia } from "./ArticleCard";
 
 export default function EventCard({ event }) {
   const d = new Date(event.date);
@@ -12,27 +13,19 @@ export default function EventCard({ event }) {
       to={`/events/${event.slug}`}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-500/10"
     >
-      <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-        <img
-          src={event.image}
-          alt={event.title}
-          loading="lazy"
-          onError={(e) => (e.currentTarget.style.display = "none")}
-          className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
-        />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/25 to-transparent" />
-        <div className="absolute left-3 top-3 flex flex-col items-center rounded-xl bg-white px-3 py-1.5 text-center shadow-lg">
+      <CardMedia src={event.image} alt={event.title} className="card-media--event">
+        <div className="absolute left-3 top-3 z-[1] flex flex-col items-center rounded-xl bg-white px-3 py-1.5 text-center shadow-lg">
           <span className="font-display text-lg font-extrabold leading-none text-brand-700">{day}</span>
           <span className="text-[10px] font-bold tracking-wide text-slate-500">{month}</span>
         </div>
         <span
-          className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide shadow-sm ${
+          className={`absolute right-3 top-3 z-[1] rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide shadow-sm ${
             online ? "bg-emerald-500 text-white" : "bg-gold-500 text-brand-950"
           }`}
         >
           {event.type}
         </span>
-      </div>
+      </CardMedia>
       <div className="flex flex-1 flex-col p-5">
         <h3 className="line-clamp-2 font-display text-[17px] font-bold leading-snug text-ink group-hover:text-brand-700">
           {event.title}
@@ -41,14 +34,18 @@ export default function EventCard({ event }) {
           <div className="grid grid-cols-2 gap-2">
             <p className="flex min-w-0 items-center gap-1.5">
               <Icon name="calendar" className="h-4 w-4 shrink-0 text-brand-400" />
-              <span className="truncate">{formatDate(event.date, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</span>
+              <span className="truncate">
+                {formatDate(event.date, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
+              </span>
             </p>
             <p className="flex min-w-0 items-center gap-1.5">
               <Icon name="clock" className="h-4 w-4 shrink-0 text-brand-400" />
               <span className="truncate">{event.time}</span>
             </p>
           </div>
-          <p className="flex items-center gap-2"><Icon name="pin" className="h-4 w-4 shrink-0 text-brand-400" /> {event.location}</p>
+          <p className="flex items-center gap-2">
+            <Icon name="pin" className="h-4 w-4 shrink-0 text-brand-400" /> {event.location}
+          </p>
         </div>
         <span className="mt-4 inline-flex items-center gap-1.5 border-t border-slate-100 pt-3 text-sm font-semibold text-brand-600 transition-transform group-hover:translate-x-0.5">
           View details <Icon name="arrow" className="h-4 w-4" />

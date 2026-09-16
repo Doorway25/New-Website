@@ -67,12 +67,14 @@ export default function EventDetail() {
       <section className="container-x -mt-8 relative z-10 pb-8">
         <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
           <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-xl shadow-brand-950/5">
-            <div className="bg-slate-50">
+            <div className="detail-hero-media">
               <img
                 src={event.image}
                 alt={event.title}
-                onError={(e) => (e.currentTarget.style.display = "none")}
-                className="mx-auto block h-auto w-full object-contain"
+                onError={(e) => {
+                  e.currentTarget.closest(".detail-hero-media")?.classList.add("hidden");
+                }}
+                className="detail-hero-img"
               />
             </div>
             <div className="p-6 sm:p-9">

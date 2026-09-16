@@ -109,7 +109,70 @@ function prepareArticleHtml(html) {
     parent.replaceWith(buildYoutubeFigure(doc, id));
   });
 
+  // Turn runs of short consecutive <p> lines into a real bullet list
+  // (Word/paste often saves lists as plain paragraphs)
+  convertShortParagraphRunsToLists(doc, root);
+
   return root.innerHTML;
+}
+
+function looksLikeListItem(text) {
+  const t = String(text || "").trim();
+  if (!t || t.length > 140) return false;
+  if (t.includes("\n")) return false;
+  if (/^[•\-\u2013\u2014*]\s+/.test(t)) return true;
+  if (/^\d+[.)]\s+\S/.test(t)) return true;
+  // Question-style checklist lines (common in guides)
+  if (/\?$/.test(t)) return true;
+  return false;
+}
+
+function stripListPrefix(text) {
+  return String(text || "")
+    .replace(/^[•\-\u2013\u2014*]\s+/, "")
+    .trim();
+}
+
+function convertShortParagraphRunsToLists(doc, root) {
+  const children = Array.from(root.childNodes);
+  let i = 0;
+  while (i < children.length) {
+    const node = children[i];
+    if (node.nodeType !== 1 || node.tagName !== "P") {
+      i += 1;
+      continue;
+    }
+    const text = (node.textContent || "").trim();
+    if (!looksLikeListItem(text)) {
+      i += 1;
+      continue;
+    }
+
+    const run = [node];
+    let j = i + 1;
+    while (j < children.length) {
+      const next = children[j];
+      if (next.nodeType !== 1 || next.tagName !== "P") break;
+      const nextText = (next.textContent || "").trim();
+      if (!looksLikeListItem(nextText)) break;
+      run.push(next);
+      j += 1;
+    }
+
+    if (run.length >= 2) {
+      const ul = doc.createElement("ul");
+      run.forEach((p) => {
+        const li = doc.createElement("li");
+        li.innerHTML = stripListPrefix(p.innerHTML);
+        ul.appendChild(li);
+      });
+      run[0].replaceWith(ul);
+      for (let k = 1; k < run.length; k += 1) run[k].remove();
+      // refresh children snapshot after DOM change
+      return convertShortParagraphRunsToLists(doc, root);
+    }
+    i = j;
+  }
 }
 
 function YoutubeEmbed({ id }) {

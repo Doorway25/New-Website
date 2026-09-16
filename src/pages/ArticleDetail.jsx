@@ -117,17 +117,17 @@ export default function ArticleDetail() {
         </div>
       </section>
 
-      <article className="container-x relative z-10 max-w-3xl pb-8 pt-0">
+      <article className="container-x relative z-10 -mt-4 max-w-3xl pb-8 sm:-mt-6">
         <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-xl shadow-brand-950/5">
           {heroImage ? (
-            <div className="border-b border-slate-100 bg-slate-50">
+            <div className="detail-hero-media">
               <img
                 src={heroImage}
                 alt={article.title}
                 loading="eager"
-                className="block w-full h-auto max-h-[min(520px,70vh)] object-contain object-center mx-auto"
+                className="detail-hero-img"
                 onError={(e) => {
-                  e.currentTarget.closest(".border-b")?.classList.add("hidden");
+                  e.currentTarget.closest(".detail-hero-media")?.classList.add("hidden");
                 }}
               />
             </div>
