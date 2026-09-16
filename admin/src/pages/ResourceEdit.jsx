@@ -317,6 +317,150 @@ export default function ResourceEdit({ resourceKey }) {
     );
   }
 
+  function renderField(key, wrapperClass = "") {
+    const field = resource.fields.find((f) => f.key === key);
+    if (!field) return null;
+    const node = (
+      <Field
+        field={field}
+        value={values[field.key]}
+        values={values}
+        onChange={setField}
+        universityOptions={universityOptions}
+        onUseYoutubeThumb={field.key === "youtubeId" ? useYoutubeThumb : undefined}
+        onFetchYoutube={field.key === "youtubeId" ? fetchYoutubeDetails : undefined}
+        fetchingYoutube={fetchingYoutube}
+        readOnly={!!field.readOnlyOnEdit && !isNew}
+        slugManual={slugManual}
+        slugSourceLabel={slugSourceLabel}
+        slugTargetLabel={slugTargetLabel}
+        onSyncSlug={
+          slugTarget &&
+          field.key === slugTarget &&
+          field.type !== "university-slug" &&
+          !(field.readOnlyOnEdit && !isNew)
+            ? syncSlugFromTitle
+            : undefined
+        }
+        articleCategoryOptions={articleCategories}
+        readTimeAuto={resourceKey === "articles" && field.key === "readTime" && !readTimeManual}
+      />
+    );
+    if (!wrapperClass) return node;
+    return (
+      <div className={wrapperClass} key={key}>
+        {node}
+      </div>
+    );
+  }
+
+  if (resource.editLayout === "article") {
+    const headline = String(values.title || "").trim() || (isNew ? "New article" : "Untitled article");
+    const published = !!values.published;
+
+    return (
+      <div className="page article-edit-page">
+        <header className="article-edit-hero">
+          <div className="article-edit-hero-inner">
+            <p className="crumb">
+              <Link to="/articles">Articles</Link>
+              <span aria-hidden="true">/</span>
+              <span>{isNew ? "Create" : "Edit"}</span>
+            </p>
+            <div className="article-edit-hero-row">
+              <div>
+                <div className="article-edit-badges">
+                  <span className={`article-status ${published ? "is-live" : "is-draft"}`}>
+                    {published ? "Published" : "Draft"}
+                  </span>
+                  {values.category ? <span className="article-cat-chip">{values.category}</span> : null}
+                  {values.readTime ? (
+                    <span className="article-meta-chip">{values.readTime} min read</span>
+                  ) : null}
+                </div>
+                <h1 className="article-edit-headline">{headline}</h1>
+                <p className="muted article-edit-sub">
+                  Write your story, add media, then publish when ready.
+                </p>
+              </div>
+              <div className="article-edit-hero-actions">
+                <Link className="btn ghost" to="/articles">
+                  Cancel
+                </Link>
+                <button
+                  type="submit"
+                  form="article-edit-form"
+                  className="btn primary"
+                  disabled={saving}
+                >
+                  {saving ? "Saving…" : isNew ? "Publish article" : "Save changes"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {error && <div className="alert error">{error}</div>}
+        {message && <div className="alert ok">{message}</div>}
+
+        <form id="article-edit-form" className="article-edit-form" onSubmit={onSubmit}>
+          <div className="article-edit-grid">
+            <div className="article-edit-main">
+              <section className="panel article-panel article-panel-story">
+                <div className="article-field-title">{renderField("title")}</div>
+                {renderField("excerpt", "article-field-excerpt")}
+                {renderField("content", "article-field-body")}
+              </section>
+
+              {resource.seo ? (
+                <section className="panel article-panel article-panel-seo">
+                  <SeoFields values={values} onChange={setField} />
+                </section>
+              ) : null}
+            </div>
+
+            <aside className="article-edit-aside">
+              <section className="panel article-panel article-panel-publish">
+                <div className="panel-head">
+                  <h2>Publish</h2>
+                </div>
+                <div className="article-aside-stack">
+                  {renderField("published", "article-publish-toggle")}
+                  {renderField("date")}
+                  {renderField("readTime", "article-read-time-field")}
+                  <div className="article-aside-actions">
+                    <button type="submit" className="btn primary block" disabled={saving}>
+                      {saving ? "Saving…" : isNew ? "Create article" : "Save changes"}
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              <section className="panel article-panel">
+                <div className="panel-head">
+                  <h2>Cover</h2>
+                  <p className="muted">Hero image on the article page and cards.</p>
+                </div>
+                {renderField("image")}
+              </section>
+
+              <section className="panel article-panel">
+                <div className="panel-head">
+                  <h2>Details</h2>
+                </div>
+                <div className="article-aside-stack">
+                  {renderField("category")}
+                  {renderField("author")}
+                  {renderField("slug", "article-slug-field")}
+                </div>
+              </section>
+            </aside>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="page">
       <header className="page-header row">
@@ -443,6 +587,7 @@ function Field({
   slugTargetLabel,
   onSyncSlug,
   articleCategoryOptions = [],
+  readTimeAuto = false,
 }) {
   const common = {
     id: field.key,
@@ -536,8 +681,11 @@ function Field({
   }
 
   if (field.type === "checkbox") {
+    const isPublish = field.key === "published";
     return (
-      <label className={`${fieldClassName(field)} check-field`}>
+      <label
+        className={`${fieldClassName(field)} check-field${isPublish ? " article-publish-check" : ""}`}
+      >
         <span className="field-label">{field.label}</span>
         <span className="check">
           <input
@@ -545,7 +693,15 @@ function Field({
             checked={!!value}
             onChange={(e) => onChange(field.key, e.target.checked)}
           />
-          <span>{value ? "Yes — visible on site" : "No — draft / hidden"}</span>
+          <span>
+            {isPublish
+              ? value
+                ? "Live on website"
+                : "Draft — hidden from visitors"
+              : value
+                ? "Yes — visible on site"
+                : "No — draft / hidden"}
+          </span>
         </span>
         {hint}
       </label>
@@ -774,7 +930,12 @@ function Field({
 
   return (
     <label className={fieldClassName(field)}>
-      <span className="field-label">{field.label}</span>
+      <span className="field-label">
+        {field.label}
+        {readTimeAuto && field.key === "readTime" ? (
+          <span className="article-auto-tag">Auto</span>
+        ) : null}
+      </span>
       <input
         {...common}
         type={field.type === "number" ? "number" : field.type === "datetime" ? "datetime-local" : "text"}
