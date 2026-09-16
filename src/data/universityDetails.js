@@ -357,12 +357,14 @@ export function buildUniversityDetails(uni, country) {
       subjects: uni.subjects || [],
       intakes: uni.intakes || [],
     },
-    studentLife: uni.studentLife?.length
+    studentLife: Array.isArray(uni.studentLife) && uni.studentLife.length
       ? uni.studentLife
       : override.studentLife || defaults.studentLife,
-    accommodation: uni.accommodation?.length
+    accommodation: Array.isArray(uni.accommodation) && uni.accommodation.length
       ? uni.accommodation
       : override.accommodation || defaults.accommodation,
-    campus: uni.campus?.length ? uni.campus : override.campus || defaults.campus,
+    campus: Array.isArray(uni.campus) && uni.campus.length
+      ? uni.campus
+      : override.campus || defaults.campus,
   };
 }

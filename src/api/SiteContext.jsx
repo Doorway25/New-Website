@@ -47,6 +47,17 @@ function resolveImage(url, fallbackUrl) {
   return mediaUrl(url) || url || "";
 }
 
+function asStringArray(value, fallback = []) {
+  if (Array.isArray(value)) return value.map((v) => String(v || "").trim()).filter(Boolean);
+  if (typeof value === "string" && value.trim()) {
+    // Admin/API sometimes stores a single value as a plain string
+    return value.includes(",")
+      ? value.split(",").map((s) => s.trim()).filter(Boolean)
+      : [value.trim()];
+  }
+  return Array.isArray(fallback) ? fallback.filter(Boolean) : [];
+}
+
 function mapUniversity(u) {
   if (!u) return u;
   const local = fallback.universityBySlug[u.slug] || {};
@@ -54,18 +65,18 @@ function mapUniversity(u) {
     ...local,
     ...u,
     country: u.countrySlug || u.country || local.country,
-    overview: u.overview || local.overview,
+    overview: u.overview || local.overview || "",
     imageUrl: resolveImage(u.imageUrl, local.imageUrl),
     logoUrl: resolveImage(u.logoUrl, local.logoUrl),
-    programs: u.programs?.length ? u.programs : local.programs,
-    subjects: u.subjects?.length ? u.subjects : local.subjects,
-    intakes: u.intakes?.length ? u.intakes : local.intakes,
-    upcoming: u.upcoming?.length ? u.upcoming : local.upcoming,
-    docs: u.docs?.length ? u.docs : local.docs,
-    studentLife: u.studentLife?.length ? u.studentLife : local.studentLife,
-    accommodation: u.accommodation?.length ? u.accommodation : local.accommodation,
-    campus: u.campus?.length ? u.campus : local.campus,
-    feeFrom: u.feeFrom ?? local.feeFrom,
+    programs: asStringArray(u.programs, local.programs),
+    subjects: asStringArray(u.subjects, local.subjects),
+    intakes: asStringArray(u.intakes, local.intakes),
+    upcoming: asStringArray(u.upcoming, local.upcoming || local.intakes),
+    docs: asStringArray(u.docs, local.docs),
+    studentLife: asStringArray(u.studentLife, local.studentLife),
+    accommodation: asStringArray(u.accommodation, local.accommodation),
+    campus: asStringArray(u.campus, local.campus),
+    feeFrom: Number(u.feeFrom ?? local.feeFrom ?? 0) || 0,
   };
 }
 

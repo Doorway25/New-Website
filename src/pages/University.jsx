@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { fetchPublic, mediaUrl } from "../api/client";
 import CounsellingSection from "../components/CounsellingSection";
 import Flag from "../components/Flag";
 import Icon from "../components/Icon";
@@ -18,23 +19,87 @@ const TABS = [
   { id: "campus", label: "Campus", icon: "pin" },
 ];
 
+const DEFAULT_DOCS = [
+  "Academic certificates & transcripts",
+  "English Proficiency",
+  "Passport",
+  "Photo",
+  "CV",
+  "Financial support",
+];
+
+function asList(value, fallback = []) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (typeof value === "string" && value.trim()) return [value.trim()];
+  return Array.isArray(fallback) ? fallback.filter(Boolean) : [];
+}
+
+function normalizeUniversity(raw, preview) {
+  if (!raw && !preview) return null;
+  const base = { ...(preview || {}), ...(raw || {}) };
+  return {
+    ...base,
+    country: base.countrySlug || base.country || preview?.country || "",
+    overview: base.overview || preview?.overview || "",
+    imageUrl: mediaUrl(base.imageUrl) || base.imageUrl || preview?.imageUrl || "",
+    logoUrl: mediaUrl(base.logoUrl) || base.logoUrl || preview?.logoUrl || "",
+    programs: asList(base.programs, preview?.programs),
+    subjects: asList(base.subjects, preview?.subjects),
+    intakes: asList(base.intakes, preview?.intakes),
+    upcoming: asList(base.upcoming, preview?.upcoming || preview?.intakes),
+    docs: asList(base.docs, preview?.docs?.length ? preview.docs : DEFAULT_DOCS),
+    studentLife: asList(base.studentLife, preview?.studentLife),
+    accommodation: asList(base.accommodation, preview?.accommodation),
+    campus: asList(base.campus, preview?.campus),
+    feeFrom: Number(base.feeFrom ?? preview?.feeFrom ?? 0) || 0,
+  };
+}
+
 export default function University() {
   const { slug } = useParams();
   const {
     universityBySlug,
     countryBySlug,
     universities,
-    programs,
+    programs = [],
     gradientFor,
   } = useSite();
-  const uni = universityBySlug[slug];
+  const preview = universityBySlug[slug];
+  const [fullUni, setFullUni] = useState(null);
+  const [loadError, setLoadError] = useState(false);
   const [tab, setTab] = useState("overview");
   const [showDetails, setShowDetails] = useState(false);
 
+  useEffect(() => {
+    if (!slug) return;
+    let cancelled = false;
+    setFullUni(null);
+    setLoadError(false);
+
+    fetchPublic(`/universities/${encodeURIComponent(slug)}`)
+      .then((item) => {
+        if (cancelled || !item) return;
+        setFullUni(normalizeUniversity(item, preview));
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps -- preview merge on first paint only
+
   const programName = useMemo(
-    () => Object.fromEntries(programs.map((p) => [p.key, p.name])),
+    () => Object.fromEntries((programs || []).map((p) => [p.key, p.name])),
     [programs]
   );
+
+  const uni = useMemo(() => {
+    if (fullUni) return fullUni;
+    if (!preview) return null;
+    return normalizeUniversity(null, preview);
+  }, [fullUni, preview]);
 
   const country = uni ? countryBySlug[uni.country] : null;
   const details = useMemo(
@@ -42,11 +107,25 @@ export default function University() {
     [uni, country]
   );
 
+  if (!preview && !fullUni && !loadError) {
+    return (
+      <section className="container-x py-24 text-center">
+        <p className="muted text-slate-500">Loading university…</p>
+      </section>
+    );
+  }
+
   if (!uni || !details) return <NotFound />;
+
+  const programsList = asList(uni.programs);
+  const subjectsList = asList(uni.subjects);
+  const intakesList = asList(uni.intakes);
+  const upcomingList = asList(uni.upcoming, intakesList);
+  const docsList = asList(uni.docs, DEFAULT_DOCS);
 
   const grad = gradientFor(uni.slug);
   const related = universities.filter((u) => u.country === uni.country && u.slug !== uni.slug).slice(0, 6);
-  const defaultIntake = uni.upcoming?.[0] || uni.intakes?.[0] || "";
+  const defaultIntake = upcomingList[0] || intakesList[0] || "";
   const applyHref = `/apply-now?university=${encodeURIComponent(uni.slug)}&intake=${encodeURIComponent(defaultIntake)}&country=${encodeURIComponent(uni.country)}`;
 
   const openDetails = (tabId = "overview") => {
@@ -120,10 +199,10 @@ export default function University() {
       {/* Quick facts */}
       <section className="container-x relative z-10 -mt-12">
         <Reveal className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-100 bg-white p-5 shadow-xl shadow-brand-950/5 md:grid-cols-4">
-          <Fact icon="cap" label="Study Levels" value={uni.programs.length} />
-          <Fact icon="book" label="Course Areas" value={uni.subjects.length} />
-          <Fact icon="clock" label="Intakes / Year" value={uni.intakes.length} />
-          <Fact icon="award" label="Tuition From" value={`$${uni.feeFrom.toLocaleString()}`} />
+          <Fact icon="cap" label="Study Levels" value={programsList.length} />
+          <Fact icon="book" label="Course Areas" value={subjectsList.length} />
+          <Fact icon="clock" label="Intakes / Year" value={intakesList.length} />
+          <Fact icon="award" label="Tuition From" value={`$${Number(uni.feeFrom || 0).toLocaleString()}`} />
         </Reveal>
       </section>
 
@@ -131,7 +210,9 @@ export default function University() {
       <section className="container-x grid gap-8 py-12 lg:grid-cols-[1.7fr_1fr]">
         <div className="space-y-8">
           <Panel title="Overview" icon="compass">
-            <p className="text-sm leading-relaxed text-slate-600">{uni.overview}</p>
+            <p className="text-sm leading-relaxed text-slate-600">
+              {uni.overview || `${uni.name} is a partner institution supported by Education Doorway.`}
+            </p>
             <button
               type="button"
               onClick={() => openDetails("overview")}
@@ -143,7 +224,7 @@ export default function University() {
 
           <Panel title="Programmes" icon="cap">
             <div className="flex flex-wrap gap-2">
-              {uni.programs.map((p) => (
+              {programsList.map((p) => (
                 <Link key={p} to={`/study/${uni.country}/${p}/all`} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium capitalize text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700">
                   {programName[p] || p}
                 </Link>
@@ -153,7 +234,7 @@ export default function University() {
 
           <Panel title="Courses / Categories" icon="book">
             <div className="flex flex-wrap gap-2">
-              {uni.subjects.map((s) => (
+              {subjectsList.map((s) => (
                 <span key={s} className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700">
                   <Icon name="check" className="h-3.5 w-3.5" /> {s}
                 </span>
@@ -163,7 +244,7 @@ export default function University() {
 
           <Panel title="Intakes" icon="clock">
             <div className="flex flex-wrap gap-2">
-              {uni.intakes.map((m) => (
+              {intakesList.map((m) => (
                 <span key={m} className="rounded-lg border border-slate-200 px-3.5 py-1.5 text-sm font-medium text-slate-700">{m}</span>
               ))}
             </div>
@@ -174,7 +255,7 @@ export default function University() {
           <Reveal className="rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 p-6 text-white shadow-lg">
             <h3 className="font-display text-lg font-bold">Upcoming Intakes</h3>
             <div className="mt-4 flex flex-wrap gap-2">
-              {uni.upcoming.map((m) => (
+              {upcomingList.map((m) => (
                 <Link
                   key={m}
                   to={`/apply-now?university=${encodeURIComponent(uni.slug)}&intake=${encodeURIComponent(m)}&country=${encodeURIComponent(uni.country)}`}
@@ -194,7 +275,7 @@ export default function University() {
               <Icon name="doc" className="h-5 w-5 text-brand-500" /> Required Documents
             </h3>
             <ul className="mt-4 space-y-2.5">
-              {uni.docs.map((d) => (
+              {docsList.map((d) => (
                 <li key={d} className="flex items-start gap-2.5 text-sm text-slate-600">
                   <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                     <Icon name="check" className="h-3.5 w-3.5" />
@@ -254,7 +335,7 @@ export default function University() {
                 <div className="space-y-5">
                   <p className="text-sm leading-relaxed text-slate-600 sm:text-base">{details.overview.body}</p>
                   <ul className="grid gap-2.5 sm:grid-cols-2">
-                    {details.overview.highlights.map((h) => (
+                    {(details.overview.highlights || []).map((h) => (
                       <li key={h} className="flex items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50/80 px-3.5 py-3 text-sm text-slate-700">
                         <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
                         {h}
@@ -269,7 +350,7 @@ export default function University() {
                   <div>
                     <h3 className="font-display text-lg font-bold text-ink">Study levels</h3>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {details.programmes.levels.map((p) => (
+                      {(details.programmes.levels || []).map((p) => (
                         <Link
                           key={p}
                           to={`/study/${uni.country}/${p}/all`}
@@ -283,7 +364,7 @@ export default function University() {
                   <div>
                     <h3 className="font-display text-lg font-bold text-ink">Course areas</h3>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {details.programmes.subjects.map((s) => (
+                      {(details.programmes.subjects || []).map((s) => (
                         <span key={s} className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700">
                           <Icon name="check" className="h-3.5 w-3.5" /> {s}
                         </span>
@@ -293,7 +374,7 @@ export default function University() {
                   <div>
                     <h3 className="font-display text-lg font-bold text-ink">Intakes</h3>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {details.programmes.intakes.map((m) => (
+                      {(details.programmes.intakes || []).map((m) => (
                         <span key={m} className="rounded-lg border border-slate-200 px-3.5 py-1.5 text-sm font-medium text-slate-700">{m}</span>
                       ))}
                     </div>
@@ -349,12 +430,13 @@ export default function University() {
 }
 
 function BulletBlock({ title, text, items }) {
+  const list = asList(items);
   return (
     <div>
       <h3 className="font-display text-lg font-bold text-ink">{title}</h3>
       {text && <p className="mt-1 text-sm text-slate-500">{text}</p>}
       <ul className="mt-4 space-y-2.5">
-        {items.map((item) => (
+        {list.map((item) => (
           <li key={item} className="flex items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50/70 px-3.5 py-3 text-sm text-slate-700">
             <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
             {item}

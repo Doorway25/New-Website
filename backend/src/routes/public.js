@@ -22,6 +22,11 @@ const UNI_LIST_SELECT = {
   subjects: true,
   intakes: true,
   upcoming: true,
+  docs: true,
+  overview: true,
+  studentLife: true,
+  accommodation: true,
+  campus: true,
   featured: true,
   sortOrder: true,
 };
