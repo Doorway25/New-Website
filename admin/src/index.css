@@ -1181,11 +1181,20 @@ button, input, select, textarea { font: inherit; }
   font-weight: 600;
   color: #50575e;
   background: #dcdcde;
+  border: 0;
   border-right: 1px solid #c3c4c7;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1.2;
 }
 
 .rich-tab:last-child {
   border-right: 0;
+}
+
+.rich-tab:hover {
+  color: #1d2327;
+  background: #e8e8ea;
 }
 
 .rich-tab.is-active {
@@ -1197,6 +1206,42 @@ button, input, select, textarea { font: inherit; }
 .rich-tab.is-disabled {
   opacity: 0.55;
   cursor: default;
+}
+
+.rich-text-mode-bar {
+  padding: 8px 14px;
+  font-size: 0.78rem;
+  color: #50575e;
+  background: #f6f7f7;
+  border-bottom: 1px solid #dcdcde;
+}
+
+.rich-surface--text {
+  display: block;
+  width: 100%;
+  min-height: 360px;
+  max-height: 640px;
+  resize: vertical;
+  border: 0;
+  border-radius: 0;
+  padding: 16px 18px;
+  font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #1d2327;
+  background: #fff;
+  box-shadow: none;
+  outline: none;
+}
+
+.rich-surface--text:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 1px #2271b1;
+}
+
+.edit-form--article .form-field-wrap[data-field="content"] .rich-surface--text {
+  min-height: 420px;
+  max-height: 680px;
 }
 
 .rich-editor-panel {

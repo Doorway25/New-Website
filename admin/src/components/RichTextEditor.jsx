@@ -79,7 +79,7 @@ function infographicFigureHtml(url, width = 100) {
 
 /**
  * WYSIWYG editor that stores HTML.
- * Supports infographic images (manual resize) and YouTube paste → 16:9 embed.
+ * Supports Visual + Text (HTML) modes, infographic resize, YouTube paste.
  */
 export default function RichTextEditor({ label, value = "", onChange, required = false }) {
   const ref = useRef(null);
@@ -88,6 +88,8 @@ export default function RichTextEditor({ label, value = "", onChange, required =
   const lastEmitted = useRef(null);
   const skipSync = useRef(false);
   const blockId = useId();
+  const [mode, setMode] = useState("visual");
+  const [textDraft, setTextDraft] = useState(() => String(value || ""));
   const [uploading, setUploading] = useState(false);
   const [selectedFigure, setSelectedFigure] = useState(null);
   const [selectedWidth, setSelectedWidth] = useState(100);
@@ -103,6 +105,7 @@ export default function RichTextEditor({ label, value = "", onChange, required =
   }, []);
 
   useEffect(() => {
+    if (mode !== "visual") return;
     const el = ref.current;
     if (!el) return;
 
@@ -123,7 +126,16 @@ export default function RichTextEditor({ label, value = "", onChange, required =
     el.innerHTML = next || "";
     lastEmitted.current = next;
     setSelectedFigure(null);
-  }, [value]);
+  }, [value, mode]);
+
+  useEffect(() => {
+    if (mode !== "text") return;
+    if (skipSync.current) {
+      skipSync.current = false;
+      return;
+    }
+    setTextDraft(String(value || ""));
+  }, [value, mode]);
 
   function emit() {
     const el = ref.current;
@@ -134,7 +146,38 @@ export default function RichTextEditor({ label, value = "", onChange, required =
     onChange(html);
   }
 
+  function emitText(html) {
+    const next = normalizeHtml(html);
+    setTextDraft(html);
+    lastEmitted.current = next;
+    skipSync.current = true;
+    onChange(next);
+  }
+
+  function switchMode(nextMode) {
+    if (nextMode === mode) return;
+    if (nextMode === "text") {
+      let html = String(value || "");
+      if (ref.current) {
+        html = serializeEditorHtml(ref.current);
+        lastEmitted.current = html;
+        skipSync.current = true;
+        onChange(html);
+      }
+      setTextDraft(html);
+      clearFigureSelection();
+      setMode("text");
+      return;
+    }
+    const html = normalizeHtml(textDraft);
+    lastEmitted.current = null;
+    skipSync.current = false;
+    onChange(html);
+    setMode("visual");
+  }
+
   function focusEditor() {
+    if (mode !== "visual") return null;
     const el = ref.current;
     if (!el) return null;
     el.focus();
@@ -345,163 +388,185 @@ export default function RichTextEditor({ label, value = "", onChange, required =
           {label}
           {required ? " *" : ""}
         </span>
-        <div className="rich-editor-tabs" aria-hidden="true">
-          <span className="rich-tab is-active">Visual</span>
-          <span className="rich-tab is-disabled" title="HTML mode coming later">Text</span>
+        <div className="rich-editor-tabs" role="tablist" aria-label="Editor mode">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "visual"}
+            className={`rich-tab${mode === "visual" ? " is-active" : ""}`}
+            onClick={() => switchMode("visual")}
+          >
+            Visual
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "text"}
+            className={`rich-tab${mode === "text" ? " is-active" : ""}`}
+            onClick={() => switchMode("text")}
+          >
+            Text
+          </button>
         </div>
       </div>
 
       <div className="rich-editor-panel">
-        <div className="rich-toolbar" role="toolbar" aria-label="Formatting">
-          <div className="rich-tool-group">
-            <label className="rich-block-select" htmlFor={blockId}>
-              <span className="sr-only">Paragraph / Heading</span>
-              <select
-                id={blockId}
-                defaultValue="p"
-                onMouseDown={(e) => e.stopPropagation()}
-                onChange={(e) => {
-                  const tag = e.target.value;
-                  if (tag) applyBlock(tag);
-                }}
-              >
-                {BLOCKS.map((b) => (
-                  <option key={b.value} value={b.value}>
-                    {b.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+        {mode === "visual" ? (
+          <div className="rich-toolbar" role="toolbar" aria-label="Formatting">
+            <div className="rich-tool-group">
+              <label className="rich-block-select" htmlFor={blockId}>
+                <span className="sr-only">Paragraph / Heading</span>
+                <select
+                  id={blockId}
+                  defaultValue="p"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onChange={(e) => {
+                    const tag = e.target.value;
+                    if (tag) applyBlock(tag);
+                  }}
+                >
+                  {BLOCKS.map((b) => (
+                    <option key={b.value} value={b.value}>
+                      {b.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
-          <span className="rich-sep" aria-hidden="true" />
+            <span className="rich-sep" aria-hidden="true" />
 
-          <div className="rich-tool-group">
-            {INLINE.map((action) => (
+            <div className="rich-tool-group">
+              {INLINE.map((action) => (
+                <button
+                  key={action.cmd}
+                  type="button"
+                  className={`rich-btn ${action.cmd === "bold" ? "rich-btn-b" : ""} ${action.cmd === "italic" ? "rich-btn-i" : ""} ${action.cmd === "underline" ? "rich-btn-u" : ""}`}
+                  title={action.title}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    runCommand(action.cmd);
+                  }}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+
+            <span className="rich-sep" aria-hidden="true" />
+
+            <div className="rich-tool-group">
+              {LISTS.map((action) => (
+                <button
+                  key={action.cmd}
+                  type="button"
+                  className="rich-btn"
+                  title={action.title}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    runCommand(action.cmd);
+                  }}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+
+            <span className="rich-sep" aria-hidden="true" />
+
+            <div className="rich-tool-group">
               <button
-                key={action.cmd}
-                type="button"
-                className={`rich-btn ${action.cmd === "bold" ? "rich-btn-b" : ""} ${action.cmd === "italic" ? "rich-btn-i" : ""} ${action.cmd === "underline" ? "rich-btn-u" : ""}`}
-                title={action.title}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  runCommand(action.cmd);
-                }}
-              >
-                {action.label}
-              </button>
-            ))}
-          </div>
-
-          <span className="rich-sep" aria-hidden="true" />
-
-          <div className="rich-tool-group">
-            {LISTS.map((action) => (
-              <button
-                key={action.cmd}
                 type="button"
                 className="rich-btn"
-                title={action.title}
+                title="Insert / edit link"
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  runCommand(action.cmd);
+                  addLink();
                 }}
               >
-                {action.label}
+                Link
               </button>
-            ))}
+              <button
+                type="button"
+                className="rich-btn"
+                title="Add Media — insert image / infographic"
+                disabled={uploading}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  fileRef.current?.click();
+                }}
+              >
+                {uploading ? "Uploading…" : "Add Media"}
+              </button>
+              <button
+                type="button"
+                className="rich-btn"
+                title="Insert YouTube video"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  addYoutube();
+                }}
+              >
+                YouTube
+              </button>
+            </div>
+
+            <span className="rich-sep" aria-hidden="true" />
+
+            <div className="rich-tool-group">
+              <button
+                type="button"
+                className="rich-btn"
+                title="Clear formatting"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  runCommand("removeFormat");
+                  applyBlock("p");
+                }}
+              >
+                Clear
+              </button>
+            </div>
+
+            {selectedFigure ? (
+              <>
+                <span className="rich-sep" aria-hidden="true" />
+                <span className="rich-width-group" title="Image width">
+                  <span className="rich-width-label">Size</span>
+                  {WIDTH_PRESETS.map((p) => (
+                    <button
+                      key={p.value}
+                      type="button"
+                      className={`rich-btn ${selectedWidth === p.value ? "rich-btn-active" : ""}`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setFigureWidth(selectedFigure, p.value);
+                      }}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                  <label className="rich-width-slider">
+                    <span className="sr-only">Width percent</span>
+                    <input
+                      type="range"
+                      min={20}
+                      max={100}
+                      step={5}
+                      value={selectedWidth}
+                      onChange={(e) => setFigureWidth(selectedFigure, Number(e.target.value))}
+                    />
+                    <em>{selectedWidth}%</em>
+                  </label>
+                </span>
+              </>
+            ) : null}
           </div>
-
-          <span className="rich-sep" aria-hidden="true" />
-
-          <div className="rich-tool-group">
-            <button
-              type="button"
-              className="rich-btn"
-              title="Insert / edit link"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                addLink();
-              }}
-            >
-              Link
-            </button>
-            <button
-              type="button"
-              className="rich-btn"
-              title="Add Media — insert image / infographic"
-              disabled={uploading}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                fileRef.current?.click();
-              }}
-            >
-              {uploading ? "Uploading…" : "Add Media"}
-            </button>
-            <button
-              type="button"
-              className="rich-btn"
-              title="Insert YouTube video"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                addYoutube();
-              }}
-            >
-              YouTube
-            </button>
+        ) : (
+          <div className="rich-text-mode-bar">
+            HTML source — edit tags directly, then switch back to Visual to preview.
           </div>
-
-          <span className="rich-sep" aria-hidden="true" />
-
-          <div className="rich-tool-group">
-            <button
-              type="button"
-              className="rich-btn"
-              title="Clear formatting"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                runCommand("removeFormat");
-                applyBlock("p");
-              }}
-            >
-              Clear
-            </button>
-          </div>
-
-          {selectedFigure ? (
-            <>
-              <span className="rich-sep" aria-hidden="true" />
-              <span className="rich-width-group" title="Image width">
-                <span className="rich-width-label">Size</span>
-                {WIDTH_PRESETS.map((p) => (
-                  <button
-                    key={p.value}
-                    type="button"
-                    className={`rich-btn ${selectedWidth === p.value ? "rich-btn-active" : ""}`}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setFigureWidth(selectedFigure, p.value);
-                    }}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-                <label className="rich-width-slider">
-                  <span className="sr-only">Width percent</span>
-                  <input
-                    type="range"
-                    min={20}
-                    max={100}
-                    step={5}
-                    value={selectedWidth}
-                    onChange={(e) => setFigureWidth(selectedFigure, Number(e.target.value))}
-                  />
-                  <em>{selectedWidth}%</em>
-                </label>
-              </span>
-            </>
-          ) : null}
-        </div>
+        )}
 
         <input
           ref={fileRef}
@@ -511,25 +576,38 @@ export default function RichTextEditor({ label, value = "", onChange, required =
           onChange={onInfographicFile}
         />
 
-        <div
-          ref={ref}
-          className="rich-surface"
-          contentEditable
-          role="textbox"
-          aria-multiline="true"
-          aria-label={label}
-          data-placeholder="Start writing or type / to choose a block… Paste a YouTube link to embed video, or use Add Media for images."
-          onInput={emit}
-          onBlur={emit}
-          onPaste={onPaste}
-          onClick={onEditorClick}
-          onMouseDown={onEditorMouseDown}
-          suppressContentEditableWarning
-        />
+        {mode === "visual" ? (
+          <div
+            ref={ref}
+            className="rich-surface"
+            contentEditable
+            role="textbox"
+            aria-multiline="true"
+            aria-label={label}
+            data-placeholder="Start writing or type / to choose a block… Paste a YouTube link to embed video, or use Add Media for images."
+            onInput={emit}
+            onBlur={emit}
+            onPaste={onPaste}
+            onClick={onEditorClick}
+            onMouseDown={onEditorMouseDown}
+            suppressContentEditableWarning
+          />
+        ) : (
+          <textarea
+            className="rich-surface rich-surface--text"
+            value={textDraft}
+            onChange={(e) => emitText(e.target.value)}
+            spellCheck={false}
+            aria-label={`${label} HTML`}
+            placeholder="Paste or edit HTML here…"
+          />
+        )}
       </div>
 
       <p className="rich-editor-foot field-hint muted">
-        Tip: click an image, then use Size or drag the corner to resize. Paste a YouTube URL for a 16:9 embed.
+        {mode === "visual"
+          ? "Tip: click an image, then use Size or drag the corner to resize. Paste a YouTube URL for a 16:9 embed."
+          : "Text mode shows raw HTML. Switch to Visual for formatting tools, media, and YouTube embeds."}
       </p>
 
       {required && !String(value || "").replace(/<[^>]+>/g, "").trim() ? (
