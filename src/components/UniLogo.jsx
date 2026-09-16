@@ -22,21 +22,21 @@ export default function UniLogo({
   const real = hasRealLogo(logoUrl);
   const sizes = {
     sm: "h-12 w-12 rounded-xl",
-    md: "h-16 w-16 rounded-2xl",
-    lg: "h-20 w-20 rounded-2xl sm:h-24 sm:w-24 sm:rounded-3xl",
-    xl: "h-24 w-24 rounded-3xl",
+    md: "h-[4.5rem] w-[4.5rem] rounded-2xl",
+    lg: "h-28 w-28 rounded-3xl sm:h-32 sm:w-32",
+    xl: "h-32 w-32 rounded-3xl",
   };
   const box = sizes[size] || sizes.md;
   const monoClass =
     size === "lg" || size === "xl"
-      ? "text-2xl sm:text-3xl"
+      ? "text-3xl sm:text-4xl"
       : size === "sm"
         ? "text-sm"
-        : "text-lg";
+        : "text-xl";
 
   return (
     <span
-      className={`uni-logo ${box} ${className}`.trim()}
+      className={`uni-logo uni-logo--tight ${box} ${className}`.trim()}
       title={name || undefined}
     >
       {real ? (

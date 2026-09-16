@@ -92,7 +92,7 @@ export default function University() {
               logoUrl={uni.logoUrl}
               slug={uni.slug}
               size="lg"
-              className="border-4 border-white/50 shadow-lg"
+              className="border-4 border-white/60 shadow-lg"
             />
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white backdrop-blur">

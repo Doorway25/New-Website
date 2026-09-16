@@ -30,7 +30,7 @@ export default function ImageUpload({
 
   const preset =
     kind === "logo"
-      ? { maxWidth: 256, quality: 70, kind: "logo" }
+      ? { maxWidth: 640, quality: 88, kind: "logo" }
       : kind === "thumb"
         ? { maxWidth: 640, quality: 62, kind: "thumb" }
         : kind === "hero"

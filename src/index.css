@@ -154,9 +154,14 @@ video {
   height: 100%;
   object-fit: contain;
   object-position: center;
-  padding: 10%;
+  /* Tight padding so the mark fills the badge */
+  padding: 4px;
   background: #fff;
-  image-rendering: -webkit-optimize-contrast;
+  image-rendering: auto;
+}
+
+.uni-logo--tight .uni-logo-img {
+  padding: 2px;
 }
 
 .uni-logo-fallback {

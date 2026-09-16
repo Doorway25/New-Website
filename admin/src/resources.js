@@ -222,7 +222,7 @@ export const resources = {
       { key: "city", label: "City", required: true, section: "Basics" },
       { key: "feeFrom", label: "Tuition from (USD)", type: "number", required: true, section: "Basics" },
       { key: "imageUrl", label: "Cover image", type: "image", section: "Media", kind: "cover", hint: "Campus / card photo — auto WebP resize on upload" },
-      { key: "logoUrl", label: "Logo", type: "image", section: "Media", kind: "logo", hint: "Square or transparent logo — optimized to ~512px WebP" },
+      { key: "logoUrl", label: "Logo", type: "image", section: "Media", kind: "logo", hint: "Square or transparent logo — saved sharp at ~640px WebP. Re-upload old logos for best clarity." },
       { key: "programs", label: "Study levels / programmes", type: "stringlist", section: "Programmes", hint: "One per line: foundation, undergraduate, postgraduate…" },
       { key: "subjects", label: "Courses / subject areas", type: "stringlist", section: "Programmes", hint: "Shown under Courses / Categories" },
       { key: "intakes", label: "Intakes", type: "stringlist", section: "Intakes", hint: "e.g. Jan, May, Sep" },

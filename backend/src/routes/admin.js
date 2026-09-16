@@ -610,7 +610,7 @@ router.post(
 
     const kind = String(req.query.kind || req.body?.kind || "cover").toLowerCase();
     const presets = {
-      logo: { maxWidth: 256, maxHeight: 256, quality: 70, fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 0 } },
+      logo: { maxWidth: 640, maxHeight: 640, quality: 88, fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 0 } },
       thumb: { maxWidth: 640, maxHeight: 640, quality: 62, fit: "inside" },
       cover: { maxWidth: 960, maxHeight: 960, quality: 64, fit: "inside" },
       hero: { maxWidth: 1200, maxHeight: 1200, quality: 68, fit: "inside" },
@@ -621,7 +621,7 @@ router.post(
       Math.max(200, Number(req.query.maxWidth) || Number(req.body?.maxWidth) || preset.maxWidth)
     );
     const quality = Math.min(
-      90,
+      95,
       Math.max(50, Number(req.query.quality) || Number(req.body?.quality) || preset.quality)
     );
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;

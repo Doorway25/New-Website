@@ -29,7 +29,7 @@ export default function UniversityCard({ uni }) {
           <Flag code={country?.code} className="text-sm" title={country?.name} />{" "}
           {country?.name?.split(" ")[0] || (uni.country || "").toUpperCase()}
         </div>
-        <div className="absolute -bottom-7 left-5">
+        <div className="absolute -bottom-8 left-5">
           <UniLogo
             name={uni.name}
             logoUrl={uni.logoUrl}
@@ -39,7 +39,7 @@ export default function UniversityCard({ uni }) {
           />
         </div>
       </div>
-      <div className="flex flex-1 flex-col p-5 pt-10">
+      <div className="flex flex-1 flex-col p-5 pt-11">
         <h3 className="line-clamp-2 font-display text-[17px] font-bold leading-snug text-ink group-hover:text-brand-700">
           {uni.name}
         </h3>
