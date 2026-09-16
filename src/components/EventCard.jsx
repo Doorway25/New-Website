@@ -1,9 +1,8 @@
 import { Link } from "react-router-dom";
 import Icon from "./Icon";
-import { formatDate, gradientFor } from "../data/site";
+import { formatDate } from "../data/site";
 
 export default function EventCard({ event }) {
-  const grad = gradientFor(event.slug);
   const d = new Date(event.date);
   const day = d.toLocaleDateString("en-GB", { day: "2-digit" });
   const month = d.toLocaleDateString("en-GB", { month: "short" }).toUpperCase();
@@ -13,15 +12,15 @@ export default function EventCard({ event }) {
       to={`/events/${event.slug}`}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-500/10"
     >
-      <div className={`relative aspect-[16/10] overflow-hidden bg-gradient-to-br ${grad}`}>
+      <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
         <img
           src={event.image}
           alt={event.title}
           loading="lazy"
           onError={(e) => (e.currentTarget.style.display = "none")}
-          className="absolute inset-0 h-full w-full object-contain bg-slate-100 transition-transform duration-500 group-hover:scale-[1.03]"
+          className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
         />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/35 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/25 to-transparent" />
         <div className="absolute left-3 top-3 flex flex-col items-center rounded-xl bg-white px-3 py-1.5 text-center shadow-lg">
           <span className="font-display text-lg font-extrabold leading-none text-brand-700">{day}</span>
           <span className="text-[10px] font-bold tracking-wide text-slate-500">{month}</span>

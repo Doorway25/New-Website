@@ -111,12 +111,21 @@ function mapTeamMember(m) {
   };
 }
 
+function normalizeArticleContent(raw) {
+  if (Array.isArray(raw)) return raw.filter(Boolean);
+  if (typeof raw === "string" && raw.trim()) {
+    if (/<[a-z][\s\S]*>/i.test(raw)) return [raw];
+    return toParagraphs(raw);
+  }
+  return [];
+}
+
 function mapArticle(a) {
   if (!a) return a;
   const local = fallback.articleBySlug?.[a.slug];
   return {
     ...a,
-    content: Array.isArray(a.content) ? a.content : toParagraphs(a.content),
+    content: normalizeArticleContent(a.content),
     image: resolveImage(a.image, local?.image),
   };
 }

@@ -1,16 +1,73 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { fetchPublic, mediaUrl } from "../api/client";
+import { useSite } from "../api/SiteContext";
 import ArticleBody from "../components/ArticleBody";
 import ArticleCard from "../components/ArticleCard";
 import CounsellingSection from "../components/CounsellingSection";
 import Icon from "../components/Icon";
 import Reveal from "../components/Reveal";
 import SeoHead from "../components/SeoHead";
-import { useSite } from "../api/SiteContext";
+
+function normalizeArticleContent(raw) {
+  if (Array.isArray(raw)) return raw.filter(Boolean);
+  if (typeof raw === "string" && raw.trim()) {
+    if (/<[a-z][\s\S]*>/i.test(raw)) return [raw];
+    return raw
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
 
 export default function ArticleDetail() {
   const { slug } = useParams();
   const { articleBySlug, articles, formatDate } = useSite();
-  const article = articleBySlug[slug];
+  const preview = articleBySlug[slug];
+  const [fullArticle, setFullArticle] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    if (!slug) return;
+    let cancelled = false;
+    setFullArticle(null);
+    setLoadError(false);
+
+    fetchPublic(`/articles/${encodeURIComponent(slug)}`)
+      .then((item) => {
+        if (cancelled || !item) return;
+        setFullArticle({
+          ...item,
+          content: normalizeArticleContent(item.content),
+          image: mediaUrl(item.image) || item.image,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  const article = useMemo(() => {
+    if (fullArticle) return fullArticle;
+    if (!preview) return null;
+    return {
+      ...preview,
+      content: normalizeArticleContent(preview.content),
+    };
+  }, [fullArticle, preview]);
+
+  if (!preview && !fullArticle && !loadError) {
+    return (
+      <section className="container-x py-24 text-center">
+        <p className="muted text-slate-500">Loading article…</p>
+      </section>
+    );
+  }
 
   if (!article) {
     return (
@@ -25,6 +82,8 @@ export default function ArticleDetail() {
   }
 
   const related = articles.filter((a) => a.slug !== article.slug).slice(0, 3);
+  const heroImage = mediaUrl(article.image) || article.image;
+  const hasBody = article.content?.some((block) => String(block || "").replace(/<[^>]+>/g, "").trim());
 
   return (
     <>
@@ -36,7 +95,7 @@ export default function ArticleDetail() {
         path={`/articles/${article.slug}`}
         type="article"
       />
-      <section className="relative overflow-hidden bg-brand-950 pb-14 pt-14">
+      <section className="relative overflow-hidden bg-brand-950 pb-6 pt-14 sm:pb-8">
         <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_30%_20%,rgba(0,178,255,.55),transparent_45%),radial-gradient(circle_at_80%_60%,rgba(79,210,255,.3),transparent_40%)]" />
         <div className="container-x relative max-w-3xl">
           <nav className="flex items-center gap-1.5 text-sm text-slate-400">
@@ -58,20 +117,33 @@ export default function ArticleDetail() {
         </div>
       </section>
 
-      <article className="container-x -mt-8 relative z-10 max-w-3xl pb-8">
+      <article className="container-x relative z-10 max-w-3xl pb-8 pt-0">
         <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-xl shadow-brand-950/5">
-          <div className="h-56 overflow-hidden bg-gradient-to-br from-brand-500 to-brand-800 sm:h-72">
-            <img
-              src={article.image}
-              alt={article.title}
-              onError={(e) => (e.currentTarget.style.display = "none")}
-              className="h-full w-full object-cover"
-            />
-          </div>
+          {heroImage ? (
+            <div className="border-b border-slate-100 bg-slate-50">
+              <img
+                src={heroImage}
+                alt={article.title}
+                loading="eager"
+                className="block w-full h-auto max-h-[min(520px,70vh)] object-contain object-center mx-auto"
+                onError={(e) => {
+                  e.currentTarget.closest(".border-b")?.classList.add("hidden");
+                }}
+              />
+            </div>
+          ) : null}
           <div className="p-6 sm:p-9">
-            <p className="text-lg font-medium leading-relaxed text-ink">{article.excerpt}</p>
-            <div className="mt-5">
-              <ArticleBody content={article.content} />
+            {article.excerpt ? (
+              <p className="text-lg font-medium leading-relaxed text-ink">{article.excerpt}</p>
+            ) : null}
+            <div className={article.excerpt ? "mt-5" : ""}>
+              {!fullArticle && !hasBody ? (
+                <p className="text-sm text-slate-400">Loading article content…</p>
+              ) : hasBody ? (
+                <ArticleBody content={article.content} />
+              ) : (
+                <p className="text-slate-500">No article body yet.</p>
+              )}
             </div>
             <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-brand-50 p-5">
               <div>
