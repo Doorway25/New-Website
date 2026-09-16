@@ -658,7 +658,7 @@ function Testimonials() {
               <div className="flex text-gold-500">
                 {Array.from({ length: 5 }).map((_, k) => <Icon key={k} name="star" className="h-4 w-4 fill-current" stroke={0} />)}
               </div>
-              <blockquote className="mt-3 flex-1 text-sm leading-relaxed text-slate-600">"{t.text}"</blockquote>
+              <blockquote className="mt-3 line-clamp-4 flex-1 text-sm leading-relaxed text-slate-600">"{t.text}"</blockquote>
               <figcaption className="mt-5 flex items-center gap-3 border-t border-slate-100 pt-4">
                 <TestimonialAvatar name={t.name} initials={t.initials} src={t.imageUrl || t.image} />
                 <div>
