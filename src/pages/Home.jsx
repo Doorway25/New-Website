@@ -12,6 +12,7 @@ import Reveal from "../components/Reveal";
 import SectionHeading from "../components/SectionHeading";
 import SeoHead from "../components/SeoHead";
 import StoryCard from "../components/StoryCard";
+import UniLogo from "../components/UniLogo";
 import { splitEvents } from "../data/site";
 import { mediaUrl } from "../api/client";
 
@@ -411,7 +412,7 @@ function VideoStories() {
 
 /* ---------------- Partners ---------------- */
 function Partners() {
-  const { partners, universityBySlug, countryBySlug, monogram } = useSite();
+  const { partners, universityBySlug, countryBySlug } = useSite();
   const list = partners.map((s) => universityBySlug[s]).filter(Boolean);
   const row = [...list, ...list];
   return (
@@ -426,28 +427,19 @@ function Partners() {
         <div className="mb-2 flex w-max animate-marquee gap-4 pr-4">
           {row.map((u, i) => {
             const country = countryBySlug[u.country] || countryBySlug[u.countrySlug];
-            const hasLogo = Boolean(u.logoUrl) && !/ui-avatars\.com/i.test(u.logoUrl);
             return (
               <Link
                 key={i}
                 to={`/university/${u.slug}`}
                 className="flex w-64 shrink-0 items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-sm transition hover:border-brand-200 hover:shadow-lg"
               >
-                <span className="flex h-14 w-[4.5rem] shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
-                  {hasLogo ? (
-                    <img
-                      src={u.logoUrl}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      className="h-full w-full object-contain p-1.5"
-                    />
-                  ) : (
-                    <span className="font-display text-sm font-extrabold text-brand-700">
-                      {monogram(u.name)}
-                    </span>
-                  )}
-                </span>
+                <UniLogo
+                  name={u.name}
+                  logoUrl={u.logoUrl}
+                  slug={u.slug}
+                  size="md"
+                  className="border border-slate-100 shadow-sm"
+                />
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-bold text-ink">{u.name}</span>
                   <span className="block text-xs text-slate-400">{country?.name || u.country}</span>

@@ -5,6 +5,7 @@ import Flag from "../components/Flag";
 import Icon from "../components/Icon";
 import Reveal from "../components/Reveal";
 import SeoHead from "../components/SeoHead";
+import UniLogo from "../components/UniLogo";
 import { useSite } from "../api/SiteContext";
 import { buildUniversityDetails } from "../data/universityDetails";
 import NotFound from "./NotFound";
@@ -25,7 +26,6 @@ export default function University() {
     universities,
     programs,
     gradientFor,
-    monogram,
   } = useSite();
   const uni = universityBySlug[slug];
   const [tab, setTab] = useState("overview");
@@ -87,15 +87,13 @@ export default function University() {
             <span className="text-white">{uni.name}</span>
           </nav>
           <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-            <span className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-3xl border-4 border-white/40 bg-white font-display text-3xl font-extrabold text-ink shadow-lg">
-              {uni.logoUrl ? (
-                <img src={uni.logoUrl} alt="" className="h-full w-full object-contain p-2" loading="eager" decoding="async" />
-              ) : (
-                <span className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${grad} text-white`}>
-                  {monogram(uni.name)}
-                </span>
-              )}
-            </span>
+            <UniLogo
+              name={uni.name}
+              logoUrl={uni.logoUrl}
+              slug={uni.slug}
+              size="lg"
+              className="border-4 border-white/50 shadow-lg"
+            />
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white backdrop-blur">
                 <Flag code={country?.code} className="text-xl" title={country?.name} /> {country?.name}
@@ -326,9 +324,13 @@ export default function University() {
             {related.map((u, i) => (
               <Reveal key={u.slug} delay={(i % 3) * 60}>
                 <Link to={`/university/${u.slug}`} className="group flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lg">
-                  <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradientFor(u.slug)} font-display text-sm font-extrabold text-white`}>
-                    {monogram(u.name)}
-                  </span>
+                  <UniLogo
+                    name={u.name}
+                    logoUrl={u.logoUrl}
+                    slug={u.slug}
+                    size="md"
+                    className="border border-slate-100 shadow-sm"
+                  />
                   <div className="min-w-0">
                     <p className="truncate font-display text-sm font-bold text-ink group-hover:text-brand-700">{u.name}</p>
                     <p className="text-xs text-slate-500">{u.city}</p>

@@ -1,20 +1,20 @@
 import { Link } from "react-router-dom";
-import { countryBySlug, gradientFor, monogram } from "../data/site";
+import { countryBySlug, gradientFor } from "../data/site";
 import Flag from "./Flag";
 import Icon from "./Icon";
+import UniLogo from "./UniLogo";
 
 export default function UniversityCard({ uni }) {
-  const country = countryBySlug[uni.country];
+  const country = countryBySlug[uni.country] || countryBySlug[uni.countrySlug];
   const grad = gradientFor(uni.slug);
   const cover = uni.imageUrl || "";
-  const logo = uni.logoUrl || "";
 
   return (
     <Link
       to={`/university/${uni.slug}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-500/10"
     >
-      <div className={`relative h-36 overflow-hidden bg-gradient-to-br ${grad}`}>
+      <div className={`relative h-40 overflow-hidden bg-gradient-to-br ${grad}`}>
         {cover ? (
           <img
             src={cover}
@@ -26,19 +26,20 @@ export default function UniversityCard({ uni }) {
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-t from-ink/50 via-ink/10 to-transparent" />
         <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-slate-700 backdrop-blur">
-          <Flag code={country?.code} className="text-sm" title={country?.name} /> {country?.name.split(" ")[0]}
+          <Flag code={country?.code} className="text-sm" title={country?.name} />{" "}
+          {country?.name?.split(" ")[0] || (uni.country || "").toUpperCase()}
         </div>
-        <div className="absolute -bottom-6 left-5 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-white shadow-lg">
-          {logo ? (
-            <img src={logo} alt="" loading="lazy" decoding="async" className="h-full w-full object-contain p-1.5" />
-          ) : (
-            <span className={`flex h-full w-full items-center justify-center rounded-xl bg-gradient-to-br ${grad} font-display text-lg font-extrabold text-white`}>
-              {monogram(uni.name)}
-            </span>
-          )}
+        <div className="absolute -bottom-7 left-5">
+          <UniLogo
+            name={uni.name}
+            logoUrl={uni.logoUrl}
+            slug={uni.slug}
+            size="md"
+            className="border-4 border-white shadow-lg"
+          />
         </div>
       </div>
-      <div className="flex flex-1 flex-col p-5 pt-9">
+      <div className="flex flex-1 flex-col p-5 pt-10">
         <h3 className="line-clamp-2 font-display text-[17px] font-bold leading-snug text-ink group-hover:text-brand-700">
           {uni.name}
         </h3>
@@ -47,7 +48,10 @@ export default function UniversityCard({ uni }) {
         </p>
         <div className="mt-3 flex flex-wrap gap-1.5">
           {(uni.programs || []).slice(0, 3).map((p) => (
-            <span key={p} className="rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-medium capitalize text-brand-600">
+            <span
+              key={p}
+              className="rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-medium capitalize text-brand-600"
+            >
               {p.replace("-", " ")}
             </span>
           ))}
