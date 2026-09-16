@@ -1341,8 +1341,13 @@ button, input, select, textarea { font: inherit; }
   outline: none;
 }
 
-.rich-editor--wp .rich-surface:empty:before {
-  color: #a7aaad;
+.rich-surface[hidden],
+.rich-surface--text[hidden] {
+  display: none !important;
+}
+
+.rich-editor--wp .rich-surface[hidden] {
+  display: none !important;
 }
 
 .rich-editor-foot {

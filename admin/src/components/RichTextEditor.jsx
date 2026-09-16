@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { uploadImage } from "../api";
 import { extractYoutubeId, youtubeThumbUrl } from "../resources";
 
@@ -38,15 +38,10 @@ function normalizeHtml(html) {
 
 /** Strip editor-only chrome before saving */
 function serializeEditorHtml(root) {
+  if (!root) return "";
   const clone = root.cloneNode(true);
-  clone.querySelectorAll(".rt-img-controls, .rt-resize-handle, .rt-selected").forEach((n) => {
-    n.classList?.remove?.("rt-selected");
-    if (n.classList?.contains("rt-img-controls") || n.classList?.contains("rt-resize-handle")) {
-      n.remove();
-    }
-  });
+  clone.querySelectorAll(".rt-img-controls, .rt-resize-handle").forEach((n) => n.remove());
   clone.querySelectorAll(".rt-selected").forEach((n) => n.classList.remove("rt-selected"));
-  // Drop empty spacer paragraphs left after inserts (causes big gaps on the public site)
   clone.querySelectorAll("p").forEach((p) => {
     const text = (p.textContent || "").replace(/\u00a0/g, " ").trim();
     const html = (p.innerHTML || "").replace(/&nbsp;/gi, "").replace(/<br\s*\/?>/gi, "").trim();
@@ -78,15 +73,14 @@ function infographicFigureHtml(url, width = 100) {
 }
 
 /**
- * WYSIWYG editor that stores HTML.
- * Supports Visual + Text (HTML) modes, infographic resize, YouTube paste.
+ * WordPress-style Visual + Text (HTML) editor.
+ * Both panes stay mounted so content is never lost when switching tabs.
  */
 export default function RichTextEditor({ label, value = "", onChange, required = false }) {
-  const ref = useRef(null);
+  const visualRef = useRef(null);
   const fileRef = useRef(null);
-  // Sentinel so the first sync always writes value → DOM (editor mounts after load with content already set)
-  const lastEmitted = useRef(null);
-  const skipSync = useRef(false);
+  const lastSent = useRef(normalizeHtml(value));
+  const applyingExternal = useRef(false);
   const blockId = useId();
   const [mode, setMode] = useState("visual");
   const [textDraft, setTextDraft] = useState(() => String(value || ""));
@@ -94,9 +88,32 @@ export default function RichTextEditor({ label, value = "", onChange, required =
   const [selectedFigure, setSelectedFigure] = useState(null);
   const [selectedWidth, setSelectedWidth] = useState(100);
 
+  // Sync from parent value (article load). Never rewrite DOM for our own keystrokes.
+  useLayoutEffect(() => {
+    const next = normalizeHtml(value);
+    const raw = String(value || "");
+    const el = visualRef.current;
+
+    if (lastSent.current === next) {
+      // Own emit — only seed empty Visual pane after mount
+      if (el && next && !normalizeHtml(el.innerHTML)) {
+        applyingExternal.current = true;
+        el.innerHTML = next;
+        applyingExternal.current = false;
+      }
+      return;
+    }
+
+    if (el) {
+      applyingExternal.current = true;
+      el.innerHTML = next || "";
+      applyingExternal.current = false;
+    }
+    setTextDraft(raw);
+    lastSent.current = next;
+  }, [value]);
+
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
     try {
       document.execCommand("defaultParagraphSeparator", false, "p");
     } catch {
@@ -104,91 +121,58 @@ export default function RichTextEditor({ label, value = "", onChange, required =
     }
   }, []);
 
-  useEffect(() => {
-    if (mode !== "visual") return;
-    const el = ref.current;
-    if (!el) return;
-
-    if (skipSync.current) {
-      skipSync.current = false;
-      lastEmitted.current = normalizeHtml(value);
-      return;
-    }
-
-    const next = normalizeHtml(value);
-    const current = normalizeHtml(el.innerHTML);
-    if (lastEmitted.current !== null && next === lastEmitted.current && next === current) return;
-    if (next === current) {
-      lastEmitted.current = next;
-      return;
-    }
-
-    el.innerHTML = next || "";
-    lastEmitted.current = next;
-    setSelectedFigure(null);
-  }, [value, mode]);
-
-  useEffect(() => {
-    if (mode !== "text") return;
-    if (skipSync.current) {
-      skipSync.current = false;
-      return;
-    }
-    setTextDraft(String(value || ""));
-  }, [value, mode]);
-
-  function emit() {
-    const el = ref.current;
-    if (!el) return;
-    const html = serializeEditorHtml(el);
-    lastEmitted.current = html;
-    skipSync.current = true;
-    onChange(html);
+  function pushChange(html) {
+    const next = normalizeHtml(html);
+    lastSent.current = next;
+    onChange(next);
   }
 
-  function emitText(html) {
-    const next = normalizeHtml(html);
+  function readVisualHtml() {
+    return serializeEditorHtml(visualRef.current);
+  }
+
+  function emitFromVisual() {
+    if (applyingExternal.current) return;
+    const html = readVisualHtml();
     setTextDraft(html);
-    lastEmitted.current = next;
-    skipSync.current = true;
-    onChange(next);
+    pushChange(html);
+  }
+
+  function emitFromText(raw) {
+    setTextDraft(raw);
+    pushChange(raw);
+    if (visualRef.current) {
+      applyingExternal.current = true;
+      visualRef.current.innerHTML = normalizeHtml(raw) || "";
+      applyingExternal.current = false;
+    }
   }
 
   function switchMode(nextMode) {
     if (nextMode === mode) return;
     if (nextMode === "text") {
-      let html = String(value || "");
-      if (ref.current) {
-        html = serializeEditorHtml(ref.current);
-        lastEmitted.current = html;
-        skipSync.current = true;
-        onChange(html);
-      }
+      const html = readVisualHtml();
       setTextDraft(html);
+      pushChange(html);
       clearFigureSelection();
       setMode("text");
       return;
     }
+    // text → visual
     const html = normalizeHtml(textDraft);
-    lastEmitted.current = null;
-    skipSync.current = false;
-    onChange(html);
+    if (visualRef.current) {
+      applyingExternal.current = true;
+      visualRef.current.innerHTML = html || "";
+      applyingExternal.current = false;
+    }
+    pushChange(html);
     setMode("visual");
   }
 
   function focusEditor() {
-    if (mode !== "visual") return null;
-    const el = ref.current;
-    if (!el) return null;
+    const el = visualRef.current;
+    if (!el || mode !== "visual") return null;
     el.focus();
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount === 0) {
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      range.collapse(false);
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
     return el;
   }
 
@@ -209,7 +193,7 @@ export default function RichTextEditor({ label, value = "", onChange, required =
       p.innerHTML = "<br>";
       el.appendChild(p);
     }
-    emit();
+    emitFromVisual();
   }
 
   function runCommand(cmd, arg) {
@@ -219,39 +203,18 @@ export default function RichTextEditor({ label, value = "", onChange, required =
     } catch {
       /* ignore */
     }
-    emit();
+    emitFromVisual();
   }
 
   function applyBlock(tag) {
     focusEditor();
-    const wrapped = `<${tag}>`;
-    let ok = false;
     try {
-      ok = document.execCommand("formatBlock", false, wrapped);
-      if (!ok) ok = document.execCommand("formatBlock", false, tag);
+      let ok = document.execCommand("formatBlock", false, `<${tag}>`);
+      if (!ok) document.execCommand("formatBlock", false, tag);
     } catch {
-      ok = false;
+      /* ignore */
     }
-
-    if (!ok) {
-      const sel = window.getSelection();
-      if (sel && sel.rangeCount) {
-        const range = sel.getRangeAt(0);
-        const block = document.createElement(tag);
-        try {
-          range.surroundContents(block);
-        } catch {
-          block.appendChild(range.extractContents());
-          range.insertNode(block);
-        }
-        sel.removeAllRanges();
-        const after = document.createRange();
-        after.selectNodeContents(block);
-        after.collapse(false);
-        sel.addRange(after);
-      }
-    }
-    emit();
+    emitFromVisual();
   }
 
   function addLink() {
@@ -291,8 +254,7 @@ export default function RichTextEditor({ label, value = "", onChange, required =
   }
 
   function clearFigureSelection() {
-    const el = ref.current;
-    el?.querySelectorAll(".article-infographic.rt-selected").forEach((n) => {
+    visualRef.current?.querySelectorAll(".article-infographic.rt-selected").forEach((n) => {
       n.classList.remove("rt-selected");
       n.querySelector(".rt-resize-handle")?.remove();
     });
@@ -319,26 +281,24 @@ export default function RichTextEditor({ label, value = "", onChange, required =
     figure.dataset.width = String(w);
     figure.style.width = `${w}%`;
     setSelectedWidth(w);
-    emit();
+    emitFromVisual();
   }
 
   function onEditorClick(e) {
     const figure = e.target.closest?.(".article-infographic");
-    if (figure && ref.current?.contains(figure)) {
+    if (figure && visualRef.current?.contains(figure)) {
       e.preventDefault();
       selectInfographic(figure);
       return;
     }
-    if (!e.target.closest?.(".rt-resize-handle")) {
-      clearFigureSelection();
-    }
+    if (!e.target.closest?.(".rt-resize-handle")) clearFigureSelection();
   }
 
   function onEditorMouseDown(e) {
     const handle = e.target.closest?.(".rt-resize-handle");
     if (!handle) return;
     const figure = handle.closest(".article-infographic");
-    const surface = ref.current;
+    const surface = visualRef.current;
     if (!figure || !surface) return;
     e.preventDefault();
     e.stopPropagation();
@@ -359,7 +319,7 @@ export default function RichTextEditor({ label, value = "", onChange, required =
     function onUp() {
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
-      emit();
+      emitFromVisual();
     }
 
     document.addEventListener("mousemove", onMove);
@@ -380,6 +340,8 @@ export default function RichTextEditor({ label, value = "", onChange, required =
       insertHtml(youtubeFigureHtml(id));
     }
   }
+
+  const hasText = Boolean(String(value || "").replace(/<[^>]+>/g, "").trim());
 
   return (
     <div className="rich-editor rich-editor--wp span-2">
@@ -421,8 +383,7 @@ export default function RichTextEditor({ label, value = "", onChange, required =
                   defaultValue="p"
                   onMouseDown={(e) => e.stopPropagation()}
                   onChange={(e) => {
-                    const tag = e.target.value;
-                    if (tag) applyBlock(tag);
+                    if (e.target.value) applyBlock(e.target.value);
                   }}
                 >
                   {BLOCKS.map((b) => (
@@ -564,7 +525,7 @@ export default function RichTextEditor({ label, value = "", onChange, required =
           </div>
         ) : (
           <div className="rich-text-mode-bar">
-            HTML source — edit tags directly, then switch back to Visual to preview.
+            HTML source — edit tags here, then switch to Visual to preview formatting.
           </div>
         )}
 
@@ -576,32 +537,33 @@ export default function RichTextEditor({ label, value = "", onChange, required =
           onChange={onInfographicFile}
         />
 
-        {mode === "visual" ? (
-          <div
-            ref={ref}
-            className="rich-surface"
-            contentEditable
-            role="textbox"
-            aria-multiline="true"
-            aria-label={label}
-            data-placeholder="Start writing or type / to choose a block… Paste a YouTube link to embed video, or use Add Media for images."
-            onInput={emit}
-            onBlur={emit}
-            onPaste={onPaste}
-            onClick={onEditorClick}
-            onMouseDown={onEditorMouseDown}
-            suppressContentEditableWarning
-          />
-        ) : (
-          <textarea
-            className="rich-surface rich-surface--text"
-            value={textDraft}
-            onChange={(e) => emitText(e.target.value)}
-            spellCheck={false}
-            aria-label={`${label} HTML`}
-            placeholder="Paste or edit HTML here…"
-          />
-        )}
+        {/* Keep both panes mounted so switching tabs never drops content */}
+        <div
+          ref={visualRef}
+          className="rich-surface"
+          contentEditable={mode === "visual"}
+          role="textbox"
+          aria-multiline="true"
+          aria-label={label}
+          data-placeholder="Start writing… Paste a YouTube link to embed video, or use Add Media for images."
+          hidden={mode !== "visual"}
+          onInput={emitFromVisual}
+          onBlur={emitFromVisual}
+          onPaste={onPaste}
+          onClick={onEditorClick}
+          onMouseDown={onEditorMouseDown}
+          suppressContentEditableWarning
+        />
+
+        <textarea
+          className="rich-surface rich-surface--text"
+          value={textDraft}
+          onChange={(e) => emitFromText(e.target.value)}
+          spellCheck={false}
+          aria-label={`${label} HTML`}
+          placeholder="Paste or edit HTML here…"
+          hidden={mode !== "text"}
+        />
       </div>
 
       <p className="rich-editor-foot field-hint muted">
@@ -610,7 +572,7 @@ export default function RichTextEditor({ label, value = "", onChange, required =
           : "Text mode shows raw HTML. Switch to Visual for formatting tools, media, and YouTube embeds."}
       </p>
 
-      {required && !String(value || "").replace(/<[^>]+>/g, "").trim() ? (
+      {required && !hasText ? (
         <input tabIndex={-1} className="sr-only" required value="" onChange={() => {}} />
       ) : null}
     </div>

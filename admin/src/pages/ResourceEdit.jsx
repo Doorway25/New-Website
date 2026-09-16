@@ -543,6 +543,7 @@ function Field({
     return (
       <div className={fieldClassName(field)}>
         <RichTextEditor
+          key={`${field.key}-${values?.slug || "new"}`}
           label={field.label}
           value={value ?? ""}
           required={!!field.required}
