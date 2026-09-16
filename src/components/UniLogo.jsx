@@ -10,7 +10,8 @@ export function hasRealLogo(url) {
 
 /**
  * Crisp university logo badge.
- * Falls back to monogram initials when no real logo is available.
+ * Default "md" is a wide rectangle so horizontal wordmarks fill the box
+ * (square boxes leave large empty top/bottom gaps).
  */
 export default function UniLogo({
   name = "",
@@ -20,23 +21,25 @@ export default function UniLogo({
   className = "",
 }) {
   const real = hasRealLogo(logoUrl);
+  // Wide badges suit real uni logos; square only for monogram fallback still works inside them
   const sizes = {
-    sm: "h-12 w-12 rounded-xl",
-    md: "h-[4.5rem] w-[4.5rem] rounded-2xl",
-    lg: "h-28 w-28 rounded-3xl sm:h-32 sm:w-32",
-    xl: "h-32 w-32 rounded-3xl",
+    sm: "h-11 w-16 rounded-xl",
+    md: "h-14 w-[7.25rem] rounded-2xl",
+    lg: "h-[5.5rem] w-[8.5rem] rounded-2xl sm:h-24 sm:w-40 sm:rounded-3xl",
+    xl: "h-24 w-44 rounded-3xl",
+    square: "h-16 w-16 rounded-2xl",
   };
   const box = sizes[size] || sizes.md;
   const monoClass =
     size === "lg" || size === "xl"
-      ? "text-3xl sm:text-4xl"
+      ? "text-2xl sm:text-3xl"
       : size === "sm"
-        ? "text-sm"
-        : "text-xl";
+        ? "text-xs"
+        : "text-base";
 
   return (
     <span
-      className={`uni-logo uni-logo--tight ${box} ${className}`.trim()}
+      className={`uni-logo uni-logo--fill ${box} ${className}`.trim()}
       title={name || undefined}
     >
       {real ? (

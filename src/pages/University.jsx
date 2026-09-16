@@ -91,8 +91,8 @@ export default function University() {
               name={uni.name}
               logoUrl={uni.logoUrl}
               slug={uni.slug}
-              size="lg"
-              className="border-4 border-white/60 shadow-lg"
+              size="xl"
+              className="border-[3px] border-white/70 shadow-lg"
             />
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white backdrop-blur">
@@ -323,7 +323,7 @@ export default function University() {
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((u, i) => (
               <Reveal key={u.slug} delay={(i % 3) * 60}>
-                <Link to={`/university/${u.slug}`} className="group flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lg">
+                <Link to={`/university/${u.slug}`} className="group flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-3 py-3 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lg">
                   <UniLogo
                     name={u.name}
                     logoUrl={u.logoUrl}
@@ -331,11 +331,11 @@ export default function University() {
                     size="md"
                     className="border border-slate-100 shadow-sm"
                   />
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="truncate font-display text-sm font-bold text-ink group-hover:text-brand-700">{u.name}</p>
                     <p className="text-xs text-slate-500">{u.city}</p>
                   </div>
-                  <Icon name="arrow" className="ml-auto h-5 w-5 text-brand-400 opacity-0 transition group-hover:opacity-100" />
+                  <Icon name="arrow" className="ml-auto h-5 w-5 shrink-0 text-brand-400 opacity-0 transition group-hover:opacity-100" />
                 </Link>
               </Reveal>
             ))}
