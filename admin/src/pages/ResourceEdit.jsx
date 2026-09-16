@@ -317,163 +317,31 @@ export default function ResourceEdit({ resourceKey }) {
     );
   }
 
-  function renderField(key, wrapperClass = "") {
-    const field = resource.fields.find((f) => f.key === key);
-    if (!field) return null;
-    const node = (
-      <Field
-        field={field}
-        value={values[field.key]}
-        values={values}
-        onChange={setField}
-        universityOptions={universityOptions}
-        onUseYoutubeThumb={field.key === "youtubeId" ? useYoutubeThumb : undefined}
-        onFetchYoutube={field.key === "youtubeId" ? fetchYoutubeDetails : undefined}
-        fetchingYoutube={fetchingYoutube}
-        readOnly={!!field.readOnlyOnEdit && !isNew}
-        slugManual={slugManual}
-        slugSourceLabel={slugSourceLabel}
-        slugTargetLabel={slugTargetLabel}
-        onSyncSlug={
-          slugTarget &&
-          field.key === slugTarget &&
-          field.type !== "university-slug" &&
-          !(field.readOnlyOnEdit && !isNew)
-            ? syncSlugFromTitle
-            : undefined
-        }
-        articleCategoryOptions={articleCategories}
-        readTimeAuto={resourceKey === "articles" && field.key === "readTime" && !readTimeManual}
-      />
-    );
-    if (!wrapperClass) return node;
-    return (
-      <div className={wrapperClass} key={key}>
-        {node}
-      </div>
-    );
-  }
-
-  if (resource.editLayout === "article") {
-    const headline = String(values.title || "").trim() || (isNew ? "New article" : "Untitled article");
-    const published = !!values.published;
-
-    return (
-      <div className="page article-edit-page">
-        <header className="article-edit-hero">
-          <div className="article-edit-hero-inner">
-            <p className="crumb">
-              <Link to="/articles">Articles</Link>
-              <span aria-hidden="true">/</span>
-              <span>{isNew ? "Create" : "Edit"}</span>
-            </p>
-            <div className="article-edit-hero-row">
-              <div>
-                <div className="article-edit-badges">
-                  <span className={`article-status ${published ? "is-live" : "is-draft"}`}>
-                    {published ? "Published" : "Draft"}
-                  </span>
-                  {values.category ? <span className="article-cat-chip">{values.category}</span> : null}
-                  {values.readTime ? (
-                    <span className="article-meta-chip">{values.readTime} min read</span>
-                  ) : null}
-                </div>
-                <h1 className="article-edit-headline">{headline}</h1>
-                <p className="muted article-edit-sub">
-                  Write your story, add media, then publish when ready.
-                </p>
-              </div>
-              <div className="article-edit-hero-actions">
-                <Link className="btn ghost" to="/articles">
-                  Cancel
-                </Link>
-                <button
-                  type="submit"
-                  form="article-edit-form"
-                  className="btn primary"
-                  disabled={saving}
-                >
-                  {saving ? "Saving…" : isNew ? "Publish article" : "Save changes"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {error && <div className="alert error">{error}</div>}
-        {message && <div className="alert ok">{message}</div>}
-
-        <form id="article-edit-form" className="article-edit-form" onSubmit={onSubmit}>
-          <div className="article-edit-grid">
-            <div className="article-edit-main">
-              <section className="panel article-panel article-panel-story">
-                <div className="article-field-title">{renderField("title")}</div>
-                {renderField("excerpt", "article-field-excerpt")}
-                {renderField("content", "article-field-body")}
-              </section>
-
-              {resource.seo ? (
-                <section className="panel article-panel article-panel-seo">
-                  <SeoFields values={values} onChange={setField} />
-                </section>
-              ) : null}
-            </div>
-
-            <aside className="article-edit-aside">
-              <section className="panel article-panel article-panel-publish">
-                <div className="panel-head">
-                  <h2>Publish</h2>
-                </div>
-                <div className="article-aside-stack">
-                  {renderField("published", "article-publish-toggle")}
-                  {renderField("date")}
-                  {renderField("readTime", "article-read-time-field")}
-                  <div className="article-aside-actions">
-                    <button type="submit" className="btn primary block" disabled={saving}>
-                      {saving ? "Saving…" : isNew ? "Create article" : "Save changes"}
-                    </button>
-                  </div>
-                </div>
-              </section>
-
-              <section className="panel article-panel">
-                <div className="panel-head">
-                  <h2>Cover</h2>
-                  <p className="muted">Hero image on the article page and cards.</p>
-                </div>
-                {renderField("image")}
-              </section>
-
-              <section className="panel article-panel">
-                <div className="panel-head">
-                  <h2>Details</h2>
-                </div>
-                <div className="article-aside-stack">
-                  {renderField("category")}
-                  {renderField("author")}
-                  {renderField("slug", "article-slug-field")}
-                </div>
-              </section>
-            </aside>
-          </div>
-        </form>
-      </div>
-    );
-  }
+  const isArticleEdit = resourceKey === "articles";
 
   return (
-    <div className="page">
+    <div className={`page${isArticleEdit ? " page-article-edit" : ""}`}>
       <header className="page-header row">
         <div>
           <p className="crumb">
             <Link to={`/${resource.path}`}>{resource.label}</Link>
           </p>
+          {isArticleEdit ? (
+            <div className="article-edit-meta">
+              <span className={`article-pill ${values.published ? "live" : "draft"}`}>
+                {values.published ? "Published" : "Draft"}
+              </span>
+              {values.category ? <span className="article-pill muted-pill">{values.category}</span> : null}
+            </div>
+          ) : null}
           <h1>
             {isNew
               ? `New ${resource.singular.toLowerCase()}`
               : resource.path === "event-albums"
                 ? `Add photos · ${values.name || resource.singular}`
-                : `Edit ${resource.singular.toLowerCase()}`}
+                : isArticleEdit && values.title
+                  ? values.title
+                  : `Edit ${resource.singular.toLowerCase()}`}
           </h1>
           <p className="muted">
             {resource.path === "event-albums" && !isNew
@@ -486,38 +354,43 @@ export default function ResourceEdit({ resourceKey }) {
       {error && <div className="alert error">{error}</div>}
       {message && <div className="alert ok">{message}</div>}
 
-      <form className="edit-form" onSubmit={onSubmit}>
+      <form className={`edit-form${isArticleEdit ? " edit-form--article" : ""}`} onSubmit={onSubmit}>
         {sections.map((section) => (
-          <section key={section.name} className="panel">
+          <section
+            key={section.name}
+            className={`panel${isArticleEdit ? ` article-section article-section--${section.name.toLowerCase().replace(/\s+/g, "-")}` : ""}`}
+          >
             <div className="panel-head">
               <h2>{section.name}</h2>
             </div>
             <div className="form-grid">
               {section.fields.map((field) => (
-                <Field
-                  key={field.key}
-                  field={field}
-                  value={values[field.key]}
-                  values={values}
-                  onChange={setField}
-                  universityOptions={universityOptions}
-                  onUseYoutubeThumb={field.key === "youtubeId" ? useYoutubeThumb : undefined}
-                  onFetchYoutube={field.key === "youtubeId" ? fetchYoutubeDetails : undefined}
-                  fetchingYoutube={fetchingYoutube}
-                  readOnly={!!field.readOnlyOnEdit && !isNew}
-                  slugManual={slugManual}
-                  slugSourceLabel={slugSourceLabel}
-                  slugTargetLabel={slugTargetLabel}
-                  onSyncSlug={
-                    slugTarget &&
-                    field.key === slugTarget &&
-                    field.type !== "university-slug" &&
-                    !(field.readOnlyOnEdit && !isNew)
-                      ? syncSlugFromTitle
-                      : undefined
-                  }
-                  articleCategoryOptions={articleCategories}
-                />
+                <div key={field.key} className="form-field-wrap" data-field={field.key}>
+                  <Field
+                    field={field}
+                    value={values[field.key]}
+                    values={values}
+                    onChange={setField}
+                    universityOptions={universityOptions}
+                    onUseYoutubeThumb={field.key === "youtubeId" ? useYoutubeThumb : undefined}
+                    onFetchYoutube={field.key === "youtubeId" ? fetchYoutubeDetails : undefined}
+                    fetchingYoutube={fetchingYoutube}
+                    readOnly={!!field.readOnlyOnEdit && !isNew}
+                    slugManual={slugManual}
+                    slugSourceLabel={slugSourceLabel}
+                    slugTargetLabel={slugTargetLabel}
+                    onSyncSlug={
+                      slugTarget &&
+                      field.key === slugTarget &&
+                      field.type !== "university-slug" &&
+                      !(field.readOnlyOnEdit && !isNew)
+                        ? syncSlugFromTitle
+                        : undefined
+                    }
+                    articleCategoryOptions={articleCategories}
+                    readTimeAuto={isArticleEdit && field.key === "readTime" && !readTimeManual}
+                  />
+                </div>
               ))}
             </div>
           </section>
