@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { API_URL, get, post, put } from "../api";
+import { useAuth } from "../auth";
 import ImageUpload from "../components/ImageUpload";
 import GalleryUpload from "../components/GalleryUpload";
 import RichTextEditor from "../components/RichTextEditor";
@@ -8,6 +9,7 @@ import { SeoFields } from "../components/SeoFields";
 import {
   autoSlugTargetField,
   emptyValues,
+  estimateArticleReadMinutes,
   extractYoutubeId,
   flagImageUrl,
   formToPayload,
@@ -16,6 +18,7 @@ import {
   resources,
   slugify,
   slugSourceField,
+  toDatetimeLocal,
   youtubeThumbUrl,
 } from "../resources";
 
@@ -46,6 +49,7 @@ export default function ResourceEdit({ resourceKey }) {
   const isNew = id === "new";
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
 
   const [values, setValues] = useState(() => emptyValues(resource));
   const [loading, setLoading] = useState(!isNew);
@@ -54,8 +58,11 @@ export default function ResourceEdit({ resourceKey }) {
   const [message, setMessage] = useState("");
   const [fetchingYoutube, setFetchingYoutube] = useState(false);
   const [universityOptions, setUniversityOptions] = useState([]);
+  const [articleCategories, setArticleCategories] = useState([]);
   /** When true, slug no longer follows the title (user edited it, or editing existing). */
   const [slugManual, setSlugManual] = useState(!isNew);
+  /** When true, read time is not overwritten when the body changes. */
+  const [readTimeManual, setReadTimeManual] = useState(!isNew);
 
   const sections = useMemo(() => groupFields(resource.fields), [resource]);
   const hasYoutube = resource.fields.some((f) => f.key === "youtubeId");
@@ -110,6 +117,13 @@ export default function ResourceEdit({ resourceKey }) {
   }, [needsUniversities, resourceKey, resource.fields, resource.countriesOnly]);
 
   useEffect(() => {
+    if (resourceKey !== "articles") return;
+    get("/api/admin/articles/categories")
+      .then((list) => setArticleCategories(Array.isArray(list) ? list : []))
+      .catch(() => setArticleCategories([]));
+  }, [resourceKey]);
+
+  useEffect(() => {
     if (isNew) {
       const next = emptyValues(resource);
       const roleKey = searchParams.get("roleKey");
@@ -123,8 +137,16 @@ export default function ResourceEdit({ resourceKey }) {
       if (countrySlug && Object.prototype.hasOwnProperty.call(next, "countrySlug")) {
         next.countrySlug = countrySlug;
       }
+      if (resourceKey === "articles") {
+        next.date = toDatetimeLocal(new Date());
+        next.readTime = estimateArticleReadMinutes(next.content || "");
+        if (user?.name || user?.email) {
+          next.author = user.name || user.email;
+        }
+      }
       setValues(next);
       setSlugManual(false);
+      setReadTimeManual(false);
       setLoading(false);
       return;
     }
@@ -133,10 +155,19 @@ export default function ResourceEdit({ resourceKey }) {
       .then((item) => {
         setValues(itemToForm(resource, item));
         setSlugManual(true);
+        setReadTimeManual(true);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [resourceKey, id, isNew, resource, searchParams]);
+  }, [resourceKey, id, isNew, resource, searchParams, user]);
+
+  useEffect(() => {
+    if (!isNew || resourceKey !== "articles" || !user) return;
+    setValues((prev) => {
+      if (prev.author) return prev;
+      return { ...prev, author: user.name || user.email || "" };
+    });
+  }, [isNew, resourceKey, user]);
 
   function setField(key, value) {
     if (key === "youtubeId" && hasYoutube) {
@@ -182,6 +213,19 @@ export default function ResourceEdit({ resourceKey }) {
         ...prev,
         [key]: value,
         [slugTarget]: slugify(value),
+      }));
+      return;
+    }
+    if (resourceKey === "articles" && key === "readTime") {
+      setReadTimeManual(true);
+      setValues((prev) => ({ ...prev, readTime: value }));
+      return;
+    }
+    if (resourceKey === "articles" && key === "content" && !readTimeManual) {
+      setValues((prev) => ({
+        ...prev,
+        content: value,
+        readTime: estimateArticleReadMinutes(value),
       }));
       return;
     }
@@ -328,6 +372,7 @@ export default function ResourceEdit({ resourceKey }) {
                       ? syncSlugFromTitle
                       : undefined
                   }
+                  articleCategoryOptions={articleCategories}
                 />
               ))}
             </div>
@@ -397,6 +442,7 @@ function Field({
   slugSourceLabel,
   slugTargetLabel,
   onSyncSlug,
+  articleCategoryOptions = [],
 }) {
   const common = {
     id: field.key,
@@ -524,6 +570,55 @@ function Field({
         </select>
         {hint}
       </label>
+    );
+  }
+
+  if (field.type === "article-category") {
+    const NEW = "__new_category__";
+    const preset = (field.options || []).map((o) => o.value || o.label);
+    const merged = [...new Set([...preset, ...articleCategoryOptions, String(value || "").trim()].filter(Boolean))].sort(
+      (a, b) => a.localeCompare(b)
+    );
+    const current = String(value || "").trim();
+    const isNewMode = !current || !merged.includes(current);
+    const selectValue = isNewMode ? NEW : current;
+
+    return (
+      <div className={fieldClassName(field, "span-full article-category-field")}>
+        <label className="field-block">
+          <span className="field-label">{field.label}</span>
+          <select
+            {...common}
+            value={selectValue}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === NEW) onChange(field.key, "");
+              else onChange(field.key, v);
+            }}
+          >
+            <option value="">Select category…</option>
+            {merged.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+            <option value={NEW}>+ New category…</option>
+          </select>
+        </label>
+        {selectValue === NEW || isNewMode ? (
+          <label className="field-block" style={{ marginTop: 8 }}>
+            <span className="field-label">New category name</span>
+            <input
+              type="text"
+              required={!!field.required}
+              placeholder="e.g. Student Life"
+              value={current}
+              onChange={(e) => onChange(field.key, e.target.value)}
+            />
+          </label>
+        ) : null}
+        {hint}
+      </div>
     );
   }
 

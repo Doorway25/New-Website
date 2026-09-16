@@ -847,6 +847,18 @@ mountCrud("universities", prisma.university, {
   filters: ["countrySlug"],
 });
 
+router.get(
+  "/articles/categories",
+  asyncHandler(async (_req, res) => {
+    const rows = await prisma.article.findMany({
+      select: { category: true },
+      distinct: ["category"],
+      orderBy: { category: "asc" },
+    });
+    res.json(rows.map((r) => r.category).filter(Boolean));
+  })
+);
+
 mountCrud("articles", prisma.article, {
   fields: ["slug", "title", "category", "date", "readTime", "author", "image", "excerpt", "content"],
   search: ["title", "slug", "category"],

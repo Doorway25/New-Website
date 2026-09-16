@@ -1,4 +1,5 @@
 import { Link, useParams } from "react-router-dom";
+import ArticleBody from "../components/ArticleBody";
 import ArticleCard from "../components/ArticleCard";
 import CounsellingSection from "../components/CounsellingSection";
 import Icon from "../components/Icon";
@@ -69,14 +70,8 @@ export default function ArticleDetail() {
           </div>
           <div className="p-6 sm:p-9">
             <p className="text-lg font-medium leading-relaxed text-ink">{article.excerpt}</p>
-            <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-slate-600 article-body">
-              {article.content.map((block, i) =>
-                /<[a-z][\s\S]*>/i.test(block) ? (
-                  <div key={i} className="article-html" dangerouslySetInnerHTML={{ __html: block }} />
-                ) : (
-                  <p key={i}>{block}</p>
-                )
-              )}
+            <div className="mt-5">
+              <ArticleBody content={article.content} />
             </div>
             <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-brand-50 p-5">
               <div>

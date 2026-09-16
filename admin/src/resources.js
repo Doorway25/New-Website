@@ -254,13 +254,41 @@ export const resources = {
         section: "Basics",
         hint: "Auto-filled from title — edit only if you need a custom URL",
       },
-      { key: "category", label: "Category", required: true, section: "Basics", hint: "Filter chip on Articles page" },
+      {
+        key: "category",
+        label: "Category",
+        required: true,
+        type: "article-category",
+        section: "Basics",
+        options: [
+          { value: "Applications", label: "Applications" },
+          { value: "Visa", label: "Visa" },
+          { value: "Scholarships", label: "Scholarships" },
+          { value: "Destinations", label: "Destinations" },
+          { value: "Test Prep", label: "Test Prep" },
+          { value: "Finance", label: "Finance" },
+        ],
+        hint: "Choose a category for the Articles page filter, or pick “New category…” to type a new one.",
+      },
       { key: "date", label: "Publish date", type: "datetime", required: true, section: "Basics" },
-      { key: "readTime", label: "Read time (min)", type: "number", required: true, section: "Basics" },
-      { key: "author", label: "Author", required: true, section: "Basics" },
+      {
+        key: "readTime",
+        label: "Read time (minutes)",
+        type: "number",
+        required: true,
+        section: "Basics",
+        hint: "Estimated minutes to read the full article (shown on the site). Auto-calculated from the body (~200 words per minute); change if you want a different number.",
+      },
+      {
+        key: "author",
+        label: "Author",
+        required: true,
+        section: "Basics",
+        hint: "Defaults to your account name when you create an article. You can edit it if needed.",
+      },
       { key: "image", label: "Cover image", type: "image", section: "Media" },
       { key: "excerpt", label: "Excerpt", type: "textarea", rows: 3, section: "Content", hint: "Lead paragraph under the title" },
-      { key: "content", label: "Article body", type: "richtext", asArray: true, section: "Content" },
+      { key: "content", label: "Article body", type: "richtext", asArray: true, section: "Content", hint: "Use Infographic to insert images (click image → Size / drag corner to resize). Paste a YouTube link to embed a 16:9 video." },
       { key: "published", label: "Published", type: "checkbox", section: "Publishing" },
     ],
   },
@@ -942,3 +970,16 @@ function toDatetimeLocal(value) {
   const pad = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
+
+/** Rough reading time for article HTML body (minutes). */
+export function estimateArticleReadMinutes(html) {
+  const text = String(html || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return 3;
+  const words = text.split(" ").filter(Boolean).length;
+  return Math.max(1, Math.min(60, Math.ceil(words / 200)));
+}
+
+export { toDatetimeLocal };

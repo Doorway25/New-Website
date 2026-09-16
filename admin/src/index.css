@@ -1242,6 +1242,127 @@ button, input, select, textarea { font: inherit; }
   text-decoration: underline;
 }
 
+.rich-btn-active {
+  border-color: #7bb8e8 !important;
+  background: #e8f4ff !important;
+  color: #0b4f86 !important;
+}
+
+.rich-width-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+  padding-left: 10px;
+  border-left: 1px solid var(--border);
+}
+
+.rich-width-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.rich-width-slider {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rich-width-slider input[type="range"] {
+  width: 90px;
+}
+
+.rich-width-slider em {
+  font-style: normal;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--navy);
+  min-width: 2.5rem;
+}
+
+.rich-surface .article-infographic {
+  position: relative;
+  margin: 1rem auto;
+  max-width: 100%;
+  outline: 2px solid transparent;
+  border-radius: 10px;
+}
+
+.rich-surface .article-infographic img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.rich-surface .article-infographic.rt-selected {
+  outline-color: #3b9ddd;
+}
+
+.rich-surface .rt-resize-handle {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: #1170d6;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  cursor: nwse-resize;
+  z-index: 2;
+}
+
+.rich-surface .article-youtube {
+  margin: 1rem 0;
+}
+
+.rich-surface .article-youtube-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #0b1f33;
+}
+
+.rich-surface .article-youtube-thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rich-surface .article-youtube-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 64px;
+  height: 44px;
+  margin: -22px 0 0 -32px;
+  border-radius: 10px;
+  background: #ff0033;
+}
+
+.rich-surface .article-youtube-play::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  top: 12px;
+  border-style: solid;
+  border-width: 10px 0 10px 16px;
+  border-color: transparent transparent transparent #fff;
+}
+
+.rich-surface .article-youtube figcaption {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
 .stats-edit-grid {
   display: grid;
   gap: 12px;
