@@ -1152,6 +1152,159 @@ button, input, select, textarea { font: inherit; }
   color: var(--muted);
 }
 
+/* WordPress-style classic editor chrome */
+.rich-editor--wp {
+  gap: 10px;
+}
+
+.rich-editor-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rich-editor-tabs {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid #c3c4c7;
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+  background: #dcdcde;
+}
+
+.rich-tab {
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #50575e;
+  background: #dcdcde;
+  border-right: 1px solid #c3c4c7;
+}
+
+.rich-tab:last-child {
+  border-right: 0;
+}
+
+.rich-tab.is-active {
+  background: #fff;
+  color: #1d2327;
+  box-shadow: inset 0 2px 0 #2271b1;
+}
+
+.rich-tab.is-disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.rich-editor-panel {
+  border: 1px solid #c3c4c7;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.rich-editor--wp .rich-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 4px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 1px solid #dcdcde;
+  border-radius: 0;
+  background: #f6f7f7;
+}
+
+.rich-tool-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.rich-sep {
+  width: 1px;
+  height: 22px;
+  margin: 0 4px;
+  background: #c3c4c7;
+  flex-shrink: 0;
+}
+
+.rich-editor--wp .rich-block-select select {
+  min-width: 140px;
+  border: 1px solid #8c8f94;
+  background: #fff;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #1d2327;
+  height: 30px;
+}
+
+.rich-editor--wp .rich-btn {
+  border: 1px solid #8c8f94;
+  background: #fff;
+  border-radius: 3px;
+  padding: 4px 9px;
+  min-height: 30px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1d2327;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.rich-editor--wp .rich-btn:hover:not(:disabled) {
+  border-color: #2271b1;
+  background: #f0f6fc;
+  color: #135e96;
+}
+
+.rich-editor--wp .rich-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.rich-editor--wp .rich-btn-active {
+  border-color: #2271b1 !important;
+  background: #f0f6fc !important;
+  color: #0a4b78 !important;
+  box-shadow: inset 0 0 0 1px #2271b1;
+}
+
+.rich-editor--wp .rich-surface {
+  min-height: 360px;
+  max-height: 640px;
+  padding: 18px 20px;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  color: #1d2327;
+  font-size: 15px;
+  line-height: 1.7;
+  box-shadow: none;
+}
+
+.rich-editor--wp .rich-surface:focus {
+  border-color: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+.rich-editor--wp .rich-surface:empty:before {
+  color: #a7aaad;
+}
+
+.rich-editor-foot {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
 .rich-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -2680,6 +2833,16 @@ td.row-actions {
   color: #0f4a7a;
 }
 
+/* Content: Excerpt then full-width WordPress-style body (not side-by-side) */
+.edit-form--article .article-section--content .form-grid {
+  grid-template-columns: 1fr;
+}
+
+.edit-form--article .form-field-wrap[data-field="excerpt"],
+.edit-form--article .form-field-wrap[data-field="content"] {
+  grid-column: 1 / -1;
+}
+
 .edit-form--article .form-field-wrap[data-field="title"] input {
   font-family: Outfit, "Source Sans 3", sans-serif;
   font-size: 1.15rem;
@@ -2691,9 +2854,9 @@ td.row-actions {
   font-size: 0.86rem;
 }
 
-.edit-form--article .form-field-wrap[data-field="content"] .rich-surface {
-  min-height: 280px;
-  max-height: 520px;
+.edit-form--article .form-field-wrap[data-field="content"] .rich-editor--wp .rich-surface {
+  min-height: 420px;
+  max-height: 680px;
 }
 
 .edit-form--article .article-publish-check {

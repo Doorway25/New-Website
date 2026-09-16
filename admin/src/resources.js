@@ -289,7 +289,7 @@ export const resources = {
       },
       { key: "image", label: "Cover image", type: "image", section: "Media" },
       { key: "excerpt", label: "Excerpt", type: "textarea", rows: 3, section: "Content", hint: "Lead paragraph under the title" },
-      { key: "content", label: "Article body", type: "richtext", asArray: true, section: "Content", hint: "Use Infographic to insert images (click image → Size / drag corner to resize). Paste a YouTube link to embed a 16:9 video." },
+      { key: "content", label: "Article body", type: "richtext", asArray: true, section: "Content", hint: "WordPress-style editor. Add Media = image/infographic (click → resize). Paste YouTube links for 16:9 video." },
       { key: "published", label: "Published", type: "checkbox", section: "Publishing" },
     ],
   },
