@@ -90,13 +90,19 @@ export default function TeamDetail() {
                   ) : null}
                   {member.phone ? (
                     <a
-                      href={`tel:${String(member.phone).replace(/[^\d+]/g, "")}`}
+                      href={`https://wa.me/${String(member.phone).replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noreferrer"
                       className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-brand-200 hover:text-brand-700"
                     >
                       <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-brand-600 shadow-sm">
                         <Icon name="phone" className="h-4 w-4" />
                       </span>
-                      {member.phone}
+                      <span>
+                        {/\(\s*whatsapp\s*\)/i.test(member.phone)
+                          ? member.phone
+                          : `${member.phone} (WhatsApp)`}
+                      </span>
                     </a>
                   ) : null}
                 </div>

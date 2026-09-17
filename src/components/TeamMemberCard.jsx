@@ -3,9 +3,22 @@ import Icon from "./Icon";
 
 const CONTACT_ROLES = new Set(["director-founder", "country-manager"]);
 
+function phoneDigits(phone) {
+  return String(phone || "").replace(/\D/g, "");
+}
+
+function phoneLabel(phone) {
+  const raw = String(phone || "").trim();
+  if (!raw) return "";
+  // Avoid duplicating the label if already typed in admin
+  if (/\(\s*whatsapp\s*\)/i.test(raw)) return raw;
+  return `${raw} (WhatsApp)`;
+}
+
 function phoneHref(phone) {
-  const digits = String(phone || "").replace(/[^\d+]/g, "");
-  return digits ? `tel:${digits}` : "";
+  const digits = phoneDigits(phone);
+  if (!digits) return "";
+  return `https://wa.me/${digits}`;
 }
 
 export default function TeamMemberCard({ member, compact = false }) {
@@ -18,7 +31,7 @@ export default function TeamMemberCard({ member, compact = false }) {
     .join("");
 
   const showContact = CONTACT_ROLES.has(member.roleKey) && (member.email || member.phone);
-  const tel = phoneHref(member.phone);
+  const wa = phoneHref(member.phone);
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-500/10">
@@ -44,7 +57,9 @@ export default function TeamMemberCard({ member, compact = false }) {
           <h3 className="font-display text-lg font-bold text-ink group-hover:text-brand-700">{member.name}</h3>
         </Link>
         {member.bio ? (
-          <p className="mt-2 line-clamp-3 flex-1 text-sm leading-relaxed text-slate-500">{member.bio}</p>
+          <p className="mt-2 line-clamp-2 max-h-[2.6em] flex-1 text-sm leading-snug text-slate-500">
+            {member.bio}
+          </p>
         ) : (
           <div className="flex-1" />
         )}
@@ -65,14 +80,16 @@ export default function TeamMemberCard({ member, compact = false }) {
             ) : null}
             {member.phone ? (
               <a
-                href={tel || undefined}
+                href={wa || undefined}
+                target={wa ? "_blank" : undefined}
+                rel={wa ? "noreferrer" : undefined}
                 className="flex items-center gap-2 text-sm text-slate-700 transition hover:text-brand-700"
                 onClick={(e) => e.stopPropagation()}
               >
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-brand-600 shadow-sm">
                   <Icon name="phone" className="h-3.5 w-3.5" />
                 </span>
-                <span className="font-medium">{member.phone}</span>
+                <span className="min-w-0 font-medium leading-snug">{phoneLabel(member.phone)}</span>
               </a>
             ) : null}
           </div>

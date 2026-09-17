@@ -516,7 +516,7 @@ export const resources = {
         key: "phone",
         label: "Mobile number",
         section: "Contact",
-        hint: "Shown on Director / Founder and Country Manager cards (include country code)",
+        hint: "Shown on Director / Founder and Country Manager cards as “number (WhatsApp)”",
       },
       {
         key: "linkedinUrl",
