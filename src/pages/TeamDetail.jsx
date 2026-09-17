@@ -35,6 +35,14 @@ export default function TeamDetail() {
     .join("");
 
   const others = (team || []).filter((m) => m.slug !== member.slug).slice(0, 3);
+  const showContact =
+    (member.email || member.phone) &&
+    (member.roleKey === "director-founder" || member.roleKey === "country-manager");
+  const phoneLabel = member.phone
+    ? /\(\s*whatsapp\s*\)/i.test(member.phone)
+      ? member.phone
+      : `${member.phone} (WhatsApp)`
+    : "";
 
   return (
     <>
@@ -55,37 +63,46 @@ export default function TeamDetail() {
         ]}
       />
 
-      <section className="container-x relative z-10 -mt-8 pb-14">
-        <Reveal className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-xl shadow-brand-950/5">
-          <div className="grid lg:grid-cols-[280px_1fr]">
-            <div className="relative min-h-[280px] bg-slate-100 lg:min-h-full">
+      <section className="container-x relative z-10 -mt-4 pb-20 sm:-mt-8 sm:pb-14">
+        <Reveal className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl shadow-brand-950/5 sm:rounded-3xl">
+          <div className="grid lg:grid-cols-[minmax(240px,300px)_minmax(0,1fr)]">
+            {/* Photo: normal flow on mobile so it never covers the bio */}
+            <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-100 sm:aspect-[3/4] lg:aspect-auto lg:min-h-[420px]">
               {member.imageUrl ? (
-                <img src={member.imageUrl} alt={member.name} className="absolute inset-0 h-full w-full object-cover" />
+                <img
+                  src={member.imageUrl}
+                  alt={member.name}
+                  className="h-full w-full object-cover object-top"
+                />
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-brand-600 to-brand-900">
+                <div className="flex h-full min-h-[280px] items-center justify-center bg-gradient-to-br from-brand-600 to-brand-900">
                   <span className="font-display text-5xl font-extrabold text-white/90">{initials}</span>
                 </div>
               )}
             </div>
-            <div className="p-6 sm:p-8 lg:p-10">
+
+            <div className="relative z-10 min-w-0 bg-white p-5 sm:p-8 lg:p-10">
               <p className="text-xs font-bold uppercase tracking-wide text-brand-600">{member.roleLabel}</p>
-              <h1 className="mt-2 font-display text-3xl font-extrabold text-ink sm:text-4xl">{member.name}</h1>
+              <h2 className="mt-2 font-display text-2xl font-extrabold leading-tight text-ink sm:text-3xl lg:text-4xl">
+                {member.name}
+              </h2>
               {member.bio ? (
-                <p className="mt-5 whitespace-pre-line text-base leading-relaxed text-slate-600">{member.bio}</p>
+                <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-slate-600 sm:mt-5 sm:text-base">
+                  {member.bio}
+                </p>
               ) : null}
 
-              {(member.email || member.phone) &&
-              (member.roleKey === "director-founder" || member.roleKey === "country-manager") ? (
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {showContact ? (
+                <div className="mt-6 grid gap-3">
                   {member.email ? (
                     <a
                       href={`mailto:${member.email}`}
-                      className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-brand-200 hover:text-brand-700"
+                      className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-brand-200 hover:text-brand-700"
                     >
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-brand-600 shadow-sm">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-brand-600 shadow-sm">
                         <Icon name="mail" className="h-4 w-4" />
                       </span>
-                      <span className="min-w-0 truncate">{member.email}</span>
+                      <span className="min-w-0 break-all">{member.email}</span>
                     </a>
                   ) : null}
                   {member.phone ? (
@@ -93,35 +110,31 @@ export default function TeamDetail() {
                       href={`https://wa.me/${String(member.phone).replace(/\D/g, "")}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-brand-200 hover:text-brand-700"
+                      className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-brand-200 hover:text-brand-700"
                     >
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-brand-600 shadow-sm">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-brand-600 shadow-sm">
                         <Icon name="phone" className="h-4 w-4" />
                       </span>
-                      <span>
-                        {/\(\s*whatsapp\s*\)/i.test(member.phone)
-                          ? member.phone
-                          : `${member.phone} (WhatsApp)`}
-                      </span>
+                      <span className="min-w-0">{phoneLabel}</span>
                     </a>
                   ) : null}
                 </div>
               ) : null}
 
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 {member.linkedinUrl ? (
                   <a
                     href={member.linkedinUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full bg-[#0A66C2] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0A66C2] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-110 sm:w-auto"
                   >
                     <Icon name="linkedin" className="h-4 w-4" /> LinkedIn profile
                   </a>
                 ) : null}
                 <Link
                   to="/team"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-brand-300 hover:text-brand-700"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-brand-300 hover:text-brand-700 sm:w-auto"
                 >
                   All team members
                 </Link>
