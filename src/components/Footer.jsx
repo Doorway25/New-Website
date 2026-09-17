@@ -130,7 +130,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div data-footer-col>
+        <div data-footer-col className="grid grid-cols-2 gap-6 min-w-0 lg:contents">
           <FooterCol title="Quick Links">
             {quickLinks.map((l) => (
               <li key={l.label}>
@@ -138,9 +138,6 @@ export default function Footer() {
               </li>
             ))}
           </FooterCol>
-        </div>
-
-        <div data-footer-col>
           <FooterCol title="Pages">
             {pages.map((l) => (
               <li key={l.label}>
@@ -181,7 +178,7 @@ export default function Footer() {
 
 function FooterCol({ title, children }) {
   return (
-    <div>
+    <div className="min-w-0">
       <h4 className="mb-4 font-display text-sm font-semibold uppercase tracking-wider text-white">{title}</h4>
       <ul className="space-y-2.5 text-sm text-slate-400">{children}</ul>
     </div>
