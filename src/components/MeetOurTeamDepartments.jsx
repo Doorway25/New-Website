@@ -5,14 +5,9 @@ import Reveal from "./Reveal";
  */
 export const TEAM_DEPARTMENTS = [
   {
-    key: "marketing",
-    label: "Marketing Team",
-    image: "/team-departments/marketing.png",
-  },
-  {
-    key: "compliance",
-    label: "Compliance Team",
-    image: "/team-departments/compliance.png",
+    key: "counsellor",
+    label: "Counsellor Team",
+    image: "/team-departments/counsellor.png",
   },
   {
     key: "application",
@@ -20,9 +15,14 @@ export const TEAM_DEPARTMENTS = [
     image: "/team-departments/application.png",
   },
   {
-    key: "counsellor",
-    label: "Counsellor Team",
-    image: "/team-departments/counsellor.png",
+    key: "compliance",
+    label: "Compliance Team",
+    image: "/team-departments/compliance.png",
+  },
+  {
+    key: "marketing",
+    label: "Marketing Team",
+    image: "/team-departments/marketing.png",
   },
 ];
 
