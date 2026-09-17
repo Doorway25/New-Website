@@ -134,7 +134,7 @@ export default function About() {
             Team profiles will appear here once added in the admin panel.
           </p>
         ) : (
-          <div className="mt-10 grid gap-10 md:grid-cols-2 lg:grid-cols-3 lg:gap-6 lg:items-start">
+          <div className="mt-10 grid items-stretch gap-10 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             {director ? <TeamRoleBlock group={director} cols="grid-cols-1" /> : null}
             {countryManager ? <TeamRoleBlock group={countryManager} cols="grid-cols-1" /> : null}
             {managers ? <TeamRoleBlock group={managers} cols="grid-cols-1" /> : null}
@@ -205,11 +205,11 @@ function Feature({ icon, title, text }) {
 
 function TeamRoleBlock({ group, cols = "sm:grid-cols-2 lg:grid-cols-3" }) {
   return (
-    <div>
+    <div className="flex h-full min-h-0 flex-col">
       <h3 className="font-display text-xl font-bold text-ink">{group.label}</h3>
-      <div className={`mt-5 grid gap-5 ${cols}`}>
+      <div className={`mt-5 grid flex-1 gap-5 ${cols}`}>
         {group.members.map((member, i) => (
-          <Reveal key={member.slug} delay={(i % 3) * 70}>
+          <Reveal key={member.slug} delay={(i % 3) * 70} className="h-full">
             <TeamMemberCard member={member} compact />
           </Reveal>
         ))}

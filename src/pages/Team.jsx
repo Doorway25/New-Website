@@ -65,7 +65,7 @@ export default function Team() {
           ) : (
             <div className="space-y-12 sm:space-y-14">
               {director || countryManager || managers ? (
-                <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:items-start lg:gap-6">
+                <div className="grid items-stretch gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
                   {director ? <TeamGroup group={director} /> : null}
                   {countryManager ? <TeamGroup group={countryManager} /> : null}
                   {managers ? <TeamGroup group={managers} /> : null}
@@ -106,7 +106,7 @@ export default function Team() {
 function TeamGroup({ group }) {
   const count = group.members.length;
   return (
-    <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm shadow-slate-950/5 sm:p-6">
+    <div className="flex h-full flex-col rounded-3xl border border-slate-100 bg-white p-5 shadow-sm shadow-slate-950/5 sm:p-6">
       <Reveal>
         <div className="mb-5 border-b border-slate-100 pb-4">
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-brand-600">Role</p>
@@ -118,9 +118,9 @@ function TeamGroup({ group }) {
           </p>
         </div>
       </Reveal>
-      <div className="grid grid-cols-1 gap-5">
+      <div className="grid flex-1 grid-cols-1 gap-5">
         {group.members.map((member, i) => (
-          <Reveal key={member.slug} delay={(i % 3) * 60}>
+          <Reveal key={member.slug} delay={(i % 3) * 60} className="h-full">
             <TeamMemberCard member={member} compact />
           </Reveal>
         ))}
