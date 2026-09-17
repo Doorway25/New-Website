@@ -138,7 +138,7 @@ export default function University() {
   };
 
   return (
-    <>
+    <div className="min-w-0 overflow-x-clip">
       <SeoHead
         seo={uni}
         title={`${uni.name} | Education Doorway`}
@@ -159,14 +159,14 @@ export default function University() {
         ) : null}
         <div className={`pointer-events-none absolute inset-0 ${uni.imageUrl ? "bg-ink/55" : "opacity-20"} ${uni.imageUrl ? "" : "[background-image:radial-gradient(circle_at_15%_20%,white_1.5px,transparent_1.5px)] [background-size:26px_26px]"}`} />
         <div className="container-x relative">
-          <nav className="mb-8 flex items-center gap-1.5 text-sm text-white/70">
+          <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-sm text-white/70 sm:mb-8">
             <Link to="/" className="hover:text-white">Home</Link>
-            <Icon name="chevron" className="h-4 w-4 -rotate-90" />
+            <Icon name="chevron" className="h-4 w-4 shrink-0 -rotate-90" />
             <Link to="/study" className="hover:text-white">Universities</Link>
-            <Icon name="chevron" className="h-4 w-4 -rotate-90" />
-            <span className="text-white">{uni.name}</span>
+            <Icon name="chevron" className="h-4 w-4 shrink-0 -rotate-90" />
+            <span className="min-w-0 break-words text-white">{uni.name}</span>
           </nav>
-          <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-6">
             <UniLogo
               name={uni.name}
               logoUrl={uni.logoUrl}
@@ -174,23 +174,31 @@ export default function University() {
               size="xl"
               className="border-[3px] border-white/70 shadow-lg"
             />
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white backdrop-blur">
-                <Flag code={country?.code} className="text-xl" title={country?.name} /> {country?.name}
+            <div className="min-w-0 w-full">
+              <div className="inline-flex max-w-full items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white backdrop-blur">
+                <Flag code={country?.code} className="text-xl" title={country?.name} />{" "}
+                <span className="truncate">{country?.name}</span>
               </div>
-              <h1 className="mt-3 font-display text-3xl font-extrabold leading-tight text-white sm:text-4xl">{uni.name}</h1>
-              <p className="mt-1.5 flex items-center gap-1.5 text-white/80"><Icon name="pin" className="h-4 w-4" /> {uni.city}</p>
+              <h1 className="mt-3 break-words font-display text-2xl font-extrabold leading-tight text-white sm:text-3xl md:text-4xl">
+                {uni.name}
+              </h1>
+              <p className="mt-1.5 flex items-center gap-1.5 text-sm text-white/80 sm:text-base">
+                <Icon name="pin" className="h-4 w-4 shrink-0" /> <span className="min-w-0 break-words">{uni.city}</span>
+              </p>
             </div>
           </div>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <button
               type="button"
               onClick={() => openDetails("overview")}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-semibold text-ink shadow-lg transition hover:bg-gold-400"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3 font-semibold text-ink shadow-lg transition hover:bg-gold-400 sm:w-auto"
             >
               More about University <Icon name="arrow" className="h-5 w-5" />
             </button>
-            <Link to={applyHref} className="inline-flex items-center gap-2 rounded-full border border-white/40 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
+            <Link
+              to={applyHref}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/40 px-6 py-3 font-semibold text-white transition hover:bg-white/10 sm:w-auto"
+            >
               Talk to an Advisor
             </Link>
           </div>
@@ -199,7 +207,7 @@ export default function University() {
 
       {/* Quick facts */}
       <section className="container-x relative z-10 -mt-12">
-        <Reveal className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-100 bg-white p-5 shadow-xl shadow-brand-950/5 md:grid-cols-4">
+        <Reveal className="grid grid-cols-2 gap-3 overflow-hidden rounded-2xl border border-slate-100 bg-white p-4 shadow-xl shadow-brand-950/5 sm:p-5 md:grid-cols-4">
           <Fact icon="cap" label="Study Levels" value={programsList.length} />
           <Fact icon="book" label="Course Areas" value={subjectsList.length} />
           <Fact icon="clock" label="Intakes / Year" value={intakesList.length} />
@@ -208,8 +216,8 @@ export default function University() {
       </section>
 
       {/* Original summary layout */}
-      <section className="container-x grid gap-8 py-12 lg:grid-cols-[1.7fr_1fr]">
-        <div className="space-y-8">
+      <section className="container-x grid min-w-0 gap-8 py-12 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+        <div className="min-w-0 space-y-8">
           <Panel title="Overview" icon="compass">
             <p className="text-sm leading-relaxed text-slate-600">
               {uni.overview || `${uni.name} is a partner institution supported by Education Doorway.`}
@@ -252,8 +260,8 @@ export default function University() {
           </Panel>
         </div>
 
-        <div className="space-y-6">
-          <Reveal className="rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 p-6 text-white shadow-lg">
+        <div className="min-w-0 space-y-6">
+          <Reveal className="rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 p-5 text-white shadow-lg sm:p-6">
             <h3 className="font-display text-lg font-bold">Upcoming Intakes</h3>
             <div className="mt-4 flex flex-wrap gap-2">
               {upcomingList.map((m) => (
@@ -271,9 +279,9 @@ export default function University() {
             </Link>
           </Reveal>
 
-          <Reveal delay={80} className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+          <Reveal delay={80} className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
             <h3 className="flex items-center gap-2 font-display text-lg font-bold text-ink">
-              <Icon name="doc" className="h-5 w-5 text-brand-500" /> Required Documents
+              <Icon name="doc" className="h-5 w-5 shrink-0 text-brand-500" /> Required Documents
             </h3>
             <ul className="mt-4 space-y-2.5">
               {docsList.map((d) => (
@@ -281,7 +289,7 @@ export default function University() {
                   <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                     <Icon name="check" className="h-3.5 w-3.5" />
                   </span>
-                  {d}
+                  <span className="min-w-0 break-words">{d}</span>
                 </li>
               ))}
             </ul>
@@ -293,18 +301,18 @@ export default function University() {
       {showDetails && (
         <section id="university-details" className="container-x scroll-mt-24 pb-12">
           <Reveal className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-5 py-5 sm:px-7">
-              <div>
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-4 py-5 sm:px-7">
+              <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">More about University</p>
-                <h2 className="mt-1 font-display text-2xl font-extrabold text-ink">University details</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <h2 className="mt-1 font-display text-xl font-extrabold text-ink sm:text-2xl">University details</h2>
+                <p className="mt-1 break-words text-sm text-slate-500">
                   Overview, programmes, student life, accommodation and campus for {uni.name}.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowDetails(false)}
-                className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-ink"
+                className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-ink"
               >
                 Close
               </button>
@@ -331,15 +339,15 @@ export default function University() {
               })}
             </div>
 
-            <div className="p-5 sm:p-7">
+            <div className="min-w-0 p-4 sm:p-7">
               {tab === "overview" && (
-                <div className="space-y-5">
-                  <p className="text-sm leading-relaxed text-slate-600 sm:text-base">{details.overview.body}</p>
+                <div className="min-w-0 space-y-5">
+                  <p className="break-words text-sm leading-relaxed text-slate-600 sm:text-base">{details.overview.body}</p>
                   <ul className="grid gap-2.5 sm:grid-cols-2">
                     {(details.overview.highlights || []).map((h) => (
-                      <li key={h} className="flex items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50/80 px-3.5 py-3 text-sm text-slate-700">
+                      <li key={h} className="flex min-w-0 items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50/80 px-3.5 py-3 text-sm text-slate-700">
                         <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
-                        {h}
+                        <span className="min-w-0 break-words">{h}</span>
                       </li>
                     ))}
                   </ul>
@@ -400,24 +408,34 @@ export default function University() {
       )}
 
       {related.length > 0 && (
-        <section className="container-x pb-8">
-          <Reveal><h2 className="font-display text-2xl font-extrabold text-ink">Related Universities</h2></Reveal>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="container-x min-w-0 overflow-x-clip pb-8">
+          <Reveal>
+            <h2 className="font-display text-xl font-extrabold text-ink sm:text-2xl">Related Universities</h2>
+          </Reveal>
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {related.map((u, i) => (
-              <Reveal key={u.slug} delay={(i % 3) * 60}>
-                <Link to={`/university/${u.slug}`} className="group flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-3 py-3 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lg">
+              <Reveal key={u.slug} delay={(i % 3) * 60} className="min-w-0">
+                <Link
+                  to={`/university/${u.slug}`}
+                  className="group flex w-full min-w-0 max-w-full items-center gap-3 overflow-hidden rounded-2xl border border-slate-100 bg-white px-3 py-3 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lg"
+                >
                   <UniLogo
                     name={u.name}
                     logoUrl={u.logoUrl}
                     slug={u.slug}
-                    size="md"
-                    className="border border-slate-100 shadow-sm"
+                    size="sm"
+                    className="shrink-0 border border-slate-100 shadow-sm"
                   />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-display text-sm font-bold text-ink group-hover:text-brand-700">{u.name}</p>
-                    <p className="text-xs text-slate-500">{u.city}</p>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <p className="truncate font-display text-sm font-bold text-ink group-hover:text-brand-700">
+                      {u.name}
+                    </p>
+                    <p className="truncate text-xs text-slate-500">{u.city}</p>
                   </div>
-                  <Icon name="arrow" className="ml-auto h-5 w-5 shrink-0 text-brand-400 opacity-0 transition group-hover:opacity-100" />
+                  <Icon
+                    name="arrow"
+                    className="hidden h-5 w-5 shrink-0 text-brand-400 opacity-0 transition group-hover:opacity-100 sm:block"
+                  />
                 </Link>
               </Reveal>
             ))}
@@ -426,21 +444,21 @@ export default function University() {
       )}
 
       <CounsellingSection />
-    </>
+    </div>
   );
 }
 
 function BulletBlock({ title, text, items }) {
   const list = asList(items);
   return (
-    <div>
+    <div className="min-w-0">
       <h3 className="font-display text-lg font-bold text-ink">{title}</h3>
       {text && <p className="mt-1 text-sm text-slate-500">{text}</p>}
       <ul className="mt-4 space-y-2.5">
         {list.map((item) => (
-          <li key={item} className="flex items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50/70 px-3.5 py-3 text-sm text-slate-700">
+          <li key={item} className="flex min-w-0 items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50/70 px-3.5 py-3 text-sm text-slate-700">
             <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
-            {item}
+            <span className="min-w-0 break-words">{item}</span>
           </li>
         ))}
       </ul>
@@ -450,13 +468,13 @@ function BulletBlock({ title, text, items }) {
 
 function Fact({ icon, label, value }) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-        <Icon name={icon} className="h-5 w-5" />
+    <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 sm:h-11 sm:w-11">
+        <Icon name={icon} className="h-4 w-4 sm:h-5 sm:w-5" />
       </span>
-      <div>
-        <p className="font-display text-lg font-extrabold text-ink">{value}</p>
-        <p className="text-xs text-slate-500">{label}</p>
+      <div className="min-w-0">
+        <p className="truncate font-display text-base font-extrabold text-ink sm:text-lg">{value}</p>
+        <p className="truncate text-[11px] text-slate-500 sm:text-xs">{label}</p>
       </div>
     </div>
   );
@@ -464,11 +482,11 @@ function Fact({ icon, label, value }) {
 
 function Panel({ title, icon, children }) {
   return (
-    <Reveal className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 flex items-center gap-2 font-display text-xl font-bold text-ink">
-        <Icon name={icon} className="h-5 w-5 text-brand-500" /> {title}
+    <Reveal className="min-w-0 overflow-hidden rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+      <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-bold text-ink sm:text-xl">
+        <Icon name={icon} className="h-5 w-5 shrink-0 text-brand-500" /> {title}
       </h2>
-      {children}
+      <div className="min-w-0">{children}</div>
     </Reveal>
   );
 }

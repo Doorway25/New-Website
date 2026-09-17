@@ -26,7 +26,7 @@ export default function UniLogo({
     sm: "h-11 w-16 rounded-xl",
     md: "h-14 w-[7.25rem] rounded-2xl",
     lg: "h-[5.5rem] w-[8.5rem] rounded-2xl sm:h-24 sm:w-40 sm:rounded-3xl",
-    xl: "h-24 w-44 rounded-3xl",
+    xl: "h-20 w-36 rounded-2xl sm:h-24 sm:w-44 sm:rounded-3xl",
     square: "h-16 w-16 rounded-2xl",
   };
   const box = sizes[size] || sizes.md;
