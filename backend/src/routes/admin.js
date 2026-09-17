@@ -788,8 +788,17 @@ function mountCrud(
       try {
         const item = await model.update({ where: { id: req.params.id }, data });
         res.json(item);
-      } catch {
-        throw new HttpError(404, "Not found");
+      } catch (err) {
+        const code = err?.code;
+        if (code === "P2025") throw new HttpError(404, "Not found");
+        if (code === "P2022" || /column .* does not exist/i.test(String(err?.message || ""))) {
+          throw new HttpError(
+            500,
+            "Database is missing new fields. On the server run: cd /var/www/doorway/backend && npx prisma migrate deploy && pm2 restart doorway-api"
+          );
+        }
+        if (code === "P2002") throw new HttpError(409, "A record with that unique value already exists");
+        throw new HttpError(400, err?.message || "Update failed");
       }
     })
   );
