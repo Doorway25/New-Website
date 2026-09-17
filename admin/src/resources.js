@@ -40,6 +40,38 @@ export const TEAM_ROLE_OPTIONS = [
 
 export const TEAM_ROLE_LABEL = Object.fromEntries(TEAM_ROLE_OPTIONS.map((r) => [r.value, r.label]));
 
+/** Country slug → tuition currency code (matches public site) */
+export const COUNTRY_CURRENCY = {
+  uk: "GBP",
+  ireland: "EUR",
+  france: "EUR",
+  germany: "EUR",
+  netherlands: "EUR",
+  spain: "EUR",
+  malta: "EUR",
+  australia: "AUD",
+  canada: "CAD",
+  usa: "USD",
+  malaysia: "MYR",
+  uae: "AED",
+  ksa: "SAR",
+};
+
+export function currencyForCountry(countrySlug) {
+  const key = String(countrySlug || "").toLowerCase().trim();
+  return COUNTRY_CURRENCY[key] || "USD";
+}
+
+export function tuitionFieldLabel(countrySlug) {
+  const code = currencyForCountry(countrySlug);
+  return `Tuition from (${code})`;
+}
+
+export function tuitionFieldHint(countrySlug) {
+  const code = currencyForCountry(countrySlug);
+  return `Enter the amount in ${code}. Change Country above to switch currency (UK = GBP, Malaysia = MYR, USA = USD…).`;
+}
+
 /** Country slugs used by universities / public Study tabs */
 export const UNIVERSITY_COUNTRY_OPTIONS = [
   { value: "uk", label: "UK" },
@@ -219,7 +251,7 @@ export const resources = {
         hint: "Must match a published country slug",
       },
       { key: "city", label: "City", required: true, section: "Basics" },
-      { key: "feeFrom", label: "Tuition from (local currency)", type: "number", required: true, section: "Basics", hint: "Enter amount in the destination currency — UK = GBP, Malaysia = MYR, USA = USD, etc." },
+      { key: "feeFrom", label: "Tuition from", type: "number", required: true, section: "Basics", hint: "Currency follows the selected country" },
       { key: "imageUrl", label: "Cover image", type: "image", section: "Media", kind: "cover", hint: "Campus / card photo — auto WebP resize on upload" },
       { key: "logoUrl", label: "Logo", type: "image", section: "Media", kind: "logo", hint: "Square or transparent logo — saved sharp at ~640px WebP. Re-upload old logos for best clarity." },
       { key: "programs", label: "Study levels / programmes", type: "stringlist", section: "Programmes", hint: "One per line: foundation, undergraduate, postgraduate…" },

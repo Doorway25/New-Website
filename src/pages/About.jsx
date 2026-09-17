@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import CounsellingSection from "../components/CounsellingSection";
 import Counter from "../components/Counter";
 import Icon from "../components/Icon";
-import MeetOurTeamDepartments from "../components/MeetOurTeamDepartments";
 import PageHero from "../components/PageHero";
 import Reveal from "../components/Reveal";
 import SeoHead from "../components/SeoHead";
@@ -141,10 +140,6 @@ export default function About() {
             {managers ? <TeamRoleBlock group={managers} cols="grid-cols-1" /> : null}
           </div>
         )}
-      </section>
-
-      <section className="container-x pb-16">
-        <MeetOurTeamDepartments />
       </section>
 
       <section className="bg-white py-16">

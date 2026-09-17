@@ -19,6 +19,8 @@ import {
   slugify,
   slugSourceField,
   toDatetimeLocal,
+  tuitionFieldHint,
+  tuitionFieldLabel,
   youtubeThumbUrl,
 } from "../resources";
 
@@ -805,7 +807,7 @@ function Field({
   return (
     <label className={fieldClassName(field)}>
       <span className="field-label">
-        {field.label}
+        {field.key === "feeFrom" ? tuitionFieldLabel(values?.countrySlug) : field.label}
         {readTimeAuto && field.key === "readTime" ? (
           <span className="article-auto-tag">Auto</span>
         ) : null}
@@ -816,7 +818,11 @@ function Field({
         value={value ?? ""}
         onChange={(e) => onChange(field.key, e.target.value)}
       />
-      {hint}
+      {field.key === "feeFrom" ? (
+        <small className="field-hint">{tuitionFieldHint(values?.countrySlug)}</small>
+      ) : (
+        hint
+      )}
     </label>
   );
 }
