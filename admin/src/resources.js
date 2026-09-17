@@ -219,7 +219,7 @@ export const resources = {
         hint: "Must match a published country slug",
       },
       { key: "city", label: "City", required: true, section: "Basics" },
-      { key: "feeFrom", label: "Tuition from (USD)", type: "number", required: true, section: "Basics" },
+      { key: "feeFrom", label: "Tuition from (local currency)", type: "number", required: true, section: "Basics", hint: "Enter amount in the destination currency — UK = GBP, Malaysia = MYR, USA = USD, etc." },
       { key: "imageUrl", label: "Cover image", type: "image", section: "Media", kind: "cover", hint: "Campus / card photo — auto WebP resize on upload" },
       { key: "logoUrl", label: "Logo", type: "image", section: "Media", kind: "logo", hint: "Square or transparent logo — saved sharp at ~640px WebP. Re-upload old logos for best clarity." },
       { key: "programs", label: "Study levels / programmes", type: "stringlist", section: "Programmes", hint: "One per line: foundation, undergraduate, postgraduate…" },

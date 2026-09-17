@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { countryBySlug, gradientFor } from "../data/site";
+import { formatTuition } from "../utils/currency";
 import Flag from "./Flag";
 import Icon from "./Icon";
 import UniLogo from "./UniLogo";
@@ -58,7 +59,7 @@ export default function UniversityCard({ uni }) {
         </div>
         <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
           <span className="text-xs text-slate-400">
-            From <span className="font-semibold text-ink">${Number(uni.feeFrom || 0).toLocaleString()}</span>/yr
+            From <span className="font-semibold text-ink">{formatTuition(uni.feeFrom, uni.country || uni.countrySlug)}</span>/yr
           </span>
           <span className="flex items-center gap-1 text-sm font-semibold text-brand-600 transition-transform group-hover:translate-x-0.5">
             View <Icon name="arrow" className="h-4 w-4" />

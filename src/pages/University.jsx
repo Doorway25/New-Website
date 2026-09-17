@@ -9,6 +9,7 @@ import SeoHead from "../components/SeoHead";
 import UniLogo from "../components/UniLogo";
 import { useSite } from "../api/SiteContext";
 import { buildUniversityDetails } from "../data/universityDetails";
+import { formatTuition } from "../utils/currency";
 import NotFound from "./NotFound";
 
 const TABS = [
@@ -202,7 +203,7 @@ export default function University() {
           <Fact icon="cap" label="Study Levels" value={programsList.length} />
           <Fact icon="book" label="Course Areas" value={subjectsList.length} />
           <Fact icon="clock" label="Intakes / Year" value={intakesList.length} />
-          <Fact icon="award" label="Tuition From" value={`$${Number(uni.feeFrom || 0).toLocaleString()}`} />
+          <Fact icon="award" label="Tuition From" value={formatTuition(uni.feeFrom, uni.country)} />
         </Reveal>
       </section>
 

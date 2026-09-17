@@ -161,23 +161,27 @@ export default function EventGalleryAlbum() {
                 <Reveal key={rel.key} delay={(i % 3) * 70}>
                   <Link
                     to={`/events/gallery/${encodeURIComponent(rel.key)}`}
-                    className="group relative block aspect-[4/3] overflow-hidden rounded-2xl border border-slate-100 bg-slate-900 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+                    className="group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
                   >
-                    <img
-                      src={rel.images[0]}
-                      alt={rel.name}
-                      loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-brand-950/90 via-brand-950/30 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5">
-                      <div>
-                        <h3 className="font-display text-lg font-bold text-white">{rel.name}</h3>
+                    <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
+                      <img
+                        src={rel.images[0]}
+                        alt={rel.name}
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                      />
+                    </div>
+                    <div
+                      className="flex items-center justify-between gap-3 px-4 py-3.5"
+                      style={{ backgroundColor: "#0d157b" }}
+                    >
+                      <div className="min-w-0">
+                        <h3 className="truncate font-display text-lg font-bold text-white">{rel.name}</h3>
                         <p className="mt-0.5 text-xs text-white/75">
                           {rel.images.length} photo{rel.images.length === 1 ? "" : "s"}
                         </p>
                       </div>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-brand-700">
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#0d157b]">
                         View all <Icon name="arrow" className="h-3.5 w-3.5" />
                       </span>
                     </div>

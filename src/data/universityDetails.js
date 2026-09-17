@@ -1,3 +1,5 @@
+import { formatTuition } from "../utils/currency";
+
 /** Country-level defaults for university detail tabs. */
 const COUNTRY_DEFAULTS = {
   uk: {
@@ -346,7 +348,7 @@ export function buildUniversityDetails(uni, country) {
         `${uni.name} is a partner institution supported by Education Doorway for international applications.`,
       highlights: [
         `Located in ${uni.city}${countryLabel ? `, ${countryLabel}` : ""}`,
-        `Tuition from $${Number(uni.feeFrom || 0).toLocaleString()} / year (indicative)`,
+        `Tuition from ${formatTuition(uni.feeFrom, uni.country)} / year (indicative)`,
         `${uni.programs?.length || 0} study levels available`,
         `${uni.subjects?.length || 0} course areas offered`,
         `${uni.intakes?.length || 0} intake periods each year`,
