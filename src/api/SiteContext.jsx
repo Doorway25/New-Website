@@ -113,10 +113,14 @@ function mapEventAlbum(a) {
 function mapTeamMember(m) {
   if (!m) return m;
   const linkedinUrl = String(m.linkedinUrl || "").trim();
+  const email = String(m.email || "").trim();
+  const phone = String(m.phone || "").trim();
   return {
     ...m,
     imageUrl: resolveImage(m.imageUrl || m.image),
     linkedinUrl: /^https?:\/\//i.test(linkedinUrl) ? linkedinUrl : "",
+    email,
+    phone,
     bio: m.bio || "",
     roleLabel: m.roleLabel || m.roleKey || "",
   };

@@ -73,6 +73,35 @@ export default function TeamDetail() {
               {member.bio ? (
                 <p className="mt-5 whitespace-pre-line text-base leading-relaxed text-slate-600">{member.bio}</p>
               ) : null}
+
+              {(member.email || member.phone) &&
+              (member.roleKey === "director-founder" || member.roleKey === "country-manager") ? (
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  {member.email ? (
+                    <a
+                      href={`mailto:${member.email}`}
+                      className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-brand-200 hover:text-brand-700"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-brand-600 shadow-sm">
+                        <Icon name="mail" className="h-4 w-4" />
+                      </span>
+                      <span className="min-w-0 truncate">{member.email}</span>
+                    </a>
+                  ) : null}
+                  {member.phone ? (
+                    <a
+                      href={`tel:${String(member.phone).replace(/[^\d+]/g, "")}`}
+                      className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-brand-200 hover:text-brand-700"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-brand-600 shadow-sm">
+                        <Icon name="phone" className="h-4 w-4" />
+                      </span>
+                      {member.phone}
+                    </a>
+                  ) : null}
+                </div>
+              ) : null}
+
               <div className="mt-8 flex flex-wrap gap-3">
                 {member.linkedinUrl ? (
                   <a

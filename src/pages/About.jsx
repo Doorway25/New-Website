@@ -34,7 +34,7 @@ export default function About() {
   const director = groups.find((g) => g.key === "director-founder");
   const countryManager = groups.find((g) => g.key === "country-manager");
   const managers = groups.find((g) => g.key === "managers");
-  const marketing = groups.find((g) => g.separate);
+  const hasLeadership = Boolean(director || countryManager || managers);
 
   return (
     <>
@@ -129,39 +129,15 @@ export default function About() {
           </Link>
         </Reveal>
 
-        {!groups.length ? (
+        {!hasLeadership ? (
           <p className="mt-8 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-slate-500">
             Team profiles will appear here once added in the admin panel.
           </p>
         ) : (
-          <div className="mt-10 space-y-12">
-            {director || countryManager || managers ? (
-              <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3 lg:gap-6 lg:items-start">
-                {director ? (
-                  <TeamRoleBlock group={director} cols="grid-cols-1" />
-                ) : null}
-                {countryManager ? (
-                  <TeamRoleBlock group={countryManager} cols="grid-cols-1" />
-                ) : null}
-                {managers ? (
-                  <TeamRoleBlock group={managers} cols="grid-cols-1" />
-                ) : null}
-              </div>
-            ) : null}
-
-            {marketing ? (
-              <div className="rounded-3xl border border-brand-100 bg-gradient-to-b from-brand-50/70 to-white p-6 sm:p-8">
-                <h3 className="font-display text-xl font-bold text-ink">{marketing.label}</h3>
-                <p className="mt-1 text-sm text-slate-500">Campaigns, content and student outreach.</p>
-                <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {marketing.members.map((member, i) => (
-                    <Reveal key={member.slug} delay={(i % 3) * 70}>
-                      <TeamMemberCard member={member} compact />
-                    </Reveal>
-                  ))}
-                </div>
-              </div>
-            ) : null}
+          <div className="mt-10 grid gap-10 md:grid-cols-2 lg:grid-cols-3 lg:gap-6 lg:items-start">
+            {director ? <TeamRoleBlock group={director} cols="grid-cols-1" /> : null}
+            {countryManager ? <TeamRoleBlock group={countryManager} cols="grid-cols-1" /> : null}
+            {managers ? <TeamRoleBlock group={managers} cols="grid-cols-1" /> : null}
           </div>
         )}
       </section>

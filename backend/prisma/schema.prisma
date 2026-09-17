@@ -380,6 +380,8 @@ model TeamMember {
   roleLabel   String
   bio         String?  @db.Text
   imageUrl    String?
+  email       String?
+  phone       String?
   linkedinUrl String?
   sortOrder   Int      @default(0)
   published   Boolean  @default(true)

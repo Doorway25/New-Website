@@ -457,7 +457,7 @@ export const resources = {
     group: "site",
     seo: false,
     pageSize: 50,
-    help: "Shown on About Us and the /team page. Add photo, short bio and LinkedIn for each person.",
+    help: "Shown on About Us and the /team page. Add photo, short bio, contact details (Directors & Country Managers) and LinkedIn.",
     filterTabs: {
       param: "roleKey",
       options: [{ value: "", label: "All" }, ...TEAM_ROLE_OPTIONS],
@@ -505,6 +505,18 @@ export const resources = {
         section: "Profile",
         span: "full",
         hint: "Shown on cards and the individual profile page",
+      },
+      {
+        key: "email",
+        label: "Email",
+        section: "Contact",
+        hint: "Shown on Director / Founder and Country Manager cards",
+      },
+      {
+        key: "phone",
+        label: "Mobile number",
+        section: "Contact",
+        hint: "Shown on Director / Founder and Country Manager cards (include country code)",
       },
       {
         key: "linkedinUrl",
