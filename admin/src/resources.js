@@ -36,7 +36,6 @@ export const TEAM_ROLE_OPTIONS = [
   { value: "director-founder", label: "Director / Founder" },
   { value: "country-manager", label: "Country Manager" },
   { value: "managers", label: "Managers" },
-  { value: "marketing", label: "Marketing team" },
 ];
 
 export const TEAM_ROLE_LABEL = Object.fromEntries(TEAM_ROLE_OPTIONS.map((r) => [r.value, r.label]));
@@ -478,7 +477,7 @@ export const resources = {
         type: "select",
         section: "Basics",
         options: TEAM_ROLE_OPTIONS,
-        hint: "Director / Founder, Country Manager, Managers, or Marketing team",
+        hint: "Director / Founder, Country Manager, or Managers",
       },
       {
         key: "roleLabel",

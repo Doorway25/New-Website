@@ -23,12 +23,11 @@ export const company = {
   ],
 };
 
-/** Our Team role groups for About Us + /team */
+/** Our Team role groups for About Us + /team (people profiles). */
 export const TEAM_ROLE_GROUPS = [
   { key: "director-founder", label: "Director / Founder" },
   { key: "country-manager", label: "Country Manager" },
   { key: "managers", label: "Managers" },
-  { key: "marketing", label: "Marketing team", separate: true },
 ];
 
 export const team = [];
