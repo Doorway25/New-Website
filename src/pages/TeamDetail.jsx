@@ -4,12 +4,11 @@ import Icon from "../components/Icon";
 import PageHero from "../components/PageHero";
 import Reveal from "../components/Reveal";
 import SeoHead from "../components/SeoHead";
-import TeamMemberCard from "../components/TeamMemberCard";
 import { useSite } from "../api/SiteContext";
 
 export default function TeamDetail() {
   const { slug } = useParams();
-  const { team, teamBySlug } = useSite();
+  const { teamBySlug } = useSite();
   const member = teamBySlug?.[slug];
 
   if (!member) {
@@ -34,7 +33,6 @@ export default function TeamDetail() {
     .map((p) => p[0]?.toUpperCase() || "")
     .join("");
 
-  const others = (team || []).filter((m) => m.slug !== member.slug).slice(0, 3);
   const showContact =
     (member.email || member.phone) &&
     (member.roleKey === "director-founder" || member.roleKey === "country-manager");
@@ -143,19 +141,6 @@ export default function TeamDetail() {
           </div>
         </Reveal>
       </section>
-
-      {others.length ? (
-        <section className="container-x pb-16">
-          <h2 className="font-display text-2xl font-bold text-ink">More from Our Team</h2>
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {others.map((m, i) => (
-              <Reveal key={m.slug} delay={(i % 3) * 70}>
-                <TeamMemberCard member={m} compact />
-              </Reveal>
-            ))}
-          </div>
-        </section>
-      ) : null}
 
       <CounsellingSection />
     </>
