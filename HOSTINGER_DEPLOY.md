@@ -546,7 +546,7 @@ cd /home/nextbigthing/projects/educationdoorway && docker compose logs --tail=50
 ssh root@76.13.254.129
 
 # new site
-pm2 restart doorway-api
+pm2 restart doorway-api --update-env
 cd /var/www/doorway && npm run build
 cd /var/www/doorway/admin && npm run build
 
