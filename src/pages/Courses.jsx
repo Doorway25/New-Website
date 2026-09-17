@@ -73,19 +73,22 @@ export default function Courses() {
         </div>
       </section>
 
-      <section className="container-x py-16">
+      <section className="container-x min-w-0 overflow-x-clip py-12 sm:py-16">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl font-extrabold text-ink">Browse by Subject</h2>
-          <p className="mt-3 text-slate-500">Explore {subjects.length}+ subject areas across our partner universities.</p>
+          <h2 className="font-display text-2xl font-extrabold text-ink sm:text-3xl">Browse by Subject</h2>
+          <p className="mt-3 text-sm text-slate-500 sm:text-base">
+            Explore {subjects.length}+ subject areas across our partner universities.
+          </p>
         </Reveal>
-        <div className="mt-10 flex flex-wrap justify-center gap-3">
+        <div className="mt-8 grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-2 sm:mt-10 sm:gap-3 md:grid-cols-3 lg:grid-cols-4">
           {shownSubjects.map((s, i) => (
-            <Reveal key={s} delay={Math.min(i * 25, 300)}>
+            <Reveal key={s} delay={Math.min(i * 25, 300)} className="min-w-0">
               <Link
                 to="/study"
-                className="group flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 shadow-sm transition hover:border-brand-300 hover:bg-brand-600 hover:text-white"
+                className="group flex h-full min-w-0 items-start gap-2 rounded-2xl border border-slate-200 bg-white px-3.5 py-3 text-sm font-medium text-slate-600 shadow-sm transition hover:border-brand-300 hover:bg-brand-600 hover:text-white sm:rounded-full sm:items-center sm:px-4 sm:py-2.5"
               >
-                <Icon name="book" className="h-4 w-4 text-brand-400 group-hover:text-white" /> {s}
+                <Icon name="book" className="mt-0.5 h-4 w-4 shrink-0 text-brand-400 group-hover:text-white sm:mt-0" />
+                <span className="min-w-0 break-words leading-snug">{s}</span>
               </Link>
             </Reveal>
           ))}
