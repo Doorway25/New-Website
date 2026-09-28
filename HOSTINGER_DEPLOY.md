@@ -522,23 +522,204 @@ Ask if you want this Actions file added to the repo.
 
 ---
 
+---
+
+## 11b. Switch public site to `educationdoorway.com` (no data loss)
+
+Use this when the new site already runs on `web.educationdoorway.com` and you want the **main domain**.
+
+**Safe rules (do not skip):**
+
+- Do **not** drop the Postgres database
+- Do **not** run `npm run db:seed` again (seed can overwrite content)
+- Do **not** stop CRM / ApplyPartner
+- Migrations: only `npx prisma migrate deploy` (safe — applies new migrations only)
+
+### Step 1 — DNS (wherever DNS is managed)
+
+```text
+A     @      →  76.13.254.129
+A     www    →  76.13.254.129
+```
+
+Keep existing:
+
+```text
+A     admin  →  76.13.254.129
+A     crm    →  (unchanged)
+A     web    →  (optional — keep for redirect)
+```
+
+Wait until DNS resolves:
+
+```bash
+ping -c 2 educationdoorway.com
+ping -c 2 www.educationdoorway.com
+```
+
+### Step 2 — SSH and backup (quick)
+
+```bash
+ssh root@76.13.254.129
+
+mkdir -p /root/doorway-backup-$(date +%F)
+cp /var/www/doorway/backend/.env /root/doorway-backup-$(date +%F)/backend.env
+cp /etc/nginx/sites-available/doorway /root/doorway-backup-$(date +%F)/doorway.nginx
+```
+
+### Step 3 — Update Nginx (`server_name` → main domain)
+
+```bash
+nano /etc/nginx/sites-available/doorway
+```
+
+Change the **public** site block to:
+
+```nginx
+server {
+  listen 80;
+  server_name educationdoorway.com www.educationdoorway.com;
+  root /var/www/doorway/dist;
+  index index.html;
+  client_max_body_size 20M;
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+
+  location /api/ {
+    proxy_pass http://127.0.0.1:4000/api/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location /uploads/ {
+    proxy_pass http://127.0.0.1:4000/uploads/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+  }
+}
+
+# Optional: send old web.* URL to the main domain
+server {
+  listen 80;
+  server_name web.educationdoorway.com;
+  return 301 https://educationdoorway.com$request_uri;
+}
+
+server {
+  listen 80;
+  server_name admin.educationdoorway.com;
+  root /var/www/doorway/admin/dist;
+  index index.html;
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}
+```
+
+Then:
+
+```bash
+nginx -t && systemctl reload nginx
+```
+
+### Step 4 — SSL for the main domain
+
+```bash
+certbot --nginx -d educationdoorway.com -d www.educationdoorway.com
+```
+
+If you want admin SSL refreshed too:
+
+```bash
+certbot --nginx -d admin.educationdoorway.com
+```
+
+### Step 5 — Backend env (CORS) + restart API only
+
+```bash
+nano /var/www/doorway/backend/.env
+```
+
+Set (keep your existing `DATABASE_URL`, `JWT_SECRET`, passwords — **do not change DB name/user**):
+
+```env
+CORS_ORIGIN="https://educationdoorway.com,https://www.educationdoorway.com,https://admin.educationdoorway.com"
+```
+
+Optional: use a strong 32+ char secret if you have not already:
+
+```env
+JWT_SECRET="your-32-char-or-longer-secret"
+```
+
+Apply pending migrations (**safe**, no data wipe) and restart API:
+
+```bash
+cd /var/www/doorway/backend
+npm install
+npx prisma migrate deploy
+pm2 restart doorway-api --update-env
+curl http://127.0.0.1:4000/api/health
+```
+
+### Step 6 — Rebuild website + admin with new API URL
+
+```bash
+cd /var/www/doorway
+echo 'VITE_API_URL=https://educationdoorway.com' > .env
+npm install
+npm run build
+
+cd /var/www/doorway/admin
+echo 'VITE_API_URL=https://educationdoorway.com' > .env
+npm install
+npm run build
+```
+
+### Step 7 — Smoke test
+
+```bash
+curl -I https://educationdoorway.com
+curl -I https://www.educationdoorway.com
+curl -I https://admin.educationdoorway.com
+curl -I https://crm.educationdoorway.com
+pm2 list
+```
+
+Browser:
+
+- [ ] `https://educationdoorway.com` — public site + universities/articles still show
+- [ ] `https://admin.educationdoorway.com` — login works
+- [ ] `https://crm.educationdoorway.com` — CRM still works
+
+### One-liner after DNS is ready (domain switch only)
+
+```bash
+cd /var/www/doorway/backend && \
+  npm install && npx prisma migrate deploy && pm2 restart doorway-api --update-env && \
+cd /var/www/doorway && \
+  echo 'VITE_API_URL=https://educationdoorway.com' > .env && npm install && npm run build && \
+cd /var/www/doorway/admin && \
+  echo 'VITE_API_URL=https://educationdoorway.com' > .env && npm install && npm run build
+```
+
+(Still edit Nginx + run Certbot separately as in Steps 3–4.)
+
+---
+
 ## 12. Troubleshooting
 
 | Problem                 | Fix                                                                              |
 | ----------------------- | -------------------------------------------------------------------------------- |
 | New site 502 on `/api`  | `pm2 restart doorway-api`; `curl http://127.0.0.1:4000/api/health`               |
-| Admin “Failed to fetch” | Rebuild admin with `VITE_API_URL=https://web.educationdoorway.com`               |
-| CRM 502 again           | `cd /home/nextbigthing/projects/educationdoorway && docker compose up -d`        |
-| Port 4000 in use        | `ss -tlnp \| grep 4000` — change `PORT` in backend `.env` and Nginx `proxy_pass` |
-| Wrong site removed      | Never delete `crm.educationdoorway.com.conf` or `applypartners`                  |
+| Admin “Failed to fetch” | Rebuild admin with `VITE_API_URL=https://educationdoorway.com`                    |                 |
 
-Logs:
-
-```bash
-pm2 logs doorway-api --lines 80
-tail -n 50 /var/log/nginx/error.log
-cd /home/nextbigthing/projects/educationdoorway && docker compose logs --tail=50
-```
 
 ## Quick cheat sheet
 

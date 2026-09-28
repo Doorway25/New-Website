@@ -6,7 +6,7 @@ export default function Login() {
   const { user, loading, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail] = useState("admin@educationdoorway.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -96,32 +96,6 @@ export default function Login() {
             <button type="submit" className="btn primary auth-submit" disabled={submitting}>
               {submitting ? "Signing in…" : "Sign in"}
             </button>
-
-            <div className="auth-demo">
-              <p>Quick fill demo accounts</p>
-              <div className="auth-demo-row">
-                <button
-                  type="button"
-                  className="hint-chip"
-                  onClick={() => {
-                    setEmail("admin@educationdoorway.com");
-                    setPassword("Admin123!");
-                  }}
-                >
-                  Admin
-                </button>
-                <button
-                  type="button"
-                  className="hint-chip"
-                  onClick={() => {
-                    setEmail("editor@educationdoorway.com");
-                    setPassword("Editor123!");
-                  }}
-                >
-                  Editor
-                </button>
-              </div>
-            </div>
           </form>
         </section>
       </div>
