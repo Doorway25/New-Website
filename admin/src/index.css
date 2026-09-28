@@ -236,41 +236,6 @@ button, input, select, textarea { font: inherit; }
   font-size: 0.98rem;
 }
 
-.auth-demo {
-  margin-top: 4px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-}
-
-.auth-demo p {
-  margin: 0 0 8px;
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.auth-demo-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.hint-chip {
-  text-align: center;
-  border: 1px solid var(--border);
-  background: #f7faff;
-  color: var(--navy);
-  border-radius: 10px;
-  padding: 10px 12px;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.hint-chip:hover {
-  border-color: var(--blue);
-  background: #eef7ff;
-}
-
 .auth-foot {
   margin: 4px 0 0;
   text-align: center;
