@@ -6,16 +6,19 @@ export default function Counter({ to = 0, suffix = "", duration = 1600, classNam
   const started = useRef(false);
 
   useEffect(() => {
+    started.current = false;
+    setVal(0);
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(([e]) => {
       if (e.isIntersecting && !started.current) {
         started.current = true;
         const start = performance.now();
+        const target = Number(to) || 0;
         const tick = (now) => {
           const p = Math.min((now - start) / duration, 1);
           const eased = 1 - Math.pow(1 - p, 3);
-          setVal(Math.round(eased * to));
+          setVal(Math.round(eased * target));
           if (p < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);

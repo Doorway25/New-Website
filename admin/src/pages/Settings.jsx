@@ -64,20 +64,28 @@ const SEO_FIELDS = [
 function socialsToForm(socials) {
   const list = Array.isArray(socials) ? socials : [];
   const byIcon = Object.fromEntries(list.map((s) => [s.icon || s.label?.toLowerCase(), s]));
+  const href = (key) => {
+    const raw = String(byIcon[key]?.href || "").trim();
+    if (!raw || raw === "#") return "";
+    return raw;
+  };
   return {
-    facebook: byIcon.facebook?.href || "",
-    instagram: byIcon.instagram?.href || "",
-    linkedin: byIcon.linkedin?.href || "",
-    youtube: byIcon.youtube?.href || "",
+    facebook: href("facebook"),
+    instagram: href("instagram"),
+    linkedin: href("linkedin"),
+    youtube: href("youtube"),
   };
 }
 
 function formToSocials(form) {
-  return SOCIAL_FIELDS.map((f) => ({
-    label: f.label.replace(" URL", ""),
-    href: String(form[f.key] || "").trim() || "#",
-    icon: f.icon,
-  }));
+  return SOCIAL_FIELDS.map((f) => {
+    const href = String(form[f.key] || "").trim();
+    return {
+      label: f.label.replace(" URL", ""),
+      href: /^https?:\/\//i.test(href) ? href : "",
+      icon: f.icon,
+    };
+  }).filter((s) => s.href);
 }
 
 function statsToForm(stats) {
@@ -158,7 +166,10 @@ export default function Settings() {
     <div className="page">
       <header className="page-header">
         <h1>Settings</h1>
-        <p className="muted">Brand, contact, and SEO / analytics connections.</p>
+        <p className="muted">
+          Live site settings: brand, contact, homepage stats, intake badge, and SEO / analytics.
+          Changes apply on the public website after save (refresh the site; ~1 minute max).
+        </p>
       </header>
 
       {!isAdmin && (
@@ -207,7 +218,8 @@ export default function Settings() {
                 <label key={field.key} className="span-2">
                   <span>{field.label}</span>
                   <input
-                    type="url"
+                    type="text"
+                    inputMode="url"
                     placeholder={`https://…`}
                     value={socials[field.key] ?? ""}
                     disabled={!isAdmin}
@@ -221,7 +233,10 @@ export default function Settings() {
           <section className="panel">
             <div className="panel-head">
               <h2>Homepage stats</h2>
-              <p className="muted">Numbers shown in the site counters (value, suffix, label).</p>
+              <p className="muted">
+                Numbers shown in the blue counter strip. The first row also updates “Join … students” text
+                and the trust marquee across the site.
+              </p>
             </div>
             <div className="stats-edit-grid">
               {stats.map((row, i) => (
@@ -268,11 +283,43 @@ export default function Settings() {
 
           <section className="panel">
             <div className="panel-head">
+              <h2>Hero intake badge</h2>
+              <p className="muted">
+                Floating badge on the homepage hero. Change the month/year when a new intake opens
+                (e.g. September 2026, May 2027).
+              </p>
+            </div>
+            <div className="form-grid">
+              <label className="span-2">
+                <span>Badge title</span>
+                <input
+                  type="text"
+                  placeholder="September 2026 Intake – Application Now Open"
+                  value={values.heroIntakeTitle ?? ""}
+                  disabled={!isAdmin}
+                  onChange={(e) => setValues((v) => ({ ...v, heroIntakeTitle: e.target.value }))}
+                />
+              </label>
+              <label className="span-2">
+                <span>Badge subtitle</span>
+                <input
+                  type="text"
+                  placeholder="Secure Your Place & Start Your Journey to Success"
+                  value={values.heroIntakeSubtitle ?? ""}
+                  disabled={!isAdmin}
+                  onChange={(e) => setValues((v) => ({ ...v, heroIntakeSubtitle: e.target.value }))}
+                />
+              </label>
+            </div>
+          </section>
+
+          <section className="panel">
+            <div className="panel-head">
               <h2>SEO & tracking connections</h2>
               <p className="muted">
                 Connect Google Analytics, Tag Manager, Search Console, Meta Pixel, Bing, and Clarity.
-                Values are injected on the public website after save. Page titles and meta still come from{" "}
-                <strong>Pages</strong> SEO fields.
+                IDs are injected on the <strong>live public website</strong> after save (not demo-only).
+                Page titles and meta descriptions still come from <strong>Pages</strong> SEO fields.
               </p>
             </div>
             <div className="form-grid">

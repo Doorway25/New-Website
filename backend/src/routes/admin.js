@@ -580,10 +580,37 @@ router.put(
     const data = pick(req.body || {}, [
       "name", "short", "tagline", "since", "phone", "phoneAlt", "email",
       "hours", "address", "whatsapp", "socials", "stats",
+      "heroIntakeTitle", "heroIntakeSubtitle",
       "googleAnalyticsId", "googleTagManagerId", "googleSiteVerification",
       "facebookPixelId", "bingSiteVerification", "microsoftClarityId",
     ]);
+
+    if (data.since != null) data.since = Number(data.since) || 0;
+    if (data.phoneAlt != null) data.phoneAlt = String(data.phoneAlt).trim() || null;
+
+    if (data.socials != null) {
+      const list = Array.isArray(data.socials) ? data.socials : [];
+      data.socials = list
+        .map((s) => ({
+          label: String(s?.label || s?.icon || "").trim(),
+          icon: String(s?.icon || "").trim(),
+          href: String(s?.href || "").trim(),
+        }))
+        .filter((s) => s.icon && /^https?:\/\//i.test(s.href));
+    }
+
+    if (data.stats != null) {
+      const list = Array.isArray(data.stats) ? data.stats : [];
+      data.stats = list.map((s) => ({
+        value: Number(s?.value) || 0,
+        suffix: String(s?.suffix ?? "").trim(),
+        label: String(s?.label || "").trim(),
+      }));
+    }
+
     for (const key of [
+      "heroIntakeTitle",
+      "heroIntakeSubtitle",
       "googleAnalyticsId",
       "googleTagManagerId",
       "googleSiteVerification",
@@ -593,11 +620,35 @@ router.put(
     ]) {
       if (data[key] != null) data[key] = String(data[key]).trim() || null;
     }
-    const settings = await prisma.siteSetting.upsert({
-      where: { key: "main" },
-      create: { key: "main", ...data },
-      update: data,
-    });
+
+    const existing = await prisma.siteSetting.findUnique({ where: { key: "main" } });
+    const settings = existing
+      ? await prisma.siteSetting.update({ where: { key: "main" }, data })
+      : await prisma.siteSetting.create({
+          data: {
+            key: "main",
+            name: data.name || "Education Doorway",
+            short: data.short || "ED",
+            tagline: data.tagline || "",
+            since: data.since || 2015,
+            phone: data.phone || "",
+            phoneAlt: data.phoneAlt ?? null,
+            email: data.email || "",
+            hours: data.hours || "",
+            address: data.address || "",
+            whatsapp: data.whatsapp || "",
+            socials: data.socials || [],
+            stats: data.stats || [],
+            heroIntakeTitle: data.heroIntakeTitle ?? null,
+            heroIntakeSubtitle: data.heroIntakeSubtitle ?? null,
+            googleAnalyticsId: data.googleAnalyticsId ?? null,
+            googleTagManagerId: data.googleTagManagerId ?? null,
+            googleSiteVerification: data.googleSiteVerification ?? null,
+            facebookPixelId: data.facebookPixelId ?? null,
+            bingSiteVerification: data.bingSiteVerification ?? null,
+            microsoftClarityId: data.microsoftClarityId ?? null,
+          },
+        });
     res.json(settings);
   })
 );

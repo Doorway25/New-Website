@@ -2,7 +2,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { useSite } from "../api/SiteContext";
+import { formatStudentsPlaced, useSite } from "../api/SiteContext";
 import ArticleCard from "../components/ArticleCard";
 import Counter from "../components/Counter";
 import EventCard from "../components/EventCard";
@@ -18,9 +18,13 @@ import { mediaUrl } from "../api/client";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const trustItems = [
-  "Free Counselling", "200+ Universities", "11+ Destinations", "98% Visa Success",
-  "75,000+ Students", "Certified Consultants", "Scholarship Guidance",
+const trustBase = [
+  "Free Counselling",
+  "200+ Universities",
+  "11+ Destinations",
+  "98% Visa Success",
+  "Certified Consultants",
+  "Scholarship Guidance",
 ];
 
 function TestimonialAvatar({ name, initials, src }) {
@@ -74,7 +78,8 @@ export default function Home() {
 
 /* ---------------- Hero ---------------- */
 function Hero() {
-  const { countries } = useSite();
+  const { countries, stats, heroIntake } = useSite();
+  const studentsLabel = formatStudentsPlaced(stats);
   const heroRef = useRef(null);
 
   useEffect(() => {
@@ -140,7 +145,7 @@ function Hero() {
             </span>
           </h1>
           <p data-hero-text className="mt-4 max-w-xl text-[15px] leading-relaxed text-slate-300 opacity-0 sm:mt-5 sm:text-lg">
-            End-to-end support from choosing the right course to landing your visa. Join 75,000+
+            End-to-end support from choosing the right course to landing your visa. Join {studentsLabel}{" "}
             students who trusted Education Doorway to build their international academic career.
           </p>
           <div data-hero-cta className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
@@ -180,8 +185,8 @@ function Hero() {
               <div data-hero-badge-float className="flex w-full items-center gap-2 rounded-2xl bg-white p-3 opacity-0 shadow-xl will-change-transform sm:p-3.5">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold-500/20 text-gold-600"><Icon name="award" className="h-5 w-5" /></span>
                 <div className="min-w-0 flex-1 text-left">
-                  <p className="text-xs font-bold text-ink sm:text-sm">January 2027 Intake- Application Now Open</p>
-                  <p className="text-[11px] text-slate-500">Secure Your Place & Start Your Journey to Success</p>
+                  <p className="text-xs font-bold text-ink sm:text-sm">{heroIntake.title}</p>
+                  <p className="text-[11px] text-slate-500">{heroIntake.subtitle}</p>
                 </div>
               </div>
             </div>
@@ -203,7 +208,18 @@ function MiniStat({ value, label }) {
 
 /* ---------------- Trust marquee ---------------- */
 function TrustMarquee() {
-  const items = [...trustItems, ...trustItems];
+  const { stats } = useSite();
+  const studentsLabel = formatStudentsPlaced(stats);
+  const itemsBase = [
+    trustBase[0],
+    trustBase[1],
+    trustBase[2],
+    trustBase[3],
+    `${studentsLabel} Students`,
+    trustBase[4],
+    trustBase[5],
+  ];
+  const items = [...itemsBase, ...itemsBase];
   return (
     <div className="border-y border-slate-200 bg-white py-4">
       <div className="relative overflow-hidden">
@@ -242,7 +258,7 @@ function WhyUs() {
   return (
     <section className="bg-white py-6 sm:py-6">
       <div className="container-x">
-      {/* <SectionHeading eyebrow="Why Education Doorway" title="Why 75,000+ Students Trust Us"
+      {/* <SectionHeading eyebrow="Why Education Doorway" title="Why students trust us"
         subtitle="Complete end-to-end support from choosing the right course to landing your visa." /> */}
       {/* <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {whyUs.map((w, i) => (

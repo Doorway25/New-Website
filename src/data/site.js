@@ -276,11 +276,17 @@ export const pillars = [
 export const pillarBySlug = Object.fromEntries(pillars.map((p) => [p.slug, p]));
 
 export const stats = [
-  { value: 75000, suffix: "+", label: "Students Placed" },
+  { value: 35000, suffix: "+", label: "Students Placed" },
   { value: 11, suffix: "+", label: "Countries" },
   { value: 75, suffix: "+", label: "Events" },
   { value: 34000, suffix: "+", label: "Courses" },
 ];
+
+/** Homepage hero floating intake badge (editable in Admin → Settings). */
+export const heroIntake = {
+  title: "January 2027 Intake – Application Now Open",
+  subtitle: "Secure Your Place & Start Your Journey to Success",
+};
 
 export const programs = [
   { key: "foundation", name: "Foundation", count: 8, blurb: "Build the academic base you need to progress into a degree with confidence." },

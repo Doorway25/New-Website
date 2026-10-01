@@ -6,19 +6,50 @@ const SiteContext = createContext(null);
 
 function settingsToCompany(settings) {
   if (!settings) return fallback.company;
+  const socials = (Array.isArray(settings.socials) ? settings.socials : [])
+    .map((s) => ({
+      label: s.label || s.icon || "",
+      icon: s.icon || "",
+      href: String(s.href || "").trim(),
+    }))
+    .filter((s) => /^https?:\/\//i.test(s.href));
   return {
-    name: settings.name,
-    short: settings.short,
-    tagline: settings.tagline,
-    since: settings.since,
-    phone: settings.phone,
-    phoneAlt: settings.phoneAlt,
-    email: settings.email,
-    hours: settings.hours,
-    address: settings.address,
-    whatsapp: settings.whatsapp,
-    socials: settings.socials || fallback.company.socials,
+    name: settings.name || fallback.company.name,
+    short: settings.short || fallback.company.short,
+    tagline: settings.tagline || fallback.company.tagline,
+    since: settings.since ?? fallback.company.since,
+    phone: settings.phone || fallback.company.phone,
+    phoneAlt: settings.phoneAlt || fallback.company.phoneAlt,
+    email: settings.email || fallback.company.email,
+    hours: settings.hours || fallback.company.hours,
+    address: settings.address || fallback.company.address,
+    whatsapp: settings.whatsapp || fallback.company.whatsapp,
+    socials: socials.length ? socials : fallback.company.socials,
   };
+}
+
+function normalizeStats(raw) {
+  const list = Array.isArray(raw) ? raw : [];
+  if (!list.length) return fallback.stats;
+  return list.map((s, i) => ({
+    value: Number(s?.value) || 0,
+    suffix: String(s?.suffix ?? fallback.stats[i]?.suffix ?? "+"),
+    label: String(s?.label || fallback.stats[i]?.label || "").trim() || fallback.stats[i]?.label || "",
+  }));
+}
+
+function settingsToHeroIntake(settings) {
+  return {
+    title: String(settings?.heroIntakeTitle || "").trim() || fallback.heroIntake.title,
+    subtitle: String(settings?.heroIntakeSubtitle || "").trim() || fallback.heroIntake.subtitle,
+  };
+}
+
+/** e.g. "35,000+" from first homepage stat */
+export function formatStudentsPlaced(statsList) {
+  const s = Array.isArray(statsList) && statsList[0] ? statsList[0] : fallback.stats[0];
+  const n = Number(s.value) || 0;
+  return `${n.toLocaleString()}${s.suffix || ""}`;
 }
 
 function settingsToSeoIntegrations(settings) {
@@ -216,6 +247,7 @@ export function SiteProvider({ children }) {
     fromApi: false,
     company: fallback.company,
     stats: fallback.stats,
+    heroIntake: fallback.heroIntake,
     countries: fallback.countries,
     programs: fallback.programs,
     subjects: fallback.subjects,
@@ -273,7 +305,8 @@ export function SiteProvider({ children }) {
           ready: true,
           fromApi: true,
           company: settingsToCompany(home?.settings),
-          stats: home?.settings?.stats || fallback.stats,
+          stats: normalizeStats(home?.settings?.stats),
+          heroIntake: settingsToHeroIntake(home?.settings),
           seoIntegrations: settingsToSeoIntegrations(home?.settings),
           countries: home?.countries?.length ? home.countries.map(mapCountry) : fallback.countries,
           programs: home?.programs?.length ? home.programs : fallback.programs,

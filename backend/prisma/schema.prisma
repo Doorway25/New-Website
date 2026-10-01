@@ -33,6 +33,8 @@ model SiteSetting {
   whatsapp                String
   socials                 Json
   stats                   Json
+  heroIntakeTitle         String?
+  heroIntakeSubtitle      String?
   googleAnalyticsId       String?
   googleTagManagerId      String?
   googleSiteVerification  String?

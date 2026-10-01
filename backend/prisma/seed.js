@@ -84,8 +84,11 @@ async function main() {
       whatsapp: company.whatsapp,
       socials: company.socials,
       stats,
+      heroIntakeTitle: "January 2027 Intake – Application Now Open",
+      heroIntakeSubtitle: "Secure Your Place & Start Your Journey to Success",
     },
     update: {
+      // Do not overwrite stats / hero intake — admins manage these in Settings
       name: company.name,
       short: company.short,
       tagline: company.tagline,
@@ -97,7 +100,6 @@ async function main() {
       address: company.address,
       whatsapp: company.whatsapp,
       socials: company.socials,
-      stats,
     },
   });
 
