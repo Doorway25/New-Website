@@ -178,6 +178,7 @@ model Event {
   title           String
   type            String
   date            DateTime
+  endDate         DateTime?
   time            String
   location        String
   image           String?

@@ -1,13 +1,22 @@
 import { Link } from "react-router-dom";
 import Icon from "./Icon";
-import { formatDate } from "../data/site";
+import { formatEventDateRange } from "../data/site";
 import { CardMedia } from "./ArticleCard";
 
 export default function EventCard({ event }) {
   const d = new Date(event.date);
-  const day = d.toLocaleDateString("en-GB", { day: "2-digit" });
-  const month = d.toLocaleDateString("en-GB", { month: "short" }).toUpperCase();
+  const day = Number.isNaN(d.getTime()) ? "--" : d.toLocaleDateString("en-GB", { day: "2-digit" });
+  const month = Number.isNaN(d.getTime())
+    ? ""
+    : d.toLocaleDateString("en-GB", { month: "short" }).toUpperCase();
   const online = event.type === "Online";
+  const dateLabel = formatEventDateRange(event, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
   return (
     <Link
       to={`/events/${event.slug}`}
@@ -34,8 +43,8 @@ export default function EventCard({ event }) {
           <div className="grid grid-cols-2 gap-2">
             <p className="flex min-w-0 items-center gap-1.5">
               <Icon name="calendar" className="h-4 w-4 shrink-0 text-brand-400" />
-              <span className="truncate">
-                {formatDate(event.date, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
+              <span className="truncate" title={dateLabel}>
+                {dateLabel}
               </span>
             </p>
             <p className="flex min-w-0 items-center gap-1.5">

@@ -146,6 +146,11 @@ export default function ResourceEdit({ resourceKey }) {
           next.author = user.name || user.email;
         }
       }
+      if (resourceKey === "events") {
+        const nowLocal = toDatetimeLocal(new Date());
+        next.date = nowLocal;
+        next.endDate = nowLocal;
+      }
       setValues(next);
       setSlugManual(false);
       setReadTimeManual(false);

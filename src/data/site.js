@@ -849,12 +849,38 @@ export const events = [
 export const eventBySlug = Object.fromEntries(events.map((e) => [e.slug, e]));
 
 export function formatDate(iso, opts = { day: "numeric", month: "short", year: "numeric" }) {
-  return new Date(iso).toLocaleDateString("en-GB", opts);
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-GB", opts);
 }
 
-/** Event is upcoming if its calendar date has not ended yet (local end-of-day). */
+/** Start–end range for events (uses endDate when set). */
+export function formatEventDateRange(event, opts = { day: "numeric", month: "short", year: "numeric" }) {
+  const start = event?.date ? new Date(event.date) : null;
+  const endRaw = event?.endDate || event?.date;
+  const end = endRaw ? new Date(endRaw) : null;
+  if (!start || Number.isNaN(start.getTime())) return "";
+  if (!end || Number.isNaN(end.getTime())) return formatDate(start, opts);
+
+  const sameDay =
+    start.getFullYear() === end.getFullYear() &&
+    start.getMonth() === end.getMonth() &&
+    start.getDate() === end.getDate();
+  if (sameDay) return formatDate(start, opts);
+
+  const sameMonth =
+    start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth();
+  if (sameMonth) {
+    return `${start.getDate()}–${formatDate(end, opts)}`;
+  }
+  return `${formatDate(start, opts)} – ${formatDate(end, opts)}`;
+}
+
+/** Event is upcoming until end of its end date (or start date if no end). */
 export function isUpcomingEvent(event, now = new Date()) {
-  const d = new Date(event?.date);
+  const endSrc = event?.endDate || event?.date;
+  const d = new Date(endSrc);
   if (Number.isNaN(d.getTime())) return false;
   const end = new Date(d);
   end.setHours(23, 59, 59, 999);

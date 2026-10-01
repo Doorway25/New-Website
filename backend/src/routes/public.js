@@ -49,6 +49,7 @@ const EVENT_LIST_SELECT = {
   title: true,
   type: true,
   date: true,
+  endDate: true,
   time: true,
   location: true,
   image: true,

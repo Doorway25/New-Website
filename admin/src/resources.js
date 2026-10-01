@@ -342,7 +342,8 @@ export const resources = {
         hint: "Auto-filled from title — edit only if you need a custom URL",
       },
       { key: "type", label: "Type", required: true, section: "Basics", hint: "In-person or Online" },
-      { key: "date", label: "Date", type: "datetime", required: true, section: "Basics" },
+      { key: "date", label: "Start date", type: "datetime", required: true, section: "Basics", hint: "When the event begins" },
+      { key: "endDate", label: "End date", type: "datetime", required: true, section: "Basics", hint: "When the event finishes (same as start for one-day events)" },
       { key: "time", label: "Time", required: true, section: "Basics" },
       { key: "location", label: "Location", required: true, section: "Basics" },
       { key: "image", label: "Cover image", type: "image", kind: "hero", section: "Media", hint: "Main poster — shown full on the event page (not cropped)" },
@@ -909,6 +910,10 @@ export function itemToForm(resource, item) {
       }
     }
   }
+  // Events: default end date to start when missing (legacy rows)
+  if (resource.path === "events" && !values.endDate && values.date) {
+    values.endDate = values.date;
+  }
   return values;
 }
 
@@ -951,6 +956,13 @@ export function formToPayload(resource, values) {
       payload[field.key] = extractYoutubeId(raw);
     } else {
       payload[field.key] = raw === "" ? null : raw;
+    }
+  }
+  // Events: if end missing, mirror start; if end before start, clamp to start
+  if (resource.path === "events") {
+    if (!payload.endDate && payload.date) payload.endDate = payload.date;
+    if (payload.date && payload.endDate && new Date(payload.endDate) < new Date(payload.date)) {
+      payload.endDate = payload.date;
     }
   }
   if (resource.seo) {

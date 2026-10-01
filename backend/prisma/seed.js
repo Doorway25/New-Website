@@ -416,9 +416,12 @@ async function main() {
   }
 
   for (const item of events) {
+    const start = new Date(item.date);
+    const end = item.endDate ? new Date(item.endDate) : start;
     const data = {
       ...item,
-      date: new Date(item.date),
+      date: start,
+      endDate: end,
       description: asText(item.description),
     };
     await prisma.event.upsert({

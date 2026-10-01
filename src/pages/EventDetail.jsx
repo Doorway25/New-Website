@@ -177,8 +177,18 @@ export default function EventDetail() {
               <ul className="mt-4 space-y-4 text-sm">
                 <Detail
                   icon="calendar"
-                  label="Date"
+                  label="Start date"
                   value={formatDate(event.date, {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                />
+                <Detail
+                  icon="calendar"
+                  label="End date"
+                  value={formatDate(event.endDate || event.date, {
                     weekday: "long",
                     day: "numeric",
                     month: "long",

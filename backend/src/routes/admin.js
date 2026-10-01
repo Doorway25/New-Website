@@ -929,12 +929,12 @@ mountCrud("articles", prisma.article, {
 
 mountCrud("events", prisma.event, {
   fields: [
-    "slug", "title", "type", "date", "time", "location", "image",
+    "slug", "title", "type", "date", "endDate", "time", "location", "image",
     "excerpt", "description", "agenda",
   ],
   search: ["title", "location", "slug"],
   orderBy: { date: "asc" },
-  dates: ["date"],
+  dates: ["date", "endDate"],
   sortOrder: false,
 });
 
