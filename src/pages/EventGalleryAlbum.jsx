@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import CounsellingSection from "../components/CounsellingSection";
-import Icon from "../components/Icon";
+import AlbumPreviewCard from "../components/AlbumPreviewCard";
 import PageHero from "../components/PageHero";
 import Reveal from "../components/Reveal";
 import SeoHead from "../components/SeoHead";
@@ -156,36 +156,10 @@ export default function EventGalleryAlbum() {
               <h2 className="font-display text-2xl font-extrabold text-ink sm:text-3xl">Relevant albums</h2>
               <p className="mt-2 text-slate-500">More event photos you may also like.</p>
             </Reveal>
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-8 grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((rel, i) => (
-                <Reveal key={rel.key} delay={(i % 3) * 70}>
-                  <Link
-                    to={`/events/gallery/${encodeURIComponent(rel.key)}`}
-                    className="group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
-                  >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
-                      <img
-                        src={rel.images[0]}
-                        alt={rel.name}
-                        loading="lazy"
-                        className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-                      />
-                    </div>
-                    <div
-                      className="flex items-center justify-between gap-3 px-4 py-3.5"
-                      style={{ backgroundColor: "#0d157b" }}
-                    >
-                      <div className="min-w-0">
-                        <h3 className="truncate font-display text-lg font-bold text-white">{rel.name}</h3>
-                        <p className="mt-0.5 text-xs text-white/75">
-                          {rel.images.length} photo{rel.images.length === 1 ? "" : "s"}
-                        </p>
-                      </div>
-                      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#0d157b]">
-                        View all <Icon name="arrow" className="h-3.5 w-3.5" />
-                      </span>
-                    </div>
-                  </Link>
+                <Reveal key={rel.key} delay={(i % 3) * 70} className="min-w-0">
+                  <AlbumPreviewCard album={rel} />
                 </Reveal>
               ))}
             </div>
