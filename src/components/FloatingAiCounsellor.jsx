@@ -21,6 +21,7 @@ export default function FloatingAiCounsellor() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [messages, setMessages] = useState([{ role: "assistant", content: WELCOME }]);
+  const [matches, setMatches] = useState([]);
   const [handoff, setHandoff] = useState(false);
   const [leadForm, setLeadForm] = useState({ name: "", phone: "", email: "" });
   const [leadSent, setLeadSent] = useState(false);
@@ -46,6 +47,17 @@ export default function FloatingAiCounsellor() {
         .map((m) => ({ role: m.role, content: m.content }));
       const data = await postAiCounsellor(history);
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply || "Sorry, I couldn’t reply." }]);
+      if (Array.isArray(data.matches) && data.matches.length) {
+        setMatches(
+          data.matches.map((m) => ({
+            name: m.name,
+            slug: m.slug,
+            city: m.city,
+            country: m.country,
+            reasons: m.reasons || [],
+          }))
+        );
+      }
     } catch (err) {
       setError(err.message || "Something went wrong");
       setMessages((prev) => [
@@ -139,7 +151,27 @@ export default function FloatingAiCounsellor() {
               </div>
             ))}
             {busy ? (
-              <p className="text-xs font-medium text-slate-400">Thinking…</p>
+              <p className="text-xs font-medium text-slate-400">Matching partner universities…</p>
+            ) : null}
+            {matches.length > 0 ? (
+              <div className="space-y-1.5 rounded-xl border border-brand-100 bg-white p-2.5">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-brand-700">Matched partners</p>
+                {matches.slice(0, 5).map((m) => (
+                  <Link
+                    key={m.slug}
+                    to={`/university/${m.slug}`}
+                    onClick={() => setOpen(false)}
+                    className="block rounded-lg px-2 py-1.5 text-xs font-semibold text-ink hover:bg-brand-50"
+                  >
+                    {m.name}
+                    <span className="mt-0.5 block font-normal text-slate-500">
+                      {m.city}
+                      {m.country ? ` · ${m.country}` : ""}
+                      {m.reasons?.length ? ` · ${m.reasons.slice(0, 2).join(", ")}` : ""}
+                    </span>
+                  </Link>
+                ))}
+              </div>
             ) : null}
             {error ? <p className="text-xs font-medium text-rose-600">{error}</p> : null}
             {leadSent ? (
@@ -151,19 +183,21 @@ export default function FloatingAiCounsellor() {
 
           {!handoff ? (
             <>
-              <div className="flex flex-wrap gap-1.5 border-t border-slate-100 bg-white px-3 py-2">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    disabled={busy}
-                    onClick={() => send(s)}
-                    className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-50"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
+              {messages.length <= 1 ? (
+                <div className="flex flex-wrap gap-1.5 border-t border-slate-100 bg-white px-3 py-2">
+                  {SUGGESTIONS.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      disabled={busy}
+                      onClick={() => send(s)}
+                      className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-50"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
 
               <form
                 className="flex gap-2 border-t border-slate-100 bg-white p-3"
