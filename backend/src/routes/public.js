@@ -403,4 +403,33 @@ router.post(
   })
 );
 
+const aiRate = new Map();
+function aiRateLimit(ip) {
+  const now = Date.now();
+  const windowMs = 60_000;
+  const max = Number(process.env.AI_COUNSELLOR_RATE_PER_MIN || 20);
+  const row = aiRate.get(ip) || { count: 0, start: now };
+  if (now - row.start > windowMs) {
+    row.count = 0;
+    row.start = now;
+  }
+  row.count += 1;
+  aiRate.set(ip, row);
+  return row.count <= max;
+}
+
+router.post(
+  "/ai-counsellor",
+  asyncHandler(async (req, res) => {
+    const ip = String(req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown")
+      .split(",")[0]
+      .trim();
+    if (!aiRateLimit(ip)) throw new HttpError(429, "Too many messages. Please wait a minute.");
+
+    const { chatWithCounsellor } = await import("../services/aiCounsellor.js");
+    const result = await chatWithCounsellor({ messages: req.body?.messages });
+    res.json(result);
+  })
+);
+
 export default router;

@@ -43,7 +43,18 @@ export async function submitLead(body) {
     body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || res.statusText || "Request failed");
+  if (!res.ok) throw new Error(data.error || data.message || res.statusText || "Request failed");
+  return data;
+}
+
+export async function postAiCounsellor(messages) {
+  const res = await fetch(`${API_URL}/api/public/ai-counsellor`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || data.message || res.statusText || "AI counsellor unavailable");
   return data;
 }
 

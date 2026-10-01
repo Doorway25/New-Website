@@ -231,6 +231,9 @@ CORS_ORIGIN="https://web.educationdoorway.com,https://admin.educationdoorway.com
 ADMIN_EMAIL="admin@educationdoorway.com"
 ADMIN_PASSWORD="CHANGE_ME_ADMIN_PASSWORD"
 YOUTUBE_API_KEY=
+OPENAI_API_KEY=""
+OPENAI_MODEL="gpt-4o-mini"
+AI_COUNSELLOR_ENABLED=true
 ```
 
 Then:
@@ -732,3 +735,48 @@ cd /var/www/doorway && npm run build
 cd /var/www/doorway/admin && npm run build
 
 ```
+
+## 13. Redeploy (AI Counsellor + latest code)
+
+On your PC: commit & push to GitHub first, then on the VPS:
+
+```bash
+ssh root@76.13.254.129
+
+cd /var/www/doorway
+cp backend/.env /root/doorway-backend.env.bak
+git checkout -- backend/.env 2>/dev/null || true
+git pull origin main
+cp /root/doorway-backend.env.bak backend/.env
+
+# Add OpenAI key for full AI (optional — without it, local partner matching still works)
+nano /var/www/doorway/backend/.env
+# OPENAI_API_KEY=sk-...
+# OPENAI_MODEL=gpt-4o-mini
+# AI_COUNSELLOR_ENABLED=true
+
+cd /var/www/doorway/backend
+npm install
+npx prisma migrate deploy
+npx prisma generate
+pm2 restart doorway-api --update-env
+
+cd /var/www/doorway
+# keep your live API URL
+grep -q VITE_API_URL .env 2>/dev/null || echo 'VITE_API_URL=https://educationdoorway.com' > .env
+npm install
+npm run build
+
+cd /var/www/doorway/admin
+grep -q VITE_API_URL .env 2>/dev/null || echo 'VITE_API_URL=https://educationdoorway.com' > .env
+npm install
+npm run build
+
+# smoke test
+curl -s http://127.0.0.1:4000/api/health
+curl -s -X POST http://127.0.0.1:4000/api/public/ai-counsellor \
+  -H 'Content-Type: application/json' \
+  -d '{"messages":[{"role":"user","content":"I want to study Nursing in the UK"}]}' | head -c 400
+```
+
+Do **not** run `npm run db:seed` (keeps your live data).

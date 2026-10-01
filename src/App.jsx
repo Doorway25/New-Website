@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import FloatingWhatsApp from "./components/FloatingWhatsApp";
+import FloatingAiCounsellor from "./components/FloatingAiCounsellor";
 import TrackingScripts from "./components/TrackingScripts";
 
 import Home from "./pages/Home";
@@ -68,6 +69,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <FloatingAiCounsellor />
       <FloatingWhatsApp />
     </div>
   );
