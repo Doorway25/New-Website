@@ -742,7 +742,6 @@ On your PC: commit & push to GitHub first, then on the VPS:
 
 ```bash
 ssh root@76.13.254.129
-
 cd /var/www/doorway
 cp backend/.env /root/doorway-backend.env.bak
 git checkout -- backend/.env 2>/dev/null || true

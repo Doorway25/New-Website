@@ -1,12 +1,7 @@
-import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Icon from "./Icon";
 import Logo from "./Logo";
 import { useSite } from "../api/SiteContext";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const quickLinks = [
   { label: "Home", to: "/" },
@@ -35,72 +30,15 @@ const legal = [
 
 export default function Footer() {
   const { company } = useSite();
-  const footerRef = useRef(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      const cols = "[data-footer-col]";
-      const social = "[data-footer-social] a";
-      const bottom = "[data-footer-bottom]";
-
-      gsap.set(cols, { autoAlpha: 0, y: 32 });
-      gsap.set(social, { autoAlpha: 0, scale: 0.7 });
-      gsap.set(bottom, { autoAlpha: 0, y: 16 });
-
-      gsap.to(cols, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.7,
-        stagger: 0.12,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: footerRef.current,
-          start: "top 90%",
-          toggleActions: "play none none none",
-        },
-      });
-
-      gsap.to(social, {
-        autoAlpha: 1,
-        scale: 1,
-        duration: 0.45,
-        stagger: 0.08,
-        ease: "back.out(1.6)",
-        scrollTrigger: {
-          trigger: footerRef.current,
-          start: "top 90%",
-          toggleActions: "play none none none",
-        },
-      });
-
-      gsap.to(bottom, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.6,
-        ease: "power2.out",
-        delay: 0.25,
-        scrollTrigger: {
-          trigger: footerRef.current,
-          start: "top 90%",
-          toggleActions: "play none none none",
-        },
-      });
-
-      requestAnimationFrame(() => ScrollTrigger.refresh());
-    }, footerRef);
-    return () => ctx.revert();
-  }, []);
 
   return (
-    <footer ref={footerRef} className="relative mt-8 overflow-hidden bg-brand-950 text-slate-300 sm:mt-10">
-      {/* World-map overlay — full-wide, centered */}
+    <footer className="relative mt-8 overflow-hidden bg-brand-950 text-slate-300 sm:mt-10">
       <img
         src="/overlay-map.png"
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute left-1/2 top-1/2 h-[140%] w-[180%] max-w-none -translate-x-1/2 -translate-y-1/2 object-cover object-center opacity-[0.12]"
       />
-      {/* Graduate figure — footer only */}
       <img
         src="/overlay-graduate.png"
         alt=""
@@ -110,14 +48,14 @@ export default function Footer() {
       <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-brand-950/80 via-transparent to-brand-950/40" />
 
       <div className="container-x relative z-10 grid gap-10 py-8 md:grid-cols-2 md:py-10 lg:grid-cols-5">
-        <div data-footer-col className="lg:col-span-2">
+        <div className="lg:col-span-2">
           <Logo light />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
             {company.name} is a well-known, trusted education consultancy helping students
             achieve their dream of studying abroad since {company.since}.
           </p>
-          <div data-footer-social className="mt-5 flex gap-2.5">
-            {company.socials.map((s) => (
+          <div className="mt-5 flex gap-2.5">
+            {(company.socials || []).map((s) => (
               <a
                 key={s.icon}
                 href={s.href}
@@ -130,31 +68,48 @@ export default function Footer() {
           </div>
         </div>
 
-        <div data-footer-col className="grid grid-cols-2 gap-6 min-w-0 lg:contents">
+        <div className="grid min-w-0 grid-cols-2 gap-6 lg:contents">
           <FooterCol title="Quick Links">
             {quickLinks.map((l) => (
               <li key={l.label}>
-                <Link to={l.to} className="hover:text-white">{l.label}</Link>
+                <Link to={l.to} className="hover:text-white">
+                  {l.label}
+                </Link>
               </li>
             ))}
           </FooterCol>
           <FooterCol title="Pages">
             {pages.map((l) => (
               <li key={l.label}>
-                <Link to={l.to} className="hover:text-white">{l.label}</Link>
+                <Link to={l.to} className="hover:text-white">
+                  {l.label}
+                </Link>
               </li>
             ))}
           </FooterCol>
         </div>
 
-        <div data-footer-col>
+        <div>
           <h4 className="mb-4 font-display text-sm font-semibold uppercase tracking-wider text-white">Contact</h4>
           <ul className="space-y-3 text-sm text-slate-400">
-            <li className="flex gap-2.5"><Icon name="pin" className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" /> {company.address}</li>
-            <li><a href={`tel:${company.phone}`} className="flex gap-2.5 hover:text-white"><Icon name="phone" className="h-4 w-4 shrink-0 text-brand-400" /> {company.phone}</a></li>
-            <li><a href={`mailto:${company.email}`} className="flex gap-2.5 hover:text-white"><Icon name="mail" className="h-4 w-4 shrink-0 text-brand-400" /> {company.email}</a></li>
+            <li className="flex gap-2.5">
+              <Icon name="pin" className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" /> {company.address}
+            </li>
             <li>
-              <a href={company.whatsapp} className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-3 py-1.5 text-emerald-300 hover:bg-emerald-500/25">
+              <a href={`tel:${company.phone}`} className="flex gap-2.5 hover:text-white">
+                <Icon name="phone" className="h-4 w-4 shrink-0 text-brand-400" /> {company.phone}
+              </a>
+            </li>
+            <li>
+              <a href={`mailto:${company.email}`} className="flex gap-2.5 hover:text-white">
+                <Icon name="mail" className="h-4 w-4 shrink-0 text-brand-400" /> {company.email}
+              </a>
+            </li>
+            <li>
+              <a
+                href={company.whatsapp}
+                className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-3 py-1.5 text-emerald-300 hover:bg-emerald-500/25"
+              >
                 <Icon name="whatsapp" className="h-4 w-4" /> WhatsApp Us
               </a>
             </li>
@@ -162,12 +117,16 @@ export default function Footer() {
         </div>
       </div>
 
-      <div data-footer-bottom className="relative z-10 border-t border-white/10">
+      <div className="relative z-10 border-t border-white/10">
         <div className="container-x flex flex-col items-center justify-between gap-3 py-5 text-xs text-slate-400 md:flex-row">
-          <p>© {new Date().getFullYear()} {company.name}. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} {company.name}. All rights reserved.
+          </p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             {legal.map((l) => (
-              <Link key={l.to} to={l.to} className="hover:text-white">{l.label}</Link>
+              <Link key={l.to} to={l.to} className="hover:text-white">
+                {l.label}
+              </Link>
             ))}
           </div>
         </div>

@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
+import { postLead } from "../api/client";
 import Icon from "./Icon";
 
-function useCaptcha() {
+function useCaptcha(key = 0) {
   return useMemo(() => {
     const a = Math.floor(Math.random() * 9) + 1;
     const b = Math.floor(Math.random() * 9) + 1;
@@ -12,19 +13,20 @@ function useCaptcha() {
     const op = ops[Math.floor(Math.random() * ops.length)];
     const [x, y] = op.sym === "-" && b > a ? [b, a] : [a, b];
     return { q: `${x} ${op.sym} ${y}`, answer: op.fn(x, y) };
-  }, []);
+  }, [key]);
 }
 
-export default function CounsellingForm({ compact = false }) {
-  const [captcha, setCaptcha] = useState(0);
-  const cap = useCaptcha();
+export default function CounsellingForm({ compact = false, type = "counselling" }) {
+  const [captchaKey, setCaptchaKey] = useState(0);
+  const cap = useCaptcha(captchaKey);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ website: "", name: "", email: "", phone: "", answer: "", message: "" });
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     setError("");
     if (!form.name.trim()) return setError("Please enter your full name.");
@@ -32,7 +34,27 @@ export default function CounsellingForm({ compact = false }) {
       return setError("Please provide at least your email or phone number.");
     if (Number(form.answer) !== cap.answer)
       return setError("The security check answer is incorrect.");
-    setSent(true);
+    // Honeypot — bots fill this; pretend success without saving
+    if (form.website.trim()) {
+      setSent(true);
+      return;
+    }
+    setBusy(true);
+    try {
+      await postLead({
+        type,
+        name: form.name.trim(),
+        email: form.email.trim() || null,
+        phone: form.phone.trim() || null,
+        message: form.message.trim() || null,
+        meta: { source: "counselling-form" },
+      });
+      setSent(true);
+    } catch (err) {
+      setError(err.message || "Could not submit. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (sent) {
@@ -46,7 +68,12 @@ export default function CounsellingForm({ compact = false }) {
           Your request has been received. One of our expert advisors will contact you within 24 hours.
         </p>
         <button
-          onClick={() => { setSent(false); setForm({ website: "", name: "", email: "", phone: "", answer: "", message: "" }); }}
+          type="button"
+          onClick={() => {
+            setSent(false);
+            setForm({ website: "", name: "", email: "", phone: "", answer: "", message: "" });
+            setCaptchaKey((k) => k + 1);
+          }}
           className="mt-5 text-sm font-semibold text-brand-600 hover:underline"
         >
           Submit another request
@@ -57,30 +84,34 @@ export default function CounsellingForm({ compact = false }) {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      {/* Honeypot */}
       <input
-        type="text" tabIndex={-1} autoComplete="off" value={form.website}
-        onChange={set("website")} className="hidden" aria-hidden="true"
+        type="text"
+        tabIndex={-1}
+        autoComplete="off"
+        value={form.website}
+        onChange={set("website")}
+        className="hidden"
+        aria-hidden="true"
       />
       <Field label="Full Name" required>
-        <input value={form.name} onChange={set("name")} placeholder="e.g. Ayesha Rahman" className={inputCls} />
+        <input value={form.name} onChange={set("name")} placeholder="e.g. Ayesha Rahman" className={inputCls} disabled={busy} />
       </Field>
       <div className={compact ? "space-y-4" : "grid gap-4 sm:grid-cols-2"}>
         <Field label="Email">
-          <input type="email" value={form.email} onChange={set("email")} placeholder="you@email.com" className={inputCls} />
+          <input type="email" value={form.email} onChange={set("email")} placeholder="you@email.com" className={inputCls} disabled={busy} />
         </Field>
         <Field label="Phone Number">
-          <input value={form.phone} onChange={set("phone")} placeholder="+8801XXXXXXXXX" className={inputCls} />
+          <input value={form.phone} onChange={set("phone")} placeholder="+8801XXXXXXXXX" className={inputCls} disabled={busy} />
         </Field>
       </div>
       <p className="rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-700">
         Please provide at least your <strong>email</strong> or <strong>phone number</strong> so we can reach you.
       </p>
       <Field label="Message">
-        <textarea rows={compact ? 2 : 3} value={form.message} onChange={set("message")} placeholder="Tell us about your study plans…" className={inputCls} />
+        <textarea rows={compact ? 2 : 3} value={form.message} onChange={set("message")} placeholder="Tell us about your study plans…" className={inputCls} disabled={busy} />
       </Field>
       <Field label={`Security Check: What is ${cap.q}?`} required>
-        <input value={form.answer} onChange={set("answer")} inputMode="numeric" placeholder="Your answer" className={inputCls} />
+        <input value={form.answer} onChange={set("answer")} inputMode="numeric" placeholder="Your answer" className={inputCls} disabled={busy} />
       </Field>
 
       {error && (
@@ -89,9 +120,10 @@ export default function CounsellingForm({ compact = false }) {
 
       <button
         type="submit"
-        className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-3.5 font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:brightness-110"
+        disabled={busy}
+        className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-3.5 font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:brightness-110 disabled:opacity-60"
       >
-        Book Free Counselling
+        {busy ? "Sending…" : "Book Free Counselling"}
         <Icon name="arrow" className="h-5 w-5 transition-transform group-hover:translate-x-1" />
       </button>
     </form>
@@ -99,7 +131,7 @@ export default function CounsellingForm({ compact = false }) {
 }
 
 const inputCls =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-ink placeholder:text-slate-400 outline-none transition focus:border-brand-400 focus:ring-4 focus:ring-brand-100";
+  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-ink placeholder:text-slate-400 outline-none transition focus:border-brand-400 focus:ring-4 focus:ring-brand-100 disabled:opacity-60";
 
 function Field({ label, required, children }) {
   return (

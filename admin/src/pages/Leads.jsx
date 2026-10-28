@@ -16,6 +16,7 @@ const TYPES = [
   { value: "apply", label: "Apply" },
   { value: "branch", label: "Branch" },
   { value: "contact", label: "Contact" },
+  { value: "ai-counsellor", label: "AI Counsellor" },
 ];
 
 export default function Leads() {

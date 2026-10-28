@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import Icon from "../components/Icon";
 import PageHero from "../components/PageHero";
 import Reveal from "../components/Reveal";
+import { postLead } from "../api/client";
 import { useSite } from "../api/SiteContext";
 
 const inputCls =
@@ -64,6 +65,7 @@ export default function Apply() {
   });
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (!prefill.university && !prefill.intake && !prefill.country) return;
@@ -104,14 +106,52 @@ export default function Apply() {
     });
   };
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     setError("");
     if (!form.name.trim()) return setError("Please enter your full name.");
     if (!form.email.trim() && !form.phone.trim()) return setError("Please provide at least an email address or phone number.");
     if (Number(form.answer) !== cap.answer) return setError("The security answer is incorrect.");
     if (!form.agree) return setError("Please agree to the privacy policy and terms of service.");
-    setSent(true);
+    if (form.website.trim()) {
+      setSent(true);
+      return;
+    }
+    setBusy(true);
+    try {
+      await postLead({
+        type: "apply",
+        name: form.name.trim(),
+        email: form.email.trim() || null,
+        phone: form.phone.trim() || null,
+        message: [
+          form.program && `Program: ${form.program}`,
+          form.course && `Course: ${form.course}`,
+          form.university && `University: ${form.university}`,
+          form.country && `Country: ${form.country}`,
+          form.intake && `Intake: ${form.intake}`,
+        ]
+          .filter(Boolean)
+          .join(" · ") || "Apply Now enquiry",
+        meta: {
+          source: "apply-now",
+          nationality: form.nationality,
+          qualification: form.qualification,
+          passingYear: form.passingYear,
+          englishTest: form.englishTest,
+          program: form.program,
+          course: form.course,
+          university: form.university,
+          country: form.country,
+          intake: form.intake,
+        },
+      });
+      setSent(true);
+    } catch (err) {
+      setError(err.message || "Could not submit. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -201,8 +241,13 @@ export default function Apply() {
 
                 {error && <p className="rounded-lg bg-rose-50 px-3 py-2.5 text-sm text-rose-600">{error}</p>}
 
-                <button type="submit" className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-4 font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:brightness-110">
-                  Submit Application <Icon name="arrow" className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-4 font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:brightness-110 disabled:opacity-60"
+                >
+                  {busy ? "Submitting…" : "Submit Application"}{" "}
+                  <Icon name="arrow" className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </button>
               </form>
             </Reveal>

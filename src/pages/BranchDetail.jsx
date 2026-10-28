@@ -23,7 +23,7 @@ function useCaptcha() {
 }
 
 const inputCls =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-ink placeholder:text-slate-400 outline-none transition focus:border-brand-400 focus:ring-4 focus:ring-brand-100";
+  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-ink placeholder:text-slate-400 outline-none transition focus:border-brand-400 focus:ring-4 focus:ring-brand-100 disabled:opacity-60";
 
 function BranchEnquiryForm({ branch }) {
   const cap = useCaptcha();
@@ -51,7 +51,12 @@ function BranchEnquiryForm({ branch }) {
         phone: form.phone.trim() || null,
         message: form.message.trim() || null,
         type: "branch",
-        meta: { branchSlug: branch.slug, branchCity: branch.city, branchCountry: branch.country },
+        meta: {
+          source: "branch-detail",
+          branchSlug: branch.slug,
+          branchCity: branch.city,
+          branchCountry: branch.country,
+        },
       });
       setSent(true);
     } catch (err) {
@@ -80,27 +85,27 @@ function BranchEnquiryForm({ branch }) {
       <input type="text" tabIndex={-1} autoComplete="off" value={form.website} onChange={set("website")} className="hidden" aria-hidden="true" />
       <label className="block">
         <span className="mb-1.5 block text-sm font-medium text-slate-700">Full Name <span className="text-rose-500">*</span></span>
-        <input value={form.name} onChange={set("name")} placeholder="e.g. Ayesha Rahman" className={inputCls} />
+        <input value={form.name} onChange={set("name")} placeholder="e.g. Ayesha Rahman" className={inputCls} disabled={busy} />
       </label>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-slate-700">Email</span>
-          <input type="email" value={form.email} onChange={set("email")} placeholder="you@email.com" className={inputCls} />
+          <input type="email" value={form.email} onChange={set("email")} placeholder="you@email.com" className={inputCls} disabled={busy} />
         </label>
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-slate-700">Phone Number</span>
-          <input value={form.phone} onChange={set("phone")} placeholder="+8801XXXXXXXXX" className={inputCls} />
+          <input value={form.phone} onChange={set("phone")} placeholder="+8801XXXXXXXXX" className={inputCls} disabled={busy} />
         </label>
       </div>
       <label className="block">
         <span className="mb-1.5 block text-sm font-medium text-slate-700">Message</span>
-        <textarea rows={3} value={form.message} onChange={set("message")} placeholder="Tell us about your study plans…" className={inputCls} />
+        <textarea rows={3} value={form.message} onChange={set("message")} placeholder="Tell us about your study plans…" className={inputCls} disabled={busy} />
       </label>
       <label className="block">
         <span className="mb-1.5 block text-sm font-medium text-slate-700">Security Check: What is {cap.q}? <span className="text-rose-500">*</span></span>
-        <input value={form.answer} onChange={set("answer")} inputMode="numeric" placeholder="Your answer" className={inputCls} />
+        <input value={form.answer} onChange={set("answer")} inputMode="numeric" placeholder="Your answer" className={inputCls} disabled={busy} />
       </label>
-      {error && <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</p>}
+      {error ? <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</p> : null}
       <button
         type="submit"
         disabled={busy}
