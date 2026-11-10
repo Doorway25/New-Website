@@ -292,8 +292,8 @@ export default function Doorcast() {
     openYoutube(youtubePlaylistUrl(meta.playlistUrl) || doorcastMeta.playlistUrl);
   }
 
-  // Backgrounds may come from CMS; brand lockup uses the shared logo files.
-  const heroSrc = mediaUrl(meta.heroImageUrl) || "/doorcast-hero.webp";
+  // Banner uses the shared crisp hero; about image can come from CMS.
+  const heroSrc = "/doorcast-hero.webp";
   const aboutImg = mediaUrl(meta.aboutImageUrl) || "/doorcast-music.jpg";
   const LOGO_DC_WHITE = "/doorcast-logo-white.png";
   const LOGO_DC_COLOR = "/doorcast-logo-color.png";
