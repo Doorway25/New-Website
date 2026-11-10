@@ -33,8 +33,8 @@ export default function UniversityCard({ uni }) {
         <div className="absolute inset-0 bg-gradient-to-t from-ink/50 via-ink/10 to-transparent" />
         <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-slate-700 backdrop-blur">
           <Flag
-            src={mediaUrl(country?.flagUrl) || ""}
-            code={country?.code}
+            src={country?.flagUrl ? mediaUrl(country.flagUrl) : ""}
+            code={country?.code || country?.slug || uni.country || uni.countrySlug}
             className="text-sm"
             title={country?.name}
           />{" "}

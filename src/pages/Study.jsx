@@ -131,10 +131,10 @@ export default function Study() {
                         : "border-slate-200 bg-white text-ink hover:border-brand-200 hover:bg-brand-50"
                     }`}
                   >
-                    {tab.flagUrl || tab.code ? (
+                    {tab.slug !== "all" ? (
                       <Flag
                         src={tab.flagUrl ? mediaUrl(tab.flagUrl) : ""}
-                        code={tab.code}
+                        code={tab.code || tab.slug}
                         className="h-5 w-5"
                         title={tab.name}
                       />

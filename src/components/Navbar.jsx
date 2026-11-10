@@ -148,7 +148,6 @@ export default function Navbar() {
             </Dropdown>
 
             <li><NavLink to="/events" className={navLink}>Events</NavLink></li>
-            <li><NavLink to="/doorcast" className={navLink}>Doorcast</NavLink></li>
             <li><NavLink to="/about-us" className={navLink}>About Us</NavLink></li>
 
             <Dropdown label="Contact Us" wide>
@@ -199,6 +198,12 @@ export default function Navbar() {
             >
               Apply Now
             </Link>
+            <Link
+              to="/doorcast"
+              className="btn-doorcast-glow inline-flex rounded-full bg-gradient-to-r from-[#c8102e] to-[#a00d24] px-3.5 py-2 text-xs font-semibold text-white transition hover:brightness-110 sm:px-5 sm:py-2.5 sm:text-sm"
+            >
+              Doorcast
+            </Link>
             <button
               onClick={() => setOpen((v) => !v)}
               className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-700 sm:h-11 sm:w-11 lg:hidden"
@@ -248,7 +253,6 @@ export default function Navbar() {
                 </div>
               </MobileAccordion>
               <MobileLink to="/events" label="Events" />
-              <MobileLink to="/doorcast" label="Doorcast" />
               <MobileLink to="/about-us" label="About Us" />
               <MobileAccordion label="Contact Us" open={sub === "c"} onToggle={() => setSub(sub === "c" ? null : "c")}>
                 <Link
@@ -274,12 +278,20 @@ export default function Navbar() {
             </div>
 
             <div className="border-t border-slate-100 bg-slate-50/80 px-4 py-4">
-              <Link
-                to="/apply-now"
-                className="block rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-5 py-3.5 text-center text-sm font-semibold text-white shadow-lg shadow-brand-500/25"
-              >
-                Apply Now
-              </Link>
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  to="/apply-now"
+                  className="block rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-4 py-3.5 text-center text-sm font-semibold text-white shadow-lg shadow-brand-500/25"
+                >
+                  Apply Now
+                </Link>
+                <Link
+                  to="/doorcast"
+                  className="btn-doorcast-glow block rounded-full bg-gradient-to-r from-[#c8102e] to-[#a00d24] px-4 py-3.5 text-center text-sm font-semibold text-white"
+                >
+                  Doorcast
+                </Link>
+              </div>
               <div className="mt-3 grid grid-cols-3 gap-2">
                 <a
                   href={`tel:${company.phone}`}

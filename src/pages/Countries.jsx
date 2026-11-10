@@ -53,8 +53,8 @@ export default function Countries() {
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-950/85 via-brand-950/25 to-transparent" />
                     <div className="absolute inset-x-0 bottom-0 flex items-end gap-3 p-4 text-white sm:p-5">
                       <Flag
-                        src={mediaUrl(c.flagUrl) || ""}
-                        code={c.code}
+                        src={c.flagUrl ? mediaUrl(c.flagUrl) : ""}
+                        code={c.code || c.slug}
                         className="h-10 w-10 shrink-0 drop-shadow sm:h-12 sm:w-12"
                         title={c.name}
                       />

@@ -172,7 +172,12 @@ function Hero() {
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   {countries.slice(0, 2).map((c) => (
                     <Link key={c.slug} to={`/study/${c.slug}`} className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2.5 text-sm font-medium transition hover:bg-white/20">
-                      <Flag src={mediaUrl(c.flagUrl) || ""} code={c.code} className="text-lg" title={c.name} />{" "}
+                      <Flag
+                        src={c.flagUrl ? mediaUrl(c.flagUrl) : ""}
+                        code={c.code || c.slug}
+                        className="text-lg"
+                        title={c.name}
+                      />{" "}
                       {c.name.split(" ")[0]}
                     </Link>
                   ))}
