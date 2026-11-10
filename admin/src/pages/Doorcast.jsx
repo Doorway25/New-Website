@@ -371,14 +371,14 @@ export default function Doorcast() {
                 value={settings.heroLogoUrl}
                 onChange={(url) => setField("heroLogoUrl", url)}
                 kind="doorcastLogo"
-                hint="Saved at 500×300. Empty = default DOORCAST wordmark"
+                hint="Saved at 300×200. Empty = default DOORCAST wordmark"
               />
               <ImageUpload
                 label="Presented-by brand logo (banner only)"
                 value={settings.brandLogoUrl}
                 onChange={(url) => setField("brandLogoUrl", url)}
                 kind="doorcastLogo"
-                hint="Banner only — 500×300. Shorts has its own logo below."
+                hint="Banner only — 300×200. Shorts has its own logo below."
               />
               <label>
                 Tagline
@@ -557,7 +557,7 @@ export default function Doorcast() {
             value={settings.aboutLogoUrl}
             onChange={(url) => setField("aboutLogoUrl", url)}
             kind="doorcastLogo"
-            hint="Saved at 500×300. Empty = default wordmark"
+            hint="Saved at 300×200. Empty = default wordmark"
           />
           <label>
             “Play all” button label
@@ -601,14 +601,14 @@ export default function Doorcast() {
             value={settings.shortsLogoUrl}
             onChange={(url) => setField("shortsLogoUrl", url)}
             kind="doorcastLogo"
-            hint="Separate from banner — saved at 500×300"
+            hint="Separate from banner — saved at 300×200"
           />
           <ImageUpload
             label="Shorts Presented-by brand logo"
             value={settings.shortsBrandLogoUrl}
             onChange={(url) => setField("shortsBrandLogoUrl", url)}
             kind="doorcastLogo"
-            hint="Separate from banner brand logo — 500×300"
+            hint="Separate from banner brand logo — 300×200"
           />
           <label className="span-2">
             Shorts intro text

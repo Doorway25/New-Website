@@ -1106,8 +1106,8 @@ router.post(
     const presets = {
       logo: { maxWidth: 640, maxHeight: 640, quality: 88, fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 0 } },
       doorcastlogo: {
-        maxWidth: 500,
-        maxHeight: 300,
+        maxWidth: 300,
+        maxHeight: 200,
         quality: 90,
         fit: "contain",
         background: { r: 255, g: 255, b: 255, alpha: 0 },
@@ -1121,6 +1121,13 @@ router.post(
       2000,
       Math.max(200, Number(req.query.maxWidth) || Number(req.body?.maxWidth) || preset.maxWidth)
     );
+    const maxHeight = Math.min(
+      2000,
+      Math.max(
+        200,
+        Number(req.query.maxHeight) || Number(req.body?.maxHeight) || preset.maxHeight || maxWidth
+      )
+    );
     const quality = Math.min(
       95,
       Math.max(50, Number(req.query.quality) || Number(req.body?.quality) || preset.quality)
@@ -1132,7 +1139,7 @@ router.post(
     try {
       let pipeline = sharp(req.file.buffer).rotate().resize({
         width: maxWidth,
-        height: preset.maxHeight || maxWidth,
+        height: maxHeight,
         fit: preset.fit || "inside",
         withoutEnlargement: true,
         background: preset.background,

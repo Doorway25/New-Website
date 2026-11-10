@@ -152,6 +152,12 @@ function Hero() {
             <Link to="/apply-now" className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-500 to-brand-400 px-6 py-3.5 font-semibold text-white opacity-0 shadow-lg shadow-brand-500/30 transition hover:brightness-110 sm:w-auto">
               Apply Now <Icon name="arrow" className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
+            <Link
+              to="/doorcast"
+              className="btn-doorcast-glow group inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#c8102e] to-[#a00d24] px-6 py-3.5 font-semibold text-white opacity-0 transition hover:brightness-110 sm:w-auto"
+            >
+              Doorcast <Icon name="arrow" className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Link>
             <Link to="/contact-us" className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 py-3.5 font-semibold text-white opacity-0 backdrop-blur transition hover:bg-white/10 sm:w-auto">
               Free Counselling
             </Link>

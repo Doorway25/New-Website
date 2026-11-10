@@ -50,7 +50,10 @@ export const post = (path, body) => api(path, { method: "POST", body });
 export const put = (path, body) => api(path, { method: "PUT", body });
 export const del = (path) => api(path, { method: "DELETE" });
 
-export async function uploadImage(file, { maxWidth = 960, quality = 64, replace, kind = "cover" } = {}) {
+export async function uploadImage(
+  file,
+  { maxWidth = 960, maxHeight, quality = 64, replace, kind = "cover" } = {}
+) {
   const body = new FormData();
   body.append("file", file);
   const params = new URLSearchParams({
@@ -58,6 +61,7 @@ export async function uploadImage(file, { maxWidth = 960, quality = 64, replace,
     quality: String(quality),
     kind: String(kind || "cover"),
   });
+  if (maxHeight) params.set("maxHeight", String(maxHeight));
   if (replace) params.set("replace", replace);
   return api(`/api/admin/upload?${params}`, {
     method: "POST",

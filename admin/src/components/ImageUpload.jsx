@@ -30,7 +30,7 @@ export default function ImageUpload({
 
   const preset =
     kind === "doorcastLogo"
-      ? { maxWidth: 500, maxHeight: 300, quality: 90, kind: "doorcastLogo" }
+      ? { maxWidth: 300, maxHeight: 200, quality: 90, kind: "doorcastLogo" }
       : kind === "logo"
         ? { maxWidth: 640, quality: 88, kind: "logo" }
         : kind === "thumb"

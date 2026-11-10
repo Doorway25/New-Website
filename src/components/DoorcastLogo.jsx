@@ -10,13 +10,13 @@ export default function DoorcastLogo({
       return (
         <div
           className={`inline-flex max-w-full items-center justify-start overflow-hidden ${className}`}
-          style={{ width: 500, height: 300, maxWidth: "100%" }}
+          style={{ width: 300, height: 200, maxWidth: "100%" }}
         >
           <img
             src={src}
             alt="DOORCAST"
-            width={500}
-            height={300}
+            width={300}
+            height={200}
             className="h-full w-full object-contain object-left"
             loading="lazy"
             decoding="async"
