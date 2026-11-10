@@ -16,6 +16,7 @@ const EMPTY_SETTINGS = {
   aboutLogoUrl: "",
   shortsIntro: "",
   shortsLogoUrl: "",
+  shortsBrandLogoUrl: "",
   playlistUrl: "",
   episodesPlaylistId: "",
   shortsPlaylistId: "",
@@ -99,6 +100,7 @@ export default function Doorcast() {
         aboutLogoUrl: s.aboutLogoUrl || "",
         shortsIntro: s.shortsIntro || "",
         shortsLogoUrl: s.shortsLogoUrl || "",
+        shortsBrandLogoUrl: s.shortsBrandLogoUrl || "",
         playlistUrl: s.playlistUrl || "",
         episodesPlaylistId: s.episodesPlaylistId || "",
         shortsPlaylistId: s.shortsPlaylistId || "",
@@ -368,15 +370,15 @@ export default function Doorcast() {
                 label="Doorcast logo on banner"
                 value={settings.heroLogoUrl}
                 onChange={(url) => setField("heroLogoUrl", url)}
-                kind="logo"
-                hint="Optional. Empty = default DOORCAST wordmark"
+                kind="doorcastLogo"
+                hint="Saved at 500×300. Empty = default DOORCAST wordmark"
               />
               <ImageUpload
-                label="Presented-by brand logo"
+                label="Presented-by brand logo (banner only)"
                 value={settings.brandLogoUrl}
                 onChange={(url) => setField("brandLogoUrl", url)}
-                kind="logo"
-                hint="Optional. Empty = Education Doorway logo"
+                kind="doorcastLogo"
+                hint="Banner only — 500×300. Shorts has its own logo below."
               />
               <label>
                 Tagline
@@ -445,22 +447,38 @@ export default function Doorcast() {
 
           {(() => {
             const id = extractYoutubeId(featuredForm.youtubeId);
-            const preview = featuredForm.imageUrl || (id ? youtubeThumbUrl(id) : "");
+            const ytThumb = id ? youtubeThumbUrl(id) : "";
+            const custom = String(featuredForm.imageUrl || "").trim();
+            const customIsYoutube = /ytimg\.com\/vi\//i.test(custom);
+            const useCustom = custom && !customIsYoutube && !/\/maxresdefault\.jpg$/i.test(custom);
+            const preview = useCustom ? custom : ytThumb;
             if (!preview) return null;
             return (
-              <div className="span-2 dc-subcard" style={{ display: "flex", gap: 14, alignItems: "center" }}>
+              <div className="span-2 dc-subcard" style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
                 <img
-                  src={preview}
+                  src={preview.startsWith("http") || preview.startsWith("/") ? preview : preview}
                   alt=""
-                  style={{ width: 160, height: 90, objectFit: "cover", borderRadius: 10 }}
+                  style={{ width: 160, height: 90, objectFit: "cover", borderRadius: 10, background: "#111" }}
+                  onError={(e) => {
+                    if (ytThumb && e.currentTarget.src !== ytThumb) e.currentTarget.src = ytThumb;
+                  }}
                 />
-                <div>
-                  <strong>Auto thumbnail</strong>
-                  <p className="muted" style={{ margin: "4px 0 0" }}>
-                    {featuredForm.imageUrl
-                      ? "Using your custom upload."
-                      : "YouTube thumbnail will be saved automatically. Upload below only if you want a custom image."}
+                <div style={{ flex: 1, minWidth: 180 }}>
+                  <strong>{useCustom ? "Custom thumbnail" : "YouTube thumbnail (auto)"}</strong>
+                  <p className="muted" style={{ margin: "4px 0 8px" }}>
+                    {useCustom
+                      ? "A custom image is set. Remove it below to use YouTube’s thumb."
+                      : "Auto from YouTube — click Save Watch Now video to store it."}
                   </p>
+                  {useCustom || customIsYoutube ? (
+                    <button
+                      type="button"
+                      className="btn sm"
+                      onClick={() => setFeaturedField("imageUrl", ytThumb || "")}
+                    >
+                      Use YouTube thumbnail
+                    </button>
+                  ) : null}
                 </div>
               </div>
             );
@@ -493,10 +511,16 @@ export default function Doorcast() {
           </label>
           <ImageUpload
             label="Custom thumbnail (optional)"
-            value={featuredForm.imageUrl}
+            value={
+              featuredForm.imageUrl &&
+              !/ytimg\.com\/vi\//i.test(featuredForm.imageUrl) &&
+              !/\/maxresdefault\.jpg$/i.test(featuredForm.imageUrl)
+                ? featuredForm.imageUrl
+                : ""
+            }
             onChange={(url) => setFeaturedField("imageUrl", url)}
             kind="cover"
-            hint="Leave empty — YouTube thumbnail is used automatically"
+            hint="Leave empty — YouTube thumbnail is used automatically. If you see a gray box, click Remove then Save."
           />
           <div className="dc-actions span-2">
             <button type="submit" className="btn primary" disabled={savingFeatured || !canEdit}>
@@ -532,8 +556,8 @@ export default function Doorcast() {
             label="About Doorcast logo"
             value={settings.aboutLogoUrl}
             onChange={(url) => setField("aboutLogoUrl", url)}
-            kind="logo"
-            hint="Optional. Empty = default wordmark"
+            kind="doorcastLogo"
+            hint="Saved at 500×300. Empty = default wordmark"
           />
           <label>
             “Play all” button label
@@ -576,15 +600,15 @@ export default function Doorcast() {
             label="Shorts Doorcast logo"
             value={settings.shortsLogoUrl}
             onChange={(url) => setField("shortsLogoUrl", url)}
-            kind="logo"
-            hint="Optional. Empty = default dark wordmark"
+            kind="doorcastLogo"
+            hint="Separate from banner — saved at 500×300"
           />
           <ImageUpload
-            label="Presented-by brand logo (shared)"
-            value={settings.brandLogoUrl}
-            onChange={(url) => setField("brandLogoUrl", url)}
-            kind="logo"
-            hint="Same brand logo used under Presented by"
+            label="Shorts Presented-by brand logo"
+            value={settings.shortsBrandLogoUrl}
+            onChange={(url) => setField("shortsBrandLogoUrl", url)}
+            kind="doorcastLogo"
+            hint="Separate from banner brand logo — 500×300"
           />
           <label className="span-2">
             Shorts intro text

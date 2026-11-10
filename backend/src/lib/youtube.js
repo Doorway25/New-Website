@@ -65,7 +65,12 @@ async function fetchApiSnippet(id) {
   return {
     title: snippet.title || "",
     description: snippet.description || "",
-    thumbnail: snippet.thumbnails?.maxres?.url || snippet.thumbnails?.high?.url || "",
+    // Prefer high/medium — maxres URL often 404s as a gray stub image
+    thumbnail:
+      snippet.thumbnails?.high?.url ||
+      snippet.thumbnails?.medium?.url ||
+      snippet.thumbnails?.standard?.url ||
+      "",
   };
 }
 
@@ -98,14 +103,17 @@ export async function fetchYoutubeMeta(raw) {
 
   let title = "";
   let description = "";
-  let thumbnail = `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
+  // hqdefault is reliable; maxresdefault often returns a gray 120×90 stub with HTTP 200
+  let thumbnail = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
   let author = "";
 
   const api = await fetchApiSnippet(id).catch(() => null);
   if (api) {
     title = api.title || title;
     description = api.description || description;
-    thumbnail = api.thumbnail || thumbnail;
+    if (api.thumbnail && !/\/maxresdefault\.jpg$/i.test(api.thumbnail)) {
+      thumbnail = api.thumbnail;
+    }
   }
 
   if (!title) {
@@ -113,7 +121,9 @@ export async function fetchYoutubeMeta(raw) {
     if (oembed) {
       title = oembed.title || title;
       author = oembed.author_name || author;
-      thumbnail = oembed.thumbnail_url || thumbnail;
+      if (oembed.thumbnail_url && !/\/maxresdefault\.jpg$/i.test(oembed.thumbnail_url)) {
+        thumbnail = oembed.thumbnail_url;
+      }
     }
   }
 

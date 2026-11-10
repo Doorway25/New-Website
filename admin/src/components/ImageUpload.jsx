@@ -29,13 +29,15 @@ export default function ImageUpload({
   const [info, setInfo] = useState(null);
 
   const preset =
-    kind === "logo"
-      ? { maxWidth: 640, quality: 88, kind: "logo" }
-      : kind === "thumb"
-        ? { maxWidth: 640, quality: 62, kind: "thumb" }
-        : kind === "hero"
-          ? { maxWidth: 1200, quality: 68, kind: "hero" }
-          : { maxWidth: 960, quality: 64, kind: "cover" };
+    kind === "doorcastLogo"
+      ? { maxWidth: 500, maxHeight: 300, quality: 90, kind: "doorcastLogo" }
+      : kind === "logo"
+        ? { maxWidth: 640, quality: 88, kind: "logo" }
+        : kind === "thumb"
+          ? { maxWidth: 640, quality: 62, kind: "thumb" }
+          : kind === "hero"
+            ? { maxWidth: 1200, quality: 68, kind: "hero" }
+            : { maxWidth: 960, quality: 64, kind: "cover" };
 
   async function removeCurrentFile() {
     if (!canDelete || !isManagedUpload(value)) return;

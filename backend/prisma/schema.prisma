@@ -421,6 +421,7 @@ model DoorcastSetting {
   aboutLogoUrl       String?
   shortsIntro        String?
   shortsLogoUrl      String?
+  shortsBrandLogoUrl String?
   playlistUrl        String?
   episodesPlaylistId String?
   shortsPlaylistId   String?

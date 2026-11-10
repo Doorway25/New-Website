@@ -222,6 +222,7 @@ export default function Doorcast() {
     aboutImageUrl: "",
     aboutLogoUrl: "",
     shortsLogoUrl: "",
+    shortsBrandLogoUrl: "",
     shortsPlaylistUrl: doorcastMeta.shortsPlaylistUrl,
     watchNowLabel: "Watch Now",
     playAllLabel: "Play all one by one",
@@ -254,6 +255,7 @@ export default function Doorcast() {
           aboutImageUrl: s.aboutImageUrl || "",
           aboutLogoUrl: s.aboutLogoUrl || "",
           shortsLogoUrl: s.shortsLogoUrl || "",
+          shortsBrandLogoUrl: s.shortsBrandLogoUrl || "",
           shortsPlaylistUrl: shortsUrl,
           watchNowLabel: s.watchNowLabel || "Watch Now",
           playAllLabel: s.playAllLabel || "Play all one by one",
@@ -300,22 +302,30 @@ export default function Doorcast() {
   const aboutLogo = mediaUrl(meta.aboutLogoUrl);
   const shortsLogo = mediaUrl(meta.shortsLogoUrl);
   const brandLogo = mediaUrl(meta.brandLogoUrl);
+  const shortsBrandLogo = mediaUrl(meta.shortsBrandLogoUrl);
 
-  function BrandMark({ light = false, className = "inline-block max-w-[160px]" }) {
-    if (brandLogo) {
+  /** Uploaded logos display in a 500×300 box (scales down on small screens). */
+  function LogoBox({ src, alt, light = false, fallback = true }) {
+    if (src) {
       return (
-        <span className={className}>
+        <div
+          className="inline-flex max-w-full items-center justify-start overflow-hidden"
+          style={{ width: 500, height: 300, maxWidth: "100%" }}
+        >
           <img
-            src={brandLogo}
-            alt={meta.presentedBy || "Education Doorway"}
-            className="h-auto w-full object-contain object-left"
+            src={src}
+            alt={alt}
+            width={500}
+            height={300}
+            className="h-full w-full object-contain object-left"
             loading="lazy"
           />
-        </span>
+        </div>
       );
     }
+    if (!fallback) return null;
     return (
-      <span className={className}>
+      <span className="inline-block max-w-[200px]">
         <Logo light={light} />
       </span>
     );
@@ -330,35 +340,34 @@ export default function Doorcast() {
         path="/doorcast"
       />
 
-      {/* Banner — matches design: full image; logos + tagline when admin enables text */}
-      <section className="relative overflow-hidden bg-[#121212] text-white">
+      {/* Banner — ~700px, no dark overlay; logos tight; smaller tagline */}
+      <section className="relative overflow-hidden bg-[#121212] text-white" style={{ height: 700, maxHeight: "70vh" }}>
         <img
           src={heroSrc}
           alt={meta.showHeroText ? "" : "Doorcast"}
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
         {meta.showHeroText ? (
-          <>
-            {/* Soft left fade so logos/tagline stay readable without washing out the photo */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25" />
-            <div className="container-x relative z-10 flex min-h-[42vh] flex-col justify-between py-10 sm:min-h-[50vh] sm:py-14 lg:min-h-[56vh]">
-              <div>
-                <DoorcastLogo src={heroLogo} className="max-w-[240px] sm:max-w-[300px]" />
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">
-                    Presented by
-                  </span>
-                  <BrandMark light className="inline-block max-w-[150px] sm:max-w-[170px]" />
-                </div>
+          <div className="container-x relative z-10 flex h-full flex-col justify-between py-8 sm:py-10">
+            <div>
+              {heroLogo ? (
+                <LogoBox src={heroLogo} alt="DOORCAST" light fallback={false} />
+              ) : (
+                <DoorcastLogo className="max-w-[220px] sm:max-w-[260px]" />
+              )}
+              <div className="mt-1.5 flex flex-wrap items-center gap-2 sm:mt-2">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/80">
+                  Presented by
+                </span>
+                <LogoBox src={brandLogo} alt={meta.presentedBy || "Education Doorway"} light />
               </div>
-              <p className="max-w-xl font-display text-2xl font-medium italic leading-snug text-white sm:text-3xl lg:text-[2.35rem] lg:leading-tight">
-                {meta.tagline}
-              </p>
             </div>
-          </>
+            <p className="max-w-lg font-display text-base font-medium italic leading-snug text-white sm:text-lg lg:text-xl">
+              {meta.tagline}
+            </p>
+          </div>
         ) : (
-          <div className="relative z-10 min-h-[42vh] sm:min-h-[50vh] lg:min-h-[56vh]" aria-hidden="true" />
+          <div className="relative z-10 h-full" aria-hidden="true" />
         )}
       </section>
 
@@ -445,10 +454,13 @@ export default function Doorcast() {
                 aria-hidden="true"
               />
 
-              <DoorcastLogo
-                src={aboutLogo}
-                className="relative z-[2] w-[210px] max-w-full drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:w-[250px]"
-              />
+              <div className="relative z-[2] drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
+                {aboutLogo ? (
+                  <LogoBox src={aboutLogo} alt="DOORCAST" fallback={false} />
+                ) : (
+                  <DoorcastLogo className="w-[210px] max-w-full sm:w-[250px]" />
+                )}
+              </div>
 
               <p
                 className="relative z-[2] max-w-[32rem] text-[13px] font-medium leading-relaxed text-white sm:text-[15px] sm:leading-7"
@@ -477,12 +489,19 @@ export default function Doorcast() {
       <section className="bg-[#efefef] py-10 sm:py-12">
         <div className="container-x grid items-center gap-8 lg:grid-cols-[0.85fr_1.35fr]">
           <div>
-            <DoorcastLogo src={shortsLogo} light={false} className="max-w-[220px]" />
+            {shortsLogo ? (
+              <LogoBox src={shortsLogo} alt="DOORCAST" fallback={false} />
+            ) : (
+              <DoorcastLogo light={false} className="max-w-[220px]" />
+            )}
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Presented by
               </span>
-              <BrandMark className="inline-block max-w-[140px] origin-left scale-90" />
+              <LogoBox
+                src={shortsBrandLogo}
+                alt={meta.presentedBy || "Education Doorway"}
+              />
             </div>
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-slate-600 sm:text-base">
               {meta.shortsIntro}

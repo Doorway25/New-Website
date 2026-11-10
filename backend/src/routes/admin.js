@@ -277,6 +277,7 @@ const DOORCAST_DEFAULTS = {
   aboutLogoUrl: null,
   shortsIntro: "Watch the youtube shorts to know the key points of the full episode",
   shortsLogoUrl: null,
+  shortsBrandLogoUrl: null,
   playlistUrl: "https://www.youtube.com/playlist?list=PLTxqWjoR7G9A",
   episodesPlaylistId: "PLTxqWjoR7G9A",
   shortsPlaylistId: null,
@@ -318,6 +319,7 @@ router.put(
       "aboutLogoUrl",
       "shortsIntro",
       "shortsLogoUrl",
+      "shortsBrandLogoUrl",
       "playlistUrl",
       "episodesPlaylistId",
       "shortsPlaylistId",
@@ -337,6 +339,7 @@ router.put(
       "aboutLogoUrl",
       "shortsIntro",
       "shortsLogoUrl",
+      "shortsBrandLogoUrl",
       "playlistUrl",
       "episodesPlaylistId",
       "shortsPlaylistId",
@@ -377,11 +380,12 @@ router.put(
     const subtitle = req.body?.subtitle != null ? String(req.body.subtitle).trim() || null : null;
     const description = manualDesc || meta?.description?.slice(0, 500) || null;
     const duration = manualDuration || null;
-    // Empty upload → auto YouTube thumbnail
-    const imageUrl =
-      manualImage ||
-      meta?.thumbnail ||
+    // Empty / gray maxres stub → reliable YouTube hqdefault
+    const ytThumb =
+      (meta?.thumbnail && !/\/maxresdefault\.jpg$/i.test(meta.thumbnail) && meta.thumbnail) ||
       `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
+    const imageUrl =
+      manualImage && !/\/maxresdefault\.jpg$/i.test(manualImage) ? manualImage : ytThumb;
     const published = req.body?.published !== false;
 
     await prisma.doorcastVideo.updateMany({
@@ -1101,6 +1105,13 @@ router.post(
     const kind = String(req.query.kind || req.body?.kind || "cover").toLowerCase();
     const presets = {
       logo: { maxWidth: 640, maxHeight: 640, quality: 88, fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 0 } },
+      doorcastlogo: {
+        maxWidth: 500,
+        maxHeight: 300,
+        quality: 90,
+        fit: "contain",
+        background: { r: 255, g: 255, b: 255, alpha: 0 },
+      },
       thumb: { maxWidth: 640, maxHeight: 640, quality: 62, fit: "inside" },
       cover: { maxWidth: 960, maxHeight: 960, quality: 64, fit: "inside" },
       hero: { maxWidth: 1200, maxHeight: 1200, quality: 68, fit: "inside" },

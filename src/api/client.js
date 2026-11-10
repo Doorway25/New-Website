@@ -7,16 +7,16 @@ export function mediaUrl(url) {
   return `${API_URL}${url.startsWith("/") ? "" : "/"}${url}`;
 }
 
-export function youtubeThumbUrl(id, quality = "maxresdefault") {
+export function youtubeThumbUrl(id, quality = "hqdefault") {
   if (!id) return "";
-  // maxresdefault = full 16:9 (no black bars). Falls back in UI if 404.
+  // hqdefault is reliable; maxresdefault often returns a gray stub with HTTP 200
   return `https://i.ytimg.com/vi/${id}/${quality}.jpg`;
 }
 
-/** Prefer maxres → sd → hq; hq has letterbox bars on many videos. */
+/** Prefer sd → hq → mq (skip maxres — gray stub often returns 200). */
 export function youtubeThumbCandidates(id) {
   if (!id) return [];
-  return ["maxresdefault", "sddefault", "hqdefault"].map(
+  return ["sddefault", "hqdefault", "mqdefault"].map(
     (q) => `https://i.ytimg.com/vi/${id}/${q}.jpg`
   );
 }

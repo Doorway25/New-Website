@@ -1,6 +1,29 @@
 /** Doorcast wordmark — uploaded image when provided, otherwise SVG lockup. */
-export default function DoorcastLogo({ className = "", light = true, src = "" }) {
+export default function DoorcastLogo({
+  className = "",
+  light = true,
+  src = "",
+  box = false,
+}) {
   if (src) {
+    if (box) {
+      return (
+        <div
+          className={`inline-flex max-w-full items-center justify-start overflow-hidden ${className}`}
+          style={{ width: 500, height: 300, maxWidth: "100%" }}
+        >
+          <img
+            src={src}
+            alt="DOORCAST"
+            width={500}
+            height={300}
+            className="h-full w-full object-contain object-left"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      );
+    }
     return (
       <div className={`inline-block overflow-visible ${className}`}>
         <img
