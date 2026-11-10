@@ -302,8 +302,8 @@ export default function Doorcast() {
   const brandLogo = mediaUrl(meta.brandLogoUrl);
   const shortsBrandLogo = mediaUrl(meta.shortsBrandLogoUrl);
 
-  /** Site-style logos: upload up to 300×200, display compact like other pages. */
-  function CmsLogo({ src, alt, className = "", maxH = 48 }) {
+  /** Logos upload up to 300×200; show large so the wordmarks read clearly. */
+  function CmsLogo({ src, alt, className = "", maxH = 120, maxW = 360 }) {
     if (!src) return null;
     return (
       <img
@@ -311,26 +311,34 @@ export default function Doorcast() {
         alt={alt}
         width={300}
         height={200}
-        className={`h-auto w-auto max-w-full object-contain object-left ${className}`}
-        style={{ maxHeight: maxH }}
+        className={`h-auto w-auto max-w-full object-contain ${className}`}
+        style={{ maxHeight: maxH, maxWidth: maxW }}
         loading="lazy"
       />
     );
   }
 
-  function DoorcastMark({ src, light = true, className = "", maxH = 52 }) {
+  function DoorcastMark({ src, light = true, className = "", maxH = 120 }) {
     if (src) {
-      return <CmsLogo src={src} alt="DOORCAST" className={className} maxH={maxH} />;
+      return <CmsLogo src={src} alt="DOORCAST" className={className} maxH={maxH} maxW={360} />;
     }
-    return <DoorcastLogo light={light} className={`max-w-[220px] ${className}`} />;
+    return <DoorcastLogo light={light} className={`w-full max-w-[360px] ${className}`} />;
   }
 
-  function BrandMark({ src, light = false, className = "" }) {
+  function BrandMark({ src, light = false, className = "", maxH = 80 }) {
     if (src) {
-      return <CmsLogo src={src} alt={meta.presentedBy || "Education Doorway"} className={className} maxH={40} />;
+      return (
+        <CmsLogo
+          src={src}
+          alt={meta.presentedBy || "Education Doorway"}
+          className={className}
+          maxH={maxH}
+          maxW={260}
+        />
+      );
     }
     return (
-      <span className={`inline-block max-w-[150px] ${className}`}>
+      <span className={`inline-block max-w-[220px] ${className}`}>
         <Logo light={light} />
       </span>
     );
@@ -361,15 +369,15 @@ export default function Doorcast() {
         />
         {meta.showHeroText ? (
           <div className="container-x relative z-10 flex h-full flex-col justify-end py-8 sm:py-10">
-            <div className="flex max-w-xl flex-col items-start gap-2">
-              <DoorcastMark src={heroLogo} light maxH={56} />
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/80">
+            <div className="flex max-w-3xl flex-col items-start gap-3">
+              <DoorcastMark src={heroLogo} light maxH={140} className="object-left" />
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/85">
                   Presented by
                 </span>
-                <BrandMark src={brandLogo} light />
+                <BrandMark src={brandLogo} light maxH={80} className="object-left" />
               </div>
-              <p className="font-display text-lg font-medium italic leading-snug text-white sm:text-xl">
+              <p className="font-display text-xl font-medium italic leading-snug text-white sm:text-2xl">
                 {meta.tagline}
               </p>
             </div>
@@ -433,7 +441,7 @@ export default function Doorcast() {
               loading="lazy"
             />
             <div className="relative z-10 ml-auto flex h-full w-full flex-col items-end justify-center gap-4 px-5 py-6 text-right sm:w-[60%] sm:px-7 sm:py-7">
-              <DoorcastMark src={aboutLogo} light className="relative z-[2]" maxH={48} />
+              <DoorcastMark src={aboutLogo} light className="relative z-[2] object-right" maxH={120} />
               <p
                 className="relative z-[2] max-w-md text-[13px] font-medium leading-relaxed text-white sm:text-sm sm:leading-6"
                 style={{ textShadow: "0 1px 3px rgba(0,0,0,0.85)" }}
@@ -458,12 +466,12 @@ export default function Doorcast() {
       <section className="bg-[#f2f2f2] py-8 sm:py-10 lg:py-12">
         <div className="container-x grid items-center gap-8 lg:grid-cols-[0.85fr_1.35fr]">
           <div>
-            <DoorcastMark src={shortsLogo} light={false} maxH={52} />
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <DoorcastMark src={shortsLogo} light={false} maxH={120} className="object-left" />
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Presented by
               </span>
-              <BrandMark src={shortsBrandLogo} />
+              <BrandMark src={shortsBrandLogo} maxH={80} className="object-left" />
             </div>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-[#0d157b] sm:text-base">
               {meta.shortsIntro}
