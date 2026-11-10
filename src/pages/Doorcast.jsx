@@ -4,7 +4,6 @@ import { useSite } from "../api/SiteContext";
 import CounsellingSection from "../components/CounsellingSection";
 import DoorcastLogo from "../components/DoorcastLogo";
 import Icon from "../components/Icon";
-import Logo from "../components/Logo";
 import SeoHead from "../components/SeoHead";
 import { doorcastEpisodes, doorcastMeta, doorcastShorts } from "../data/doorcast";
 
@@ -158,7 +157,7 @@ function ShortsCarousel({ items, onPlay }) {
             key={item.id}
             type="button"
             onClick={() => onPlay(item)}
-            className="group relative w-[156px] shrink-0 snap-start overflow-hidden rounded-2xl bg-black shadow-lg ring-1 ring-black/10 sm:w-[180px]"
+            className="group relative w-[140px] shrink-0 snap-start overflow-hidden rounded-xl bg-black shadow-lg ring-1 ring-black/10 sm:w-[180px] sm:rounded-2xl"
           >
             <div className="relative aspect-[9/16] w-full overflow-hidden bg-black">
               <Thumb
@@ -191,7 +190,7 @@ function ShortsCarousel({ items, onPlay }) {
           type="button"
           aria-label="Previous shorts"
           onClick={() => scrollBy(-1)}
-          className="absolute left-0 top-1/2 z-10 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-slate-700 shadow-lg ring-1 ring-slate-200 hover:bg-slate-50"
+          className="absolute left-1 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-slate-700 shadow-lg ring-1 ring-slate-200 hover:bg-slate-50 sm:left-0 sm:h-10 sm:w-10 sm:-translate-x-1/2"
         >
           <Icon name="arrow" className="h-4 w-4 rotate-180" />
         </button>
@@ -201,7 +200,7 @@ function ShortsCarousel({ items, onPlay }) {
           type="button"
           aria-label="Next shorts"
           onClick={() => scrollBy(1)}
-          className="absolute right-0 top-1/2 z-10 flex h-10 w-10 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-slate-200 text-slate-700 shadow-lg hover:bg-white"
+          className="absolute right-1 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-slate-200 text-slate-700 shadow-lg hover:bg-white sm:right-0 sm:h-10 sm:w-10 sm:translate-x-1/2"
         >
           <Icon name="arrow" className="h-4 w-4" />
         </button>
@@ -302,7 +301,7 @@ export default function Doorcast() {
   const brandLogo = mediaUrl(meta.brandLogoUrl);
   const shortsBrandLogo = mediaUrl(meta.shortsBrandLogoUrl);
 
-  /** Logos upload up to 300×200; show large so the wordmarks read clearly. */
+  /** Logos upload up to 300×200; sizes scale down on mobile. */
   function CmsLogo({ src, alt, className = "", maxH = 120, maxW = 360 }) {
     if (!src) return null;
     return (
@@ -318,14 +317,18 @@ export default function Doorcast() {
     );
   }
 
-  function DoorcastMark({ src, light = true, className = "", maxH = 120 }) {
+  function DoorcastMark({ src, light = true, className = "", maxH = 96, maxW = 280 }) {
     if (src) {
-      return <CmsLogo src={src} alt="DOORCAST" className={className} maxH={maxH} maxW={360} />;
+      return <CmsLogo src={src} alt="DOORCAST" className={className} maxH={maxH} maxW={maxW} />;
     }
-    return <DoorcastLogo light={light} className={`w-full max-w-[360px] ${className}`} />;
+    return (
+      <span className={`inline-block w-full max-w-full ${className}`} style={{ maxWidth: maxW }}>
+        <DoorcastLogo light={light} className="w-full" />
+      </span>
+    );
   }
 
-  function BrandMark({ src, light = false, className = "", maxH = 80 }) {
+  function BrandMark({ src, light = false, className = "", maxH = 64, maxW = 200 }) {
     if (src) {
       return (
         <CmsLogo
@@ -333,14 +336,18 @@ export default function Doorcast() {
           alt={meta.presentedBy || "Education Doorway"}
           className={className}
           maxH={maxH}
-          maxW={260}
+          maxW={maxW}
         />
       );
     }
     return (
-      <span className={`inline-block max-w-[220px] ${className}`}>
-        <Logo light={light} />
-      </span>
+      <img
+        alt="Education Doorway"
+        width={200}
+        height={69}
+        className={`h-auto w-[min(100%,200px)] max-w-full object-contain object-left ${className}`}
+        src={light ? "/logo-white.png" : "/logo-color.png"}
+      />
     );
   }
 
@@ -354,10 +361,7 @@ export default function Doorcast() {
       />
 
       {/* 1 · Banner */}
-      <section
-        className="relative overflow-hidden bg-[#121212] text-white"
-        style={{ height: 560, maxHeight: "65vh" }}
-      >
+      <section className="relative min-h-[340px] overflow-hidden bg-[#121212] text-white sm:min-h-[420px] md:min-h-0 md:h-[560px] md:max-h-[65vh]">
         <img
           src={heroSrc}
           alt={meta.showHeroText ? "" : "Doorcast"}
@@ -368,34 +372,60 @@ export default function Doorcast() {
           }}
         />
         {meta.showHeroText ? (
-          <div className="container-x relative z-10 flex h-full flex-col justify-end py-8 sm:py-10">
-            <div className="flex max-w-3xl flex-col items-start gap-3">
-              <DoorcastMark src={heroLogo} light maxH={140} className="object-left" />
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/85">
-                  Presented by
-                </span>
-                <BrandMark src={brandLogo} light maxH={80} className="object-left" />
+          <div className="container-x relative z-10 flex min-h-[340px] h-full flex-col justify-between gap-6 pt-14 pb-6 sm:min-h-[420px] sm:gap-8 sm:pt-[100px] sm:pb-8 md:pb-10">
+            {/* Logo lockup — top left */}
+            <div className="flex w-full max-w-xl flex-col items-start gap-3 sm:gap-4">
+              {heroLogo ? (
+                <img
+                  src={heroLogo}
+                  alt="DOORCAST"
+                  width={280}
+                  height={96}
+                  className="h-auto w-[min(72vw,200px)] object-contain object-left sm:w-[240px] md:w-[280px]"
+                />
+              ) : (
+                <DoorcastLogo light className="w-[min(72vw,200px)] sm:w-[240px] md:w-[280px]" />
+              )}
+              <div className="flex w-full max-w-full flex-wrap items-center gap-2 sm:gap-3">
+                <span className="shrink-0 text-xs font-medium text-white/90 sm:text-sm">Presented by</span>
+                {brandLogo ? (
+                  <img
+                    src={brandLogo}
+                    alt={meta.presentedBy || "Education Doorway"}
+                    width={200}
+                    height={69}
+                    className="h-auto w-[min(60vw,160px)] object-contain object-left sm:w-[180px] md:w-[200px]"
+                  />
+                ) : (
+                  <img
+                    alt="Education Doorway"
+                    width={200}
+                    height={69}
+                    className="h-auto w-[min(60vw,160px)] object-contain object-left sm:w-[180px] md:w-[200px]"
+                    src="/logo-white.png"
+                  />
+                )}
               </div>
-              <p className="font-display text-xl font-medium italic leading-snug text-white sm:text-2xl">
-                {meta.tagline}
-              </p>
             </div>
+            {/* Tagline — bottom left */}
+            <p className="max-w-xl font-display text-base font-medium italic leading-snug text-white sm:text-xl md:text-2xl">
+              {meta.tagline}
+            </p>
           </div>
         ) : (
-          <div className="relative z-10 h-full" aria-hidden="true" />
+          <div className="relative z-10 min-h-[340px] h-full sm:min-h-[420px]" aria-hidden="true" />
         )}
       </section>
 
-      {/* 2 · Watch Now + About — same height, no empty bars */}
-      <section className="bg-[#1a1a1a] py-8 sm:py-10">
-        <div className="container-x grid gap-5 lg:grid-cols-2 lg:items-stretch">
+      {/* 2 · Watch Now + About */}
+      <section className="bg-[#1a1a1a] py-6 sm:py-8 md:py-10">
+        <div className="container-x grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-2 lg:items-stretch">
           <button
             type="button"
             onClick={playFeatured}
-            className="group relative min-h-[240px] overflow-hidden rounded-2xl bg-black text-left shadow-xl lg:min-h-0"
+            className="group relative min-h-0 w-full min-w-0 overflow-hidden rounded-xl bg-black text-left shadow-xl sm:rounded-2xl lg:min-h-[280px]"
           >
-            <div className="relative h-full min-h-[240px] w-full overflow-hidden lg:absolute lg:inset-0 lg:min-h-0">
+            <div className="relative w-full overflow-hidden lg:absolute lg:inset-0 lg:h-full">
               <div className="relative aspect-video w-full lg:absolute lg:inset-0 lg:aspect-auto lg:h-full">
                 {featured?.youtubeId || featured?.imageUrl ? (
                   <Thumb
@@ -413,18 +443,18 @@ export default function Doorcast() {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
                 <span className="absolute inset-0 flex items-center justify-center">
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 text-[#c8102e] shadow-xl transition group-hover:scale-110">
-                    <PlayIcon className="h-6 w-6" />
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-[#c8102e] shadow-xl transition group-hover:scale-110 sm:h-14 sm:w-14">
+                    <PlayIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                   </span>
                 </span>
                 <span
-                  className="absolute bottom-3 left-3 rounded px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow"
+                  className="absolute bottom-2 left-2 rounded px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow sm:bottom-3 sm:left-3 sm:px-3 sm:py-1.5 sm:text-xs"
                   style={{ backgroundColor: ACCENT }}
                 >
                   {meta.watchNowLabel || "Watch Now"}
                 </span>
                 {featured?.duration ? (
-                  <span className="absolute bottom-3 right-3 rounded bg-black/70 px-2 py-1 text-xs font-semibold text-white">
+                  <span className="absolute bottom-2 right-2 rounded bg-black/70 px-2 py-1 text-[10px] font-semibold text-white sm:bottom-3 sm:right-3 sm:text-xs">
                     {featured.duration}
                   </span>
                 ) : null}
@@ -432,7 +462,7 @@ export default function Doorcast() {
             </div>
           </button>
 
-          <div className="relative min-h-[240px] overflow-hidden rounded-2xl bg-[#1a1a1a] shadow-xl">
+          <div className="relative min-h-[220px] min-w-0 overflow-hidden rounded-xl bg-[#1a1a1a] shadow-xl sm:min-h-[260px] sm:rounded-2xl lg:min-h-[280px]">
             <img
               src={aboutImg}
               alt="Doorcast studio microphone"
@@ -440,10 +470,16 @@ export default function Doorcast() {
               style={{ objectPosition: "35% 40%" }}
               loading="lazy"
             />
-            <div className="relative z-10 ml-auto flex h-full w-full flex-col items-end justify-center gap-4 px-5 py-6 text-right sm:w-[60%] sm:px-7 sm:py-7">
-              <DoorcastMark src={aboutLogo} light className="relative z-[2] object-right" maxH={120} />
+            <div className="relative z-10 ml-auto flex h-full w-full flex-col items-start justify-center gap-3 px-4 py-5 text-left sm:w-[70%] sm:items-end sm:gap-4 sm:px-6 sm:py-6 sm:text-right md:w-[60%] md:px-7 md:py-7">
+              <DoorcastMark
+                src={aboutLogo}
+                light
+                className="relative z-[2] max-w-[200px] object-left sm:max-w-[240px] sm:object-right md:max-w-[280px]"
+                maxH={88}
+                maxW={280}
+              />
               <p
-                className="relative z-[2] max-w-md text-[13px] font-medium leading-relaxed text-white sm:text-sm sm:leading-6"
+                className="relative z-[2] max-w-md text-[12px] font-medium leading-relaxed text-white sm:text-[13px] sm:leading-6 md:text-sm"
                 style={{ textShadow: "0 1px 3px rgba(0,0,0,0.85)" }}
               >
                 {meta.about}
@@ -451,27 +487,38 @@ export default function Doorcast() {
               <button
                 type="button"
                 onClick={playAll}
-                className="relative z-[2] inline-flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:brightness-110"
+                className="relative z-[2] inline-flex max-w-full items-center gap-2 rounded-sm px-3 py-2 text-xs font-bold text-white shadow-lg transition hover:brightness-110 sm:px-4 sm:text-sm"
                 style={{ backgroundColor: ACCENT }}
               >
-                {meta.playAllLabel || "Play all one by one"}
-                <span className="text-base leading-none">›</span>
+                <span className="truncate">{meta.playAllLabel || "Play all one by one"}</span>
+                <span className="shrink-0 text-base leading-none">›</span>
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3 · Shorts — one logo only, tight spacing like Home sections */}
-      <section className="bg-[#f2f2f2] py-8 sm:py-10 lg:py-12">
-        <div className="container-x grid items-center gap-8 lg:grid-cols-[0.85fr_1.35fr]">
-          <div>
-            <DoorcastMark src={shortsLogo} light={false} maxH={120} className="object-left" />
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+      {/* 3 · Shorts */}
+      <section className="overflow-x-clip bg-[#f2f2f2] py-6 sm:py-8 md:py-10 lg:py-12">
+        <div className="container-x grid min-w-0 items-start gap-6 sm:gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.35fr)] lg:items-center">
+          <div className="min-w-0">
+            <DoorcastMark
+              src={shortsLogo}
+              light={false}
+              className="max-w-[200px] object-left sm:max-w-[240px] md:max-w-[280px]"
+              maxH={88}
+              maxW={280}
+            />
+            <div className="mt-3 flex flex-wrap items-center gap-2 sm:gap-3">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 sm:text-xs">
                 Presented by
               </span>
-              <BrandMark src={shortsBrandLogo} maxH={80} className="object-left" />
+              <BrandMark
+                src={shortsBrandLogo}
+                className="object-left"
+                maxH={56}
+                maxW={200}
+              />
             </div>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-[#0d157b] sm:text-base">
               {meta.shortsIntro}
@@ -489,7 +536,9 @@ export default function Doorcast() {
             </button>
           </div>
 
-          <ShortsCarousel items={shorts} onPlay={playShort} />
+          <div className="min-w-0">
+            <ShortsCarousel items={shorts} onPlay={playShort} />
+          </div>
         </div>
       </section>
 
