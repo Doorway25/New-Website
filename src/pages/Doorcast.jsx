@@ -310,7 +310,7 @@ export default function Doorcast() {
       />
 
       {/* 1 · Banner */}
-      <section className="relative h-[220px] overflow-hidden bg-black text-white sm:h-[280px] md:h-[320px]">
+      <section className="relative h-[200px] overflow-hidden bg-black text-white sm:h-[260px] md:h-[300px]">
         <img
           src={heroSrc}
           alt=""
@@ -326,21 +326,19 @@ export default function Doorcast() {
         />
         {meta.showHeroText ? (
           <div className="container-x relative z-10 flex h-full flex-col justify-between py-3 sm:py-4">
-            <div className="flex flex-col items-start gap-1.5 sm:gap-2">
+            <div className="flex flex-col items-start gap-1 sm:gap-1.5">
               <img
                 src={LOGO_DC_WHITE}
                 alt="DOORCAST"
-                className="h-10 w-auto object-contain object-left mix-blend-screen sm:h-14 md:h-16"
+                className="h-9 w-auto max-w-[min(88vw,320px)] object-contain object-left sm:h-12 md:h-14"
               />
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[11px] font-medium text-white/90 sm:text-xs">Presented by</span>
-                <div className="h-7 w-[150px] overflow-hidden sm:h-8 sm:w-[180px]">
-                  <img
-                    src={LOGO_ED_WHITE}
-                    alt="Education Doorway"
-                    className="h-full w-full scale-125 object-contain object-left mix-blend-screen"
-                  />
-                </div>
+                <img
+                  src={LOGO_ED_WHITE}
+                  alt="Education Doorway"
+                  className="h-8 w-auto max-w-[200px] object-contain object-left sm:h-9 sm:max-w-[220px]"
+                />
               </div>
             </div>
             {meta.tagline ? (
@@ -353,7 +351,7 @@ export default function Doorcast() {
       </section>
 
       {/* 2 · Watch Now + About */}
-      <section className="bg-[#1a1a1a] py-2.5 sm:py-3">
+      <section className="bg-[#1a1a1a] py-2 sm:py-2.5">
         <div className="container-x grid min-w-0 gap-2.5 sm:gap-3 lg:grid-cols-2 lg:items-stretch">
           <button
             type="button"
@@ -406,7 +404,7 @@ export default function Doorcast() {
               <img
                 src={LOGO_DC_WHITE}
                 alt="DOORCAST"
-                className="h-9 w-auto object-contain mix-blend-screen sm:h-11 md:h-12"
+                className="h-9 w-auto object-contain sm:h-11 md:h-12"
               />
               <p
                 className="max-w-md text-[12px] font-medium leading-snug text-white sm:text-[13px] sm:leading-5"
@@ -429,30 +427,25 @@ export default function Doorcast() {
       </section>
 
       {/* 3 · Shorts */}
-      <section className="overflow-x-clip bg-[#f2f2f2] py-4 sm:py-5">
+      <section className="overflow-x-clip bg-[#f2f2f2] py-3 sm:py-4">
         <div className="container-x grid min-w-0 items-center gap-4 sm:gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.35fr)]">
-          <div className="flex min-w-0 flex-col items-start gap-0">
-            {/* Crop padded color logo */}
-            <div className="h-12 w-[min(92vw,280px)] overflow-hidden sm:h-14 sm:w-[320px] md:h-16 md:w-[360px]">
-              <img
-                src={LOGO_DC_COLOR}
-                alt="DOORCAST"
-                className="h-full w-full scale-[1.55] object-contain object-center"
-              />
-            </div>
-            <div className="mt-1 flex items-center gap-2">
+          <div className="flex min-w-0 flex-col items-start">
+            <img
+              src={LOGO_DC_COLOR}
+              alt="DOORCAST"
+              className="h-10 w-auto max-w-[min(90vw,300px)] object-contain object-left sm:h-12 sm:max-w-[340px] md:h-14 md:max-w-[380px]"
+            />
+            <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 sm:text-xs">
                 Presented by
               </span>
-              <div className="h-8 w-[140px] overflow-hidden sm:h-9 sm:w-[160px]">
-                <img
-                  src={LOGO_ED_COLOR}
-                  alt="Education Doorway"
-                  className="h-full w-full scale-110 object-contain object-left"
-                />
-              </div>
+              <img
+                src={LOGO_ED_COLOR}
+                alt="Education Doorway"
+                className="h-8 w-auto max-w-[170px] object-contain object-left sm:h-9 sm:max-w-[190px]"
+              />
             </div>
-            <p className="mt-2.5 max-w-sm text-sm leading-relaxed text-[#0d157b] sm:mt-3 sm:text-base">
+            <p className="mt-2.5 max-w-sm text-sm leading-relaxed text-[#0d157b] sm:text-base">
               {meta.shortsIntro}
             </p>
             <button
