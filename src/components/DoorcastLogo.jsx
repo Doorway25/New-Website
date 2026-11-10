@@ -1,5 +1,19 @@
-/** Doorcast wordmark — single-line DOORCAST with headphones in the OO. */
-export default function DoorcastLogo({ className = "", light = true }) {
+/** Doorcast wordmark — uploaded image when provided, otherwise SVG lockup. */
+export default function DoorcastLogo({ className = "", light = true, src = "" }) {
+  if (src) {
+    return (
+      <div className={`inline-block overflow-visible ${className}`}>
+        <img
+          src={src}
+          alt="DOORCAST"
+          className="h-auto w-full object-contain object-left"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    );
+  }
+
   const fill = light ? "#ffffff" : "#0d157b";
   const accent = "#3b9eff";
   return (

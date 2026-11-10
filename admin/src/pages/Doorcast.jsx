@@ -2,22 +2,34 @@ import { useEffect, useState } from "react";
 import { del, get, post, put } from "../api";
 import ImageUpload from "../components/ImageUpload";
 import { useAuth } from "../auth";
-import { youtubeThumbUrl } from "../resources";
+import { extractYoutubeId, youtubeThumbUrl } from "../resources";
 
 const EMPTY_SETTINGS = {
   heroImageUrl: "",
-  showHeroText: false,
+  heroLogoUrl: "",
+  showHeroText: true,
   tagline: "",
   presentedBy: "EDUCATION DOORWAY",
+  brandLogoUrl: "",
   about: "",
   aboutImageUrl: "",
+  aboutLogoUrl: "",
   shortsIntro: "",
+  shortsLogoUrl: "",
   playlistUrl: "",
   episodesPlaylistId: "",
   shortsPlaylistId: "",
   watchNowLabel: "Watch Now",
   playAllLabel: "Play all one by one",
   moreStoriesLabel: "More video stories",
+};
+
+const EMPTY_FEATURED = {
+  youtubeId: "",
+  title: "",
+  description: "",
+  duration: "",
+  imageUrl: "",
 };
 
 const EMPTY_VIDEO = {
@@ -33,14 +45,33 @@ const EMPTY_VIDEO = {
   sortOrder: 0,
 };
 
+function Section({ num, title, hint, children, accent }) {
+  return (
+    <section className="dc-section">
+      <div className="dc-section-head">
+        <span className="dc-section-num" style={accent ? { background: accent } : undefined}>
+          {num}
+        </span>
+        <div>
+          <h2>{title}</h2>
+          {hint ? <p className="muted">{hint}</p> : null}
+        </div>
+      </div>
+      <div className="dc-section-body">{children}</div>
+    </section>
+  );
+}
+
 export default function Doorcast() {
   const { user } = useAuth();
   const canEdit = user?.role === "admin" || user?.role === "editor";
   const canDelete = user?.role === "admin";
   const [settings, setSettings] = useState(EMPTY_SETTINGS);
+  const [featuredForm, setFeaturedForm] = useState(EMPTY_FEATURED);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingFeatured, setSavingFeatured] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [episodePlaylist, setEpisodePlaylist] = useState("");
@@ -58,12 +89,16 @@ export default function Doorcast() {
       const s = data.settings || {};
       setSettings({
         heroImageUrl: s.heroImageUrl || "",
-        showHeroText: Boolean(s.showHeroText),
+        heroLogoUrl: s.heroLogoUrl || "",
+        showHeroText: s.showHeroText !== false,
         tagline: s.tagline || "",
         presentedBy: s.presentedBy || "EDUCATION DOORWAY",
+        brandLogoUrl: s.brandLogoUrl || "",
         about: s.about || "",
         aboutImageUrl: s.aboutImageUrl || "",
+        aboutLogoUrl: s.aboutLogoUrl || "",
         shortsIntro: s.shortsIntro || "",
+        shortsLogoUrl: s.shortsLogoUrl || "",
         playlistUrl: s.playlistUrl || "",
         episodesPlaylistId: s.episodesPlaylistId || "",
         shortsPlaylistId: s.shortsPlaylistId || "",
@@ -79,7 +114,23 @@ export default function Doorcast() {
       setShortsPlaylist(
         s.shortsPlaylistId ? `https://www.youtube.com/playlist?list=${s.shortsPlaylistId}` : ""
       );
-      setVideos(Array.isArray(data.videos) ? data.videos : []);
+      const list = Array.isArray(data.videos) ? data.videos : [];
+      setVideos(list);
+      const featured =
+        list.find((v) => v.kind === "episode" && v.featured) ||
+        list.find((v) => v.kind === "episode") ||
+        null;
+      setFeaturedForm(
+        featured
+          ? {
+              youtubeId: featured.youtubeId || "",
+              title: featured.title || "",
+              description: featured.description || "",
+              duration: featured.duration || "",
+              imageUrl: featured.imageUrl || "",
+            }
+          : EMPTY_FEATURED
+      );
     } catch (err) {
       setError(err.message || "Failed to load Doorcast");
     } finally {
@@ -95,20 +146,44 @@ export default function Doorcast() {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }
 
+  function setFeaturedField(key, value) {
+    setFeaturedForm((prev) => ({ ...prev, [key]: value }));
+  }
+
   async function saveSettings(e) {
-    e.preventDefault();
+    e?.preventDefault?.();
     if (!canEdit) return;
     setSaving(true);
     setError("");
     setMessage("");
     try {
       await put("/api/admin/doorcast/settings", settings);
-      setMessage("Doorcast settings saved");
+      setMessage("Doorcast settings saved — live on /doorcast");
       load();
     } catch (err) {
       setError(err.message || "Save failed");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function saveFeatured(e) {
+    e.preventDefault();
+    if (!canEdit) return;
+    setSavingFeatured(true);
+    setError("");
+    setMessage("");
+    try {
+      await put("/api/admin/doorcast/settings", {
+        watchNowLabel: settings.watchNowLabel,
+      });
+      await put("/api/admin/doorcast/featured", featuredForm);
+      setMessage("Watch Now video saved");
+      load();
+    } catch (err) {
+      setError(err.message || "Could not save Watch Now video");
+    } finally {
+      setSavingFeatured(false);
     }
   }
 
@@ -193,7 +268,11 @@ export default function Doorcast() {
     setError("");
     setMessage("");
     try {
-      await put(`/api/admin/doorcast/videos/${id}`, { featured: true, published: true, kind: "episode" });
+      await put(`/api/admin/doorcast/videos/${id}`, {
+        featured: true,
+        published: true,
+        kind: "episode",
+      });
       setMessage("Watch Now video updated");
       load();
     } catch (err) {
@@ -215,7 +294,6 @@ export default function Doorcast() {
 
   const episodes = videos.filter((v) => v.kind === "episode");
   const shorts = videos.filter((v) => v.kind === "short");
-  const featured = episodes.find((v) => v.featured) || episodes[0] || null;
 
   if (loading) {
     return (
@@ -226,74 +304,124 @@ export default function Doorcast() {
   }
 
   return (
-    <div className="page">
+    <div className="page dc-page">
       <header className="page-header">
         <div>
           <p className="eyebrow">Content</p>
           <h1>Doorcast</h1>
           <p className="muted">
-            Each block below matches a section on the public /doorcast page. Save settings, then
-            manage the Watch Now video and Shorts list.
+            Edit the public page section by section — same order as /doorcast.
           </p>
         </div>
       </header>
 
+      <div className="dc-map">
+        <strong>Page map:</strong> 1 Banner → 2 Watch Now (left) + 3 About (right) → 4 Shorts →
+        counselling form (site-wide)
+      </div>
+
       {error ? <div className="alert error">{error}</div> : null}
       {message ? <div className="alert ok">{message}</div> : null}
 
-      <form className="panel" onSubmit={saveSettings}>
-        <div className="panel-head">
-          <h2>1 · Hero</h2>
-          <p className="muted">Top full-bleed image. Optional logo + tagline overlay.</p>
+      {/* 1 Banner */}
+      <Section
+        num="1"
+        title="Banner"
+        hint="Top full-bleed image. Choose image-only, or show Doorcast logo + Presented by + tagline (matches your layout)."
+      >
+        <div className="dc-mode" role="group" aria-label="Banner mode">
+          <button
+            type="button"
+            className={`dc-mode-btn${settings.showHeroText ? " active" : ""}`}
+            onClick={() => setField("showHeroText", true)}
+            disabled={!canEdit}
+          >
+            <strong>Banner with text</strong>
+            <span>Shows Doorcast logo, Presented by, and tagline over the image (recommended).</span>
+          </button>
+          <button
+            type="button"
+            className={`dc-mode-btn${!settings.showHeroText ? " active" : ""}`}
+            onClick={() => setField("showHeroText", false)}
+            disabled={!canEdit}
+          >
+            <strong>Image only</strong>
+            <span>Only the banner photo — no logos or tagline overlay.</span>
+          </button>
         </div>
 
         <div className="form-grid">
           <ImageUpload
-            label="Hero image"
+            label="Banner background image"
             value={settings.heroImageUrl}
             onChange={(url) => setField("heroImageUrl", url)}
             kind="hero"
-            hint="Full-bleed hero background — JPG/PNG/WebP"
+            hint="ON AIR / studio photo — full width"
           />
-
-          <label className="span-2" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <input
-              type="checkbox"
-              checked={settings.showHeroText}
-              onChange={(e) => setField("showHeroText", e.target.checked)}
-            />
-            <span>Show text on hero (logo + tagline). Leave off for image-only hero.</span>
-          </label>
-
-          <label>
-            Tagline
-            <input
-              value={settings.tagline}
-              onChange={(e) => setField("tagline", e.target.value)}
-              placeholder="Beyond the Conversation. Into Your Future."
-              disabled={!settings.showHeroText}
-            />
-          </label>
-
-          <label>
-            Presented by
-            <input
-              value={settings.presentedBy}
-              onChange={(e) => setField("presentedBy", e.target.value)}
-            />
-          </label>
         </div>
 
-        <div className="panel-head" style={{ marginTop: 28 }}>
-          <h2>2 · Watch Now video (left card)</h2>
-          <p className="muted">
-            This is the big play card (title, description, duration). Add/edit it in{" "}
-            <strong>Videos</strong> below — mark one episode as <strong>Featured (Watch Now)</strong>,
-            or sync a single YouTube video URL. Badge text is editable here.
+        {settings.showHeroText ? (
+          <div className="dc-subcard">
+            <h3>Text on banner (live when mode = Banner with text)</h3>
+            <div className="form-grid">
+              <ImageUpload
+                label="Doorcast logo on banner"
+                value={settings.heroLogoUrl}
+                onChange={(url) => setField("heroLogoUrl", url)}
+                kind="logo"
+                hint="Optional. Empty = default DOORCAST wordmark"
+              />
+              <ImageUpload
+                label="Presented-by brand logo"
+                value={settings.brandLogoUrl}
+                onChange={(url) => setField("brandLogoUrl", url)}
+                kind="logo"
+                hint="Optional. Empty = Education Doorway logo"
+              />
+              <label>
+                Tagline
+                <input
+                  value={settings.tagline}
+                  onChange={(e) => setField("tagline", e.target.value)}
+                  placeholder="Beyond the Conversation. Into Your Future."
+                />
+              </label>
+              <label>
+                Presented by (text)
+                <input
+                  value={settings.presentedBy}
+                  onChange={(e) => setField("presentedBy", e.target.value)}
+                />
+              </label>
+            </div>
+          </div>
+        ) : (
+          <p className="muted" style={{ margin: 0 }}>
+            Text fields are hidden because Image only is selected. Switch to{" "}
+            <strong>Banner with text</strong> to edit logo + tagline.
           </p>
-        </div>
+        )}
 
-        <div className="form-grid">
+        <div className="dc-actions">
+          <button
+            type="button"
+            className="btn primary"
+            disabled={saving || !canEdit}
+            onClick={saveSettings}
+          >
+            {saving ? "Saving…" : "Save banner"}
+          </button>
+        </div>
+      </Section>
+
+      {/* 2 Watch Now */}
+      <Section
+        num="2"
+        title="Watch Now video (left card)"
+        hint="Paste a YouTube link → thumbnail is added automatically. Title/description auto-fill on save if left empty."
+        accent="#c8102e"
+      >
+        <form className="form-grid" onSubmit={saveFeatured}>
           <label>
             “Watch Now” badge label
             <input
@@ -302,42 +430,88 @@ export default function Doorcast() {
               placeholder="Watch Now"
             />
           </label>
+          <label className="span-2">
+            YouTube video URL or ID
+            <input
+              required
+              value={featuredForm.youtubeId}
+              onChange={(e) => setFeaturedField("youtubeId", e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX"
+            />
+            <small className="field-hint">
+              Example: https://www.youtube.com/watch?v=… or https://youtu.be/…
+            </small>
+          </label>
 
-          <div className="span-2" style={{ padding: "12px 14px", background: "#f4f6fb", borderRadius: 10 }}>
-            {featured ? (
-              <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+          {(() => {
+            const id = extractYoutubeId(featuredForm.youtubeId);
+            const preview = featuredForm.imageUrl || (id ? youtubeThumbUrl(id) : "");
+            if (!preview) return null;
+            return (
+              <div className="span-2 dc-subcard" style={{ display: "flex", gap: 14, alignItems: "center" }}>
                 <img
-                  src={featured.imageUrl || youtubeThumbUrl(featured.youtubeId)}
+                  src={preview}
                   alt=""
-                  style={{ width: 120, height: 68, objectFit: "cover", borderRadius: 8 }}
+                  style={{ width: 160, height: 90, objectFit: "cover", borderRadius: 10 }}
                 />
-                <div style={{ flex: 1, minWidth: 180 }}>
-                  <strong>Current Watch Now:</strong> {featured.title}
-                  {featured.duration ? <span className="muted"> · {featured.duration}</span> : null}
-                  {featured.description ? (
-                    <div className="muted" style={{ marginTop: 4, fontSize: 13 }}>
-                      {featured.description}
-                    </div>
-                  ) : null}
+                <div>
+                  <strong>Auto thumbnail</strong>
+                  <p className="muted" style={{ margin: "4px 0 0" }}>
+                    {featuredForm.imageUrl
+                      ? "Using your custom upload."
+                      : "YouTube thumbnail will be saved automatically. Upload below only if you want a custom image."}
+                  </p>
                 </div>
-                <button type="button" className="btn sm" onClick={() => startEdit(featured)}>
-                  Edit this video
-                </button>
               </div>
-            ) : (
-              <p className="muted" style={{ margin: 0 }}>
-                No Watch Now video yet — use “Add episode” below or sync a YouTube video URL, then tick{" "}
-                <strong>Featured (Watch Now)</strong>.
-              </p>
-            )}
+            );
+          })()}
+
+          <label>
+            Title (optional — auto from YouTube)
+            <input
+              value={featuredForm.title}
+              onChange={(e) => setFeaturedField("title", e.target.value)}
+              placeholder="Study in Malaysia?"
+            />
+          </label>
+          <label>
+            Duration
+            <input
+              value={featuredForm.duration}
+              onChange={(e) => setFeaturedField("duration", e.target.value)}
+              placeholder="56 Min"
+            />
+          </label>
+          <label className="span-2">
+            Description (optional — auto from YouTube)
+            <textarea
+              rows={2}
+              value={featuredForm.description}
+              onChange={(e) => setFeaturedField("description", e.target.value)}
+              placeholder="Real conversation on opportunities, costs, and pathways…"
+            />
+          </label>
+          <ImageUpload
+            label="Custom thumbnail (optional)"
+            value={featuredForm.imageUrl}
+            onChange={(url) => setFeaturedField("imageUrl", url)}
+            kind="cover"
+            hint="Leave empty — YouTube thumbnail is used automatically"
+          />
+          <div className="dc-actions span-2">
+            <button type="submit" className="btn primary" disabled={savingFeatured || !canEdit}>
+              {savingFeatured ? "Saving…" : "Save Watch Now video"}
+            </button>
           </div>
-        </div>
+        </form>
+      </Section>
 
-        <div className="panel-head" style={{ marginTop: 28 }}>
-          <h2>3 · About panel (right card)</h2>
-          <p className="muted">About text + studio / host image behind the Doorcast logo panel.</p>
-        </div>
-
+      {/* 3 About */}
+      <Section
+        num="3"
+        title="About panel (right card)"
+        hint="Mic / host image + Doorcast logo + about text + Play all button."
+      >
         <div className="form-grid">
           <label className="span-2">
             About Doorcast
@@ -347,15 +521,20 @@ export default function Doorcast() {
               onChange={(e) => setField("about", e.target.value)}
             />
           </label>
-
           <ImageUpload
             label="About portrait / host image"
             value={settings.aboutImageUrl}
             onChange={(url) => setField("aboutImageUrl", url)}
             kind="cover"
-            hint="Mic / host photo on the right about card (not circular). Leave empty to use default studio image."
+            hint="Studio mic / host photo"
           />
-
+          <ImageUpload
+            label="About Doorcast logo"
+            value={settings.aboutLogoUrl}
+            onChange={(url) => setField("aboutLogoUrl", url)}
+            kind="logo"
+            hint="Optional. Empty = default wordmark"
+          />
           <label>
             “Play all” button label
             <input
@@ -364,9 +543,8 @@ export default function Doorcast() {
               placeholder="Play all one by one"
             />
           </label>
-
           <label>
-            Channel / “Play all” URL
+            Play all / channel URL
             <input
               type="url"
               value={settings.playlistUrl}
@@ -375,13 +553,39 @@ export default function Doorcast() {
             />
           </label>
         </div>
-
-        <div className="panel-head" style={{ marginTop: 28 }}>
-          <h2>4 · Shorts section</h2>
-          <p className="muted">Intro text + link under the shorts carousel. Videos themselves are synced below.</p>
+        <div className="dc-actions">
+          <button
+            type="button"
+            className="btn primary"
+            disabled={saving || !canEdit}
+            onClick={saveSettings}
+          >
+            {saving ? "Saving…" : "Save about panel"}
+          </button>
         </div>
+      </Section>
 
+      {/* 4 Shorts */}
+      <Section
+        num="4"
+        title="Shorts section"
+        hint="Logo + intro text on the left; vertical shorts carousel on the right."
+      >
         <div className="form-grid">
+          <ImageUpload
+            label="Shorts Doorcast logo"
+            value={settings.shortsLogoUrl}
+            onChange={(url) => setField("shortsLogoUrl", url)}
+            kind="logo"
+            hint="Optional. Empty = default dark wordmark"
+          />
+          <ImageUpload
+            label="Presented-by brand logo (shared)"
+            value={settings.brandLogoUrl}
+            onChange={(url) => setField("brandLogoUrl", url)}
+            kind="logo"
+            hint="Same brand logo used under Presented by"
+          />
           <label className="span-2">
             Shorts intro text
             <textarea
@@ -390,7 +594,6 @@ export default function Doorcast() {
               onChange={(e) => setField("shortsIntro", e.target.value)}
             />
           </label>
-
           <label className="span-2">
             “More video stories” link label
             <input
@@ -400,31 +603,31 @@ export default function Doorcast() {
             />
           </label>
         </div>
-
-        <div className="form-actions">
-          <button type="submit" className="btn primary" disabled={saving || !canEdit}>
-            {saving ? "Saving…" : "Save settings"}
+        <div className="dc-actions">
+          <button
+            type="button"
+            className="btn primary"
+            disabled={saving || !canEdit}
+            onClick={saveSettings}
+          >
+            {saving ? "Saving…" : "Save shorts section"}
           </button>
         </div>
-      </form>
+      </Section>
 
-      <div className="panel playlist-sync">
-        <div className="panel-head">
-          <strong>5 · YouTube sync</strong>
-          <p className="muted">
-            <strong>Watch Now:</strong> paste a single video URL (or playlist) → Sync episodes.{" "}
-            <strong>Shorts slider:</strong> paste shorts playlist → Sync shorts.
-          </p>
-        </div>
-
+      <Section
+        num="5"
+        title="YouTube sync"
+        hint="Bulk import. Prefer section 2 for the single Watch Now video."
+      >
         <div className="playlist-sync-row">
           <label className="grow">
-            Watch Now — playlist or single video URL
+            Episodes playlist (optional)
             <input
               type="url"
               value={episodePlaylist}
               onChange={(e) => setEpisodePlaylist(e.target.value)}
-              placeholder="https://www.youtube.com/watch?v=... or playlist URL"
+              placeholder="https://www.youtube.com/playlist?list=..."
             />
           </label>
           <button
@@ -433,13 +636,12 @@ export default function Doorcast() {
             disabled={!!syncing || !canEdit}
             onClick={() => syncPlaylist("episode")}
           >
-            {syncing === "episode" ? "Syncing…" : "Sync Watch Now / episodes"}
+            {syncing === "episode" ? "Syncing…" : "Sync episodes"}
           </button>
         </div>
-
-        <div className="playlist-sync-row" style={{ marginTop: 12 }}>
+        <div className="playlist-sync-row" style={{ marginTop: 4 }}>
           <label className="grow">
-            Shorts playlist (bottom carousel)
+            Shorts playlist (carousel)
             <input
               type="url"
               value={shortsPlaylist}
@@ -456,37 +658,26 @@ export default function Doorcast() {
             {syncing === "short" ? "Syncing…" : "Sync shorts"}
           </button>
         </div>
-      </div>
+      </Section>
 
-      <div className="panel">
-        <div className="panel-head row" style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-          <div>
-            <h2>6 · Videos</h2>
-            <p className="muted">
-              {episodes.length} episode{episodes.length === 1 ? "" : "s"} · {shorts.length} short
-              {shorts.length === 1 ? "" : "s"} — tick <strong>Featured (Watch Now)</strong> on the
-              episode that should appear in the left card.
-            </p>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button type="button" className="btn" onClick={() => startAdd("episode")} disabled={!canEdit}>
-              Add episode
-            </button>
-            <button type="button" className="btn" onClick={() => startAdd("short")} disabled={!canEdit}>
-              Add short
-            </button>
-          </div>
+      <Section num="6" title="All videos" hint={`${episodes.length} episodes · ${shorts.length} shorts`}>
+        <div className="dc-actions" style={{ justifyContent: "flex-end" }}>
+          <button type="button" className="btn" onClick={() => startAdd("episode")} disabled={!canEdit}>
+            Add episode
+          </button>
+          <button type="button" className="btn" onClick={() => startAdd("short")} disabled={!canEdit}>
+            Add short
+          </button>
         </div>
 
         {adding ? (
-          <form className="form-grid" onSubmit={saveVideo} style={{ marginBottom: 20 }}>
+          <form className="form-grid" onSubmit={saveVideo}>
             <label className="span-2">
               YouTube URL or ID
               <input
                 required
                 value={form.youtubeId}
                 onChange={(e) => setForm((p) => ({ ...p, youtubeId: e.target.value }))}
-                placeholder="https://youtube.com/watch?v=... or Shorts URL"
               />
             </label>
             <label>
@@ -494,7 +685,6 @@ export default function Doorcast() {
               <input
                 value={form.title}
                 onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-                placeholder="e.g. Study in Malaysia?"
               />
             </label>
             <label>
@@ -510,8 +700,8 @@ export default function Doorcast() {
                 value={form.kind}
                 onChange={(e) => setForm((p) => ({ ...p, kind: e.target.value }))}
               >
-                <option value="episode">Episode (Watch Now card)</option>
-                <option value="short">Short (bottom slider)</option>
+                <option value="episode">Episode (Watch Now)</option>
+                <option value="short">Short (carousel)</option>
               </select>
             </label>
             <label>
@@ -519,25 +709,22 @@ export default function Doorcast() {
               <input
                 value={form.duration}
                 onChange={(e) => setForm((p) => ({ ...p, duration: e.target.value }))}
-                placeholder="56 Min"
               />
             </label>
             <label className="span-2">
-              Description (shown under title on Watch Now card)
+              Description
               <textarea
                 rows={2}
                 value={form.description}
                 onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Real conversation on opportunities, costs, and pathways…"
               />
             </label>
             <div className="span-2">
               <ImageUpload
-                label="Custom thumbnail (optional)"
+                label="Thumbnail"
                 value={form.imageUrl}
                 onChange={(url) => setForm((p) => ({ ...p, imageUrl: url }))}
                 kind="cover"
-                hint="Leave empty to use YouTube thumbnail"
               />
             </div>
             <label style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -546,7 +733,7 @@ export default function Doorcast() {
                 checked={form.featured}
                 onChange={(e) => setForm((p) => ({ ...p, featured: e.target.checked }))}
               />
-              <span>Featured (Watch Now) — left card on /doorcast</span>
+              <span>Featured (Watch Now)</span>
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <input
@@ -556,7 +743,7 @@ export default function Doorcast() {
               />
               <span>Published</span>
             </label>
-            <div className="form-actions span-2">
+            <div className="dc-actions span-2">
               <button type="submit" className="btn primary">
                 {editingId ? "Update video" : "Add video"}
               </button>
@@ -590,7 +777,7 @@ export default function Doorcast() {
               {videos.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="muted">
-                    No videos yet — sync a playlist or add one manually.
+                    No videos yet — use section 2 or sync shorts.
                   </td>
                 </tr>
               ) : (
@@ -605,12 +792,6 @@ export default function Doorcast() {
                     </td>
                     <td>
                       <strong>{v.title}</strong>
-                      {v.subtitle ? <div className="muted">{v.subtitle}</div> : null}
-                      {v.description ? (
-                        <div className="muted" style={{ fontSize: 12, maxWidth: 360 }}>
-                          {v.description}
-                        </div>
-                      ) : null}
                       <div className="muted" style={{ fontSize: 12 }}>
                         {v.youtubeId}
                         {v.duration ? ` · ${v.duration}` : ""}
@@ -657,7 +838,7 @@ export default function Doorcast() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Section>
     </div>
   );
 }

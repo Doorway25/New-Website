@@ -411,12 +411,16 @@ model DoorcastSetting {
   id                 String   @id @default(cuid())
   key                String   @unique @default("main")
   heroImageUrl       String?
+  heroLogoUrl        String?
   showHeroText       Boolean  @default(false)
   tagline            String?
   presentedBy        String?  @default("EDUCATION DOORWAY")
+  brandLogoUrl       String?
   about              String?  @db.Text
   aboutImageUrl      String?
+  aboutLogoUrl       String?
   shortsIntro        String?
+  shortsLogoUrl      String?
   playlistUrl        String?
   episodesPlaylistId String?
   shortsPlaylistId   String?

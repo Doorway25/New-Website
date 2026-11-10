@@ -216,8 +216,12 @@ export default function Doorcast() {
   const [meta, setMeta] = useState({
     ...doorcastMeta,
     heroImageUrl: "/doorcast-hero.jpg",
-    showHeroText: false,
+    heroLogoUrl: "",
+    brandLogoUrl: "",
+    showHeroText: true,
     aboutImageUrl: "",
+    aboutLogoUrl: "",
+    shortsLogoUrl: "",
     shortsPlaylistUrl: doorcastMeta.shortsPlaylistUrl,
     watchNowLabel: "Watch Now",
     playAllLabel: "Play all one by one",
@@ -225,6 +229,7 @@ export default function Doorcast() {
   });
   const [featured, setFeatured] = useState(doorcastEpisodes[0] || null);
   const [shorts, setShorts] = useState(doorcastShorts);
+  const [cmsReady, setCmsReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -243,8 +248,12 @@ export default function Doorcast() {
           shortsIntro: s.shortsIntro || doorcastMeta.shortsIntro,
           playlistUrl: s.playlistUrl || doorcastMeta.playlistUrl,
           heroImageUrl: s.heroImageUrl || "/doorcast-hero.jpg",
+          heroLogoUrl: s.heroLogoUrl || "",
+          brandLogoUrl: s.brandLogoUrl || "",
           showHeroText: Boolean(s.showHeroText),
           aboutImageUrl: s.aboutImageUrl || "",
+          aboutLogoUrl: s.aboutLogoUrl || "",
+          shortsLogoUrl: s.shortsLogoUrl || "",
           shortsPlaylistUrl: shortsUrl,
           watchNowLabel: s.watchNowLabel || "Watch Now",
           playAllLabel: s.playAllLabel || "Play all one by one",
@@ -252,7 +261,10 @@ export default function Doorcast() {
         });
         if (data.featured?.youtubeId) setFeatured(data.featured);
         else if (Array.isArray(data.episodes) && data.episodes[0]) setFeatured(data.episodes[0]);
+        else setFeatured(null);
         if (Array.isArray(data.shorts) && data.shorts.length) setShorts(data.shorts);
+        else setShorts([]);
+        setCmsReady(true);
       })
       .catch(() => {
         /* keep static fallbacks */
@@ -284,6 +296,30 @@ export default function Doorcast() {
 
   const heroSrc = mediaUrl(meta.heroImageUrl) || "/doorcast-hero.jpg";
   const aboutImg = mediaUrl(meta.aboutImageUrl) || "/doorcast-music.jpg";
+  const heroLogo = mediaUrl(meta.heroLogoUrl);
+  const aboutLogo = mediaUrl(meta.aboutLogoUrl);
+  const shortsLogo = mediaUrl(meta.shortsLogoUrl);
+  const brandLogo = mediaUrl(meta.brandLogoUrl);
+
+  function BrandMark({ light = false, className = "inline-block max-w-[160px]" }) {
+    if (brandLogo) {
+      return (
+        <span className={className}>
+          <img
+            src={brandLogo}
+            alt={meta.presentedBy || "Education Doorway"}
+            className="h-auto w-full object-contain object-left"
+            loading="lazy"
+          />
+        </span>
+      );
+    }
+    return (
+      <span className={className}>
+        <Logo light={light} />
+      </span>
+    );
+  }
 
   return (
     <>
@@ -294,37 +330,35 @@ export default function Doorcast() {
         path="/doorcast"
       />
 
-      {/* Hero: image only by default; optional text when admin enables it */}
+      {/* Banner — matches design: full image; logos + tagline when admin enables text */}
       <section className="relative overflow-hidden bg-[#121212] text-white">
         <img
           src={heroSrc}
           alt={meta.showHeroText ? "" : "Doorcast"}
-          className={`absolute inset-0 h-full w-full object-cover object-center ${
-            meta.showHeroText ? "opacity-45" : "opacity-100"
-          }`}
+          className="absolute inset-0 h-full w-full object-cover object-center"
         />
         {meta.showHeroText ? (
           <>
-            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/35" />
-            <div className="container-x relative z-10 flex min-h-[42vh] flex-col justify-between py-10 sm:min-h-[48vh] sm:py-14 lg:min-h-[52vh]">
+            {/* Soft left fade so logos/tagline stay readable without washing out the photo */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25" />
+            <div className="container-x relative z-10 flex min-h-[42vh] flex-col justify-between py-10 sm:min-h-[50vh] sm:py-14 lg:min-h-[56vh]">
               <div>
-                <DoorcastLogo className="max-w-[240px] sm:max-w-[300px]" />
+                <DoorcastLogo src={heroLogo} className="max-w-[240px] sm:max-w-[300px]" />
                 <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">
                     Presented by
                   </span>
-                  <span className="inline-block max-w-[160px]">
-                    <Logo light />
-                  </span>
+                  <BrandMark light className="inline-block max-w-[150px] sm:max-w-[170px]" />
                 </div>
               </div>
-              <p className="mt-10 max-w-xl font-display text-2xl font-medium italic leading-snug text-white sm:text-3xl lg:text-4xl">
+              <p className="max-w-xl font-display text-2xl font-medium italic leading-snug text-white sm:text-3xl lg:text-[2.35rem] lg:leading-tight">
                 {meta.tagline}
               </p>
             </div>
           </>
         ) : (
-          <div className="relative z-10 min-h-[42vh] sm:min-h-[48vh] lg:min-h-[56vh]" aria-hidden="true" />
+          <div className="relative z-10 min-h-[42vh] sm:min-h-[50vh] lg:min-h-[56vh]" aria-hidden="true" />
         )}
       </section>
 
@@ -337,11 +371,11 @@ export default function Doorcast() {
             className="group relative overflow-hidden rounded-2xl bg-slate-900 text-left shadow-xl"
           >
             <div className="relative aspect-video w-full overflow-hidden">
-              {featured?.youtubeId ? (
+              {featured?.youtubeId || featured?.imageUrl ? (
                 <Thumb
-                  youtubeId={featured.youtubeId}
-                  imageUrl={featured.imageUrl}
-                  alt={featured.title}
+                  youtubeId={featured?.youtubeId}
+                  imageUrl={featured?.imageUrl}
+                  alt={featured?.title || "Doorcast"}
                   className="absolute inset-0 transition duration-500 group-hover:scale-[1.03]"
                 />
               ) : (
@@ -370,7 +404,9 @@ export default function Doorcast() {
               </span>
             </div>
             <div className="px-4 py-3 sm:px-5">
-              <p className="font-display text-lg font-bold text-white">{featured?.title || "Doorcast"}</p>
+              <p className="font-display text-lg font-bold text-white">
+                {featured?.title || (cmsReady ? "Add a Watch Now video in Admin → Doorcast" : "Doorcast")}
+              </p>
               {featured?.description ? (
                 <p className="mt-1 line-clamp-2 text-sm text-white/65">{featured.description}</p>
               ) : null}
@@ -409,7 +445,10 @@ export default function Doorcast() {
                 aria-hidden="true"
               />
 
-              <DoorcastLogo className="relative z-[2] w-[210px] max-w-full drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:w-[250px]" />
+              <DoorcastLogo
+                src={aboutLogo}
+                className="relative z-[2] w-[210px] max-w-full drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:w-[250px]"
+              />
 
               <p
                 className="relative z-[2] max-w-[32rem] text-[13px] font-medium leading-relaxed text-white sm:text-[15px] sm:leading-7"
@@ -438,14 +477,12 @@ export default function Doorcast() {
       <section className="bg-[#efefef] py-10 sm:py-12">
         <div className="container-x grid items-center gap-8 lg:grid-cols-[0.85fr_1.35fr]">
           <div>
-            <DoorcastLogo light={false} className="max-w-[220px]" />
+            <DoorcastLogo src={shortsLogo} light={false} className="max-w-[220px]" />
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Presented by
               </span>
-              <span className="inline-block max-w-[140px] origin-left scale-90">
-                <Logo />
-              </span>
+              <BrandMark className="inline-block max-w-[140px] origin-left scale-90" />
             </div>
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-slate-600 sm:text-base">
               {meta.shortsIntro}

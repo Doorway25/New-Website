@@ -2999,3 +2999,106 @@ td.row-actions {
     min-height: 44px;
   }
 }
+
+/* —— Doorcast section CMS —— */
+.dc-page .dc-map {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0d157b12, #c8102e0d);
+  border: 1px solid var(--border);
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+.dc-page .dc-map strong { color: var(--text); }
+.dc-section {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.dc-section-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+  background: #f8f9fc;
+}
+.dc-section-num {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fff;
+  background: #0d157b;
+}
+.dc-section-head h2 {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+}
+.dc-section-head .muted {
+  margin: 0;
+  font-size: 0.84rem;
+}
+.dc-section-body {
+  padding: 16px 18px 18px;
+  display: grid;
+  gap: 14px;
+}
+.dc-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 720px) {
+  .dc-mode { grid-template-columns: 1fr; }
+}
+.dc-mode-btn {
+  text-align: left;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 14px 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.dc-mode-btn strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+.dc-mode-btn span {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.dc-mode-btn.active {
+  border-color: #0d157b;
+  background: #0d157b0d;
+  box-shadow: 0 0 0 3px #0d157b1a;
+}
+.dc-subcard {
+  border: 1px dashed #c5cce0;
+  border-radius: 14px;
+  padding: 14px;
+  background: #fbfcff;
+}
+.dc-subcard h3 {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+}
+.dc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}

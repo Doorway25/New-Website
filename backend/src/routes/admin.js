@@ -266,13 +266,17 @@ router.post(
 const DOORCAST_DEFAULTS = {
   key: "main",
   heroImageUrl: "/doorcast-hero.jpg",
-  showHeroText: false,
+  heroLogoUrl: null,
+  showHeroText: true,
   tagline: "Beyond the Conversation. Into Your Future.",
   presentedBy: "EDUCATION DOORWAY",
+  brandLogoUrl: null,
   about:
     "A platform for real conversations, expert insights, and honest guidance for students and families. Through engaging discussions with university partners, alumni, and education specialists, Doorcast helps you make informed decisions about your future.",
   aboutImageUrl: null,
+  aboutLogoUrl: null,
   shortsIntro: "Watch the youtube shorts to know the key points of the full episode",
+  shortsLogoUrl: null,
   playlistUrl: "https://www.youtube.com/playlist?list=PLTxqWjoR7G9A",
   episodesPlaylistId: "PLTxqWjoR7G9A",
   shortsPlaylistId: null,
@@ -304,12 +308,16 @@ router.put(
     await ensureDoorcastSetting();
     const data = pick(req.body || {}, [
       "heroImageUrl",
+      "heroLogoUrl",
       "showHeroText",
       "tagline",
       "presentedBy",
+      "brandLogoUrl",
       "about",
       "aboutImageUrl",
+      "aboutLogoUrl",
       "shortsIntro",
+      "shortsLogoUrl",
       "playlistUrl",
       "episodesPlaylistId",
       "shortsPlaylistId",
@@ -320,11 +328,15 @@ router.put(
     if (data.showHeroText != null) data.showHeroText = Boolean(data.showHeroText);
     for (const key of [
       "heroImageUrl",
+      "heroLogoUrl",
       "tagline",
       "presentedBy",
+      "brandLogoUrl",
       "about",
       "aboutImageUrl",
+      "aboutLogoUrl",
       "shortsIntro",
+      "shortsLogoUrl",
       "playlistUrl",
       "episodesPlaylistId",
       "shortsPlaylistId",
@@ -339,6 +351,62 @@ router.put(
       data,
     });
     res.json(settings);
+  })
+);
+
+/** Upsert the left-card Watch Now / featured episode in one step */
+router.put(
+  "/doorcast/featured",
+  asyncHandler(async (req, res) => {
+    const rawId = String(req.body?.youtubeId || req.body?.url || "").trim();
+    const youtubeId = extractYoutubeId(rawId) || rawId;
+    if (!youtubeId) throw new HttpError(400, "YouTube URL or ID required for Watch Now video");
+
+    let meta = null;
+    try {
+      meta = await fetchYoutubeMeta(youtubeId);
+    } catch {
+      /* manual fields ok */
+    }
+
+    const manualTitle = String(req.body?.title || "").trim();
+    const manualDesc = String(req.body?.description || "").trim();
+    const manualDuration = String(req.body?.duration || "").trim();
+    const manualImage = String(req.body?.imageUrl || "").trim();
+    const title = manualTitle || meta?.title || `YouTube ${youtubeId}`;
+    const subtitle = req.body?.subtitle != null ? String(req.body.subtitle).trim() || null : null;
+    const description = manualDesc || meta?.description?.slice(0, 500) || null;
+    const duration = manualDuration || null;
+    // Empty upload → auto YouTube thumbnail
+    const imageUrl =
+      manualImage ||
+      meta?.thumbnail ||
+      `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
+    const published = req.body?.published !== false;
+
+    await prisma.doorcastVideo.updateMany({
+      where: { kind: "episode", featured: true },
+      data: { featured: false },
+    });
+
+    const existing = await prisma.doorcastVideo.findUnique({ where: { youtubeId } });
+    const payload = {
+      title,
+      subtitle,
+      description,
+      duration,
+      imageUrl,
+      kind: "episode",
+      featured: true,
+      published,
+      sortOrder: 0,
+    };
+
+    const video = existing
+      ? await prisma.doorcastVideo.update({ where: { id: existing.id }, data: payload })
+      : await prisma.doorcastVideo.create({ data: { youtubeId, ...payload } });
+
+    res.json(video);
   })
 );
 

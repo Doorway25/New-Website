@@ -313,13 +313,17 @@ router.get(
     if (!settings) {
       settings = {
         heroImageUrl: "/doorcast-hero.jpg",
-        showHeroText: false,
+        heroLogoUrl: null,
+        showHeroText: true,
         tagline: "Beyond the Conversation. Into Your Future.",
         presentedBy: "EDUCATION DOORWAY",
+        brandLogoUrl: null,
         about:
           "A platform for real conversations, expert insights, and honest guidance for students and families. Through engaging discussions with university partners, alumni, and education specialists, Doorcast helps you make informed decisions about your future.",
         aboutImageUrl: null,
+        aboutLogoUrl: null,
         shortsIntro: "Watch the youtube shorts to know the key points of the full episode",
+        shortsLogoUrl: null,
         playlistUrl: "https://www.youtube.com/playlist?list=PLTxqWjoR7G9A",
         episodesPlaylistId: "PLTxqWjoR7G9A",
         shortsPlaylistId: "PLPX4VGzg8TQo",
@@ -342,12 +346,16 @@ router.get(
     res.json({
       settings: {
         heroImageUrl: settings.heroImageUrl,
+        heroLogoUrl: settings.heroLogoUrl,
         showHeroText: settings.showHeroText,
         tagline: settings.tagline,
         presentedBy: settings.presentedBy,
+        brandLogoUrl: settings.brandLogoUrl,
         about: settings.about,
         aboutImageUrl: settings.aboutImageUrl,
+        aboutLogoUrl: settings.aboutLogoUrl,
         shortsIntro: settings.shortsIntro,
+        shortsLogoUrl: settings.shortsLogoUrl,
         playlistUrl: settings.playlistUrl,
         episodesPlaylistId: settings.episodesPlaylistId,
         shortsPlaylistId: settings.shortsPlaylistId,
