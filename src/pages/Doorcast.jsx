@@ -310,7 +310,7 @@ export default function Doorcast() {
       />
 
       {/* 1 · Banner */}
-      <section className="relative h-[240px] overflow-hidden bg-black text-white sm:h-[300px] md:h-[360px]">
+      <section className="relative h-[260px] overflow-hidden bg-black text-white sm:h-[320px] md:h-[380px]">
         <img
           src={heroSrc}
           alt=""
@@ -325,31 +325,33 @@ export default function Doorcast() {
           }}
         />
         {meta.showHeroText ? (
-          <div className="container-x relative z-10 flex h-full flex-col justify-between py-4 sm:py-5 md:py-6">
-            <div className="flex max-w-xl flex-col items-start gap-2 sm:gap-2.5">
+          <div className="container-x relative z-10 flex h-full flex-col justify-between py-5 sm:py-6 md:py-7">
+            <div className="flex flex-col items-start gap-1.5 sm:gap-2">
               <img
                 src={LOGO_DC_WHITE}
                 alt="DOORCAST"
-                width={360}
-                height={72}
-                className="h-12 w-auto max-h-12 max-w-[min(88vw,340px)] object-contain object-left sm:h-14 sm:max-h-14 sm:max-w-[380px] md:h-16 md:max-h-16 md:max-w-[420px]"
+                width={240}
+                height={48}
+                style={{ height: 40, width: "auto", maxWidth: 260 }}
+                className="object-contain object-left sm:!h-[48px] sm:!max-w-[300px] md:!h-[52px] md:!max-w-[320px]"
               />
-              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-                <span className="shrink-0 text-xs font-medium tracking-wide text-white/90">Presented by</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="shrink-0 text-[11px] font-medium tracking-wide text-white/90 sm:text-xs">
+                  Presented by
+                </span>
                 <img
                   src={LOGO_ED_WHITE}
                   alt="Education Doorway"
-                  width={220}
-                  height={40}
-                  className="h-8 w-auto max-h-8 max-w-[180px] object-contain object-left sm:h-9 sm:max-h-9 sm:max-w-[200px]"
+                  width={160}
+                  height={32}
+                  style={{ height: 28, width: "auto", maxWidth: 160 }}
+                  className="object-contain object-left sm:!h-[32px] sm:!max-w-[180px]"
                 />
               </div>
             </div>
-            {meta.tagline ? (
-              <p className="max-w-xl font-display text-base font-medium italic leading-snug text-white sm:text-lg md:text-xl">
-                {meta.tagline}
-              </p>
-            ) : null}
+            <p className="max-w-xl shrink-0 font-display text-base font-medium italic leading-snug text-white sm:text-lg md:text-xl">
+              {meta.tagline || "Beyond the Conversation. Into Your Future."}
+            </p>
           </div>
         ) : null}
       </section>
