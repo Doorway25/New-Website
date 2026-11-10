@@ -60,6 +60,7 @@ export default function ResourceEdit({ resourceKey }) {
   const [message, setMessage] = useState("");
   const [fetchingYoutube, setFetchingYoutube] = useState(false);
   const [universityOptions, setUniversityOptions] = useState([]);
+  const [countryOptions, setCountryOptions] = useState([]);
   const [articleCategories, setArticleCategories] = useState([]);
   /** When true, slug no longer follows the title (user edited it, or editing existing). */
   const [slugManual, setSlugManual] = useState(!isNew);
@@ -69,6 +70,7 @@ export default function ResourceEdit({ resourceKey }) {
   const sections = useMemo(() => groupFields(resource.fields), [resource]);
   const hasYoutube = resource.fields.some((f) => f.key === "youtubeId");
   const needsUniversities = resource.fields.some((f) => f.type === "university-slug");
+  const needsCountries = resource.fields.some((f) => f.type === "country-slug");
   const editableSlug = useMemo(() => !!autoSlugTargetField(resource), [resource]);
   const slugTarget = useMemo(() => autoSlugTargetField(resource), [resource]);
   const slugSource = useMemo(() => slugSourceField(resource), [resource]);
@@ -76,6 +78,29 @@ export default function ResourceEdit({ resourceKey }) {
     resource.fields.find((f) => f.key === slugSource)?.label || "Title";
   const slugTargetLabel =
     resource.fields.find((f) => f.key === slugTarget)?.label || "Slug";
+
+  useEffect(() => {
+    if (!needsCountries) {
+      setCountryOptions([]);
+      return;
+    }
+    get("/api/admin/countries?pageSize=200")
+      .then((res) => {
+        const items = res?.items || [];
+        setCountryOptions(
+          items
+            .map((c) => ({
+              value: c.slug,
+              label: c.name || c.slug,
+              code: c.code || "",
+              flagUrl: c.flagUrl || "",
+              published: c.published !== false,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label))
+        );
+      })
+      .catch(() => setCountryOptions([]));
+  }, [needsCountries, resourceKey]);
 
   useEffect(() => {
     if (!needsUniversities) return;
@@ -383,6 +408,7 @@ export default function ResourceEdit({ resourceKey }) {
                     values={values}
                     onChange={setField}
                     universityOptions={universityOptions}
+                    countryOptions={countryOptions}
                     onUseYoutubeThumb={field.key === "youtubeId" ? useYoutubeThumb : undefined}
                     onFetchYoutube={field.key === "youtubeId" ? fetchYoutubeDetails : undefined}
                     fetchingYoutube={fetchingYoutube}
@@ -453,6 +479,8 @@ function isFullSpanField(field) {
     field.type === "pointlist" ||
     field.type === "json" ||
     field.type === "stringlist" ||
+    field.type === "country" ||
+    field.type === "country-slug" ||
     field.key === "youtubeId"
   );
 }
@@ -471,6 +499,7 @@ function Field({
   values,
   onChange,
   universityOptions = [],
+  countryOptions = [],
   onUseYoutubeThumb,
   onFetchYoutube,
   fetchingYoutube,
@@ -712,6 +741,52 @@ function Field({
             </div>
           </div>
         ) : null}
+      </div>
+    );
+  }
+
+  if (field.type === "country-slug") {
+    const slug = String(value || "").trim();
+    const selected = countryOptions.find((o) => o.value === slug);
+    const flagSrc = selected?.flagUrl
+      ? adminMediaUrl(selected.flagUrl)
+      : flagImageUrl(selected?.code, 80);
+    const options =
+      slug && !countryOptions.some((o) => o.value === slug)
+        ? [...countryOptions, { value: slug, label: `${slug} (saved)` }]
+        : countryOptions;
+    return (
+      <div className="span-full country-flag-row">
+        <label className="field-block">
+          <span className="field-label">{field.label || "Country"}</span>
+          <select
+            {...common}
+            value={slug}
+            onChange={(e) => onChange(field.key, e.target.value)}
+          >
+            <option value="">Select country…</option>
+            {options.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+                {opt.published === false ? " (draft)" : ""}
+              </option>
+            ))}
+          </select>
+          {hint}
+          {!options.length ? (
+            <small className="field-hint">No countries yet — add one under Countries first.</small>
+          ) : null}
+        </label>
+        <div className="field-block flag-preview-field">
+          <span className="field-label">Flag</span>
+          <div className={`flag-preview-box${flagSrc ? "" : " is-empty"}`}>
+            {flagSrc ? (
+              <img src={flagSrc} alt={selected?.label || slug} title={selected?.label || slug} />
+            ) : (
+              <span>Select a country</span>
+            )}
+          </div>
+        </div>
       </div>
     );
   }

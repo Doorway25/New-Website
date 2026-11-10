@@ -257,10 +257,8 @@ export const resources = {
     pageSize: 20,
     filterTabs: {
       param: "countrySlug",
-      options: [
-        { value: "", label: "All" },
-        ...UNIVERSITY_COUNTRY_OPTIONS,
-      ],
+      fromCountries: true,
+      options: [{ value: "", label: "All" }],
     },
     fields: [
       { key: "name", label: "Name", required: true, section: "Basics" },
@@ -275,10 +273,9 @@ export const resources = {
         key: "countrySlug",
         label: "Country",
         required: true,
-        type: "select",
+        type: "country-slug",
         section: "Basics",
-        options: UNIVERSITY_COUNTRY_OPTIONS,
-        hint: "Must match a published country slug",
+        hint: "Choose from Countries in the database. Add a country under Countries first if missing.",
       },
       { key: "city", label: "City", required: true, section: "Basics" },
       { key: "feeFrom", label: "Tuition from", type: "number", required: true, section: "Basics", hint: "Currency follows the selected country" },

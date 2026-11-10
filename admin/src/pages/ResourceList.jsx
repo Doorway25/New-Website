@@ -28,6 +28,7 @@ export default function ResourceList({ resourceKey }) {
   const [error, setError] = useState("");
   const [query, setQuery] = useState(q);
   const [uniBySlug, setUniBySlug] = useState({});
+  const [countryTabs, setCountryTabs] = useState(null);
   const [playlistUrl, setPlaylistUrl] = useState("");
   const [syncRole, setSyncRole] = useState("delegate");
   const [syncing, setSyncing] = useState(false);
@@ -67,6 +68,27 @@ export default function ResourceList({ resourceKey }) {
     setSyncMessage("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resourceKey, filterValue, resource.playlistSync]);
+
+  useEffect(() => {
+    if (!filterTabs?.fromCountries) {
+      setCountryTabs(null);
+      return;
+    }
+    get("/api/admin/countries?pageSize=200")
+      .then((res) => {
+        const items = (res?.items || [])
+          .slice()
+          .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || String(a.name || "").localeCompare(String(b.name || "")));
+        setCountryTabs([
+          { value: "", label: "All" },
+          ...items.map((c) => ({
+            value: c.slug,
+            label: c.name || c.slug,
+          })),
+        ]);
+      })
+      .catch(() => setCountryTabs([{ value: "", label: "All" }]));
+  }, [filterTabs?.fromCountries, resourceKey]);
 
   useEffect(() => {
     if (!partnerMode) {
@@ -206,7 +228,7 @@ export default function ResourceList({ resourceKey }) {
 
       {filterTabs ? (
         <div className="filter-tabs" role="tablist" aria-label={`${resource.label} filters`}>
-          {filterTabs.options.map((tab) => {
+          {(countryTabs || filterTabs.options).map((tab) => {
             const active = filterValue === tab.value;
             return (
               <button
