@@ -405,7 +405,7 @@ export default function Doorcast() {
               style={{ objectPosition: "28% 40%" }}
               loading="lazy"
             />
-            <div className="absolute inset-y-0 right-0 z-10 flex w-full flex-col items-start justify-center gap-2.5 px-4 py-4 text-left sm:w-[58%] sm:items-end sm:gap-3 sm:px-6 sm:py-5 sm:text-right">
+            <div className="absolute inset-y-0 right-0 z-10 flex w-full flex-col items-start justify-center gap-2.5 px-4 py-5 pb-8 text-left sm:w-[58%] sm:items-end sm:gap-3 sm:px-6 sm:py-6 sm:pb-10 sm:text-right">
               <img
                 src={LOGO_DC_WHITE}
                 alt="DOORCAST"
@@ -422,7 +422,7 @@ export default function Doorcast() {
               <button
                 type="button"
                 onClick={playAll}
-                className="inline-flex max-w-full items-center gap-2 rounded-sm px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:brightness-110"
+                className="mb-1 inline-flex max-w-full items-center gap-2 rounded-sm px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:brightness-110 sm:mb-2"
                 style={{ backgroundColor: ACCENT }}
               >
                 <span className="truncate">{meta.playAllLabel || "Play all one by one"}</span>
