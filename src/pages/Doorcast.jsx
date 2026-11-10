@@ -361,7 +361,7 @@ export default function Doorcast() {
       />
 
       {/* 1 · Banner */}
-      <section className="relative min-h-[340px] overflow-hidden bg-[#121212] text-white sm:min-h-[420px] md:min-h-0 md:h-[560px] md:max-h-[65vh]">
+      <section className="relative min-h-[360px] overflow-hidden bg-[#121212] text-white sm:min-h-[440px] md:min-h-0 md:h-[560px] md:max-h-[65vh]">
         <img
           src={heroSrc}
           alt={meta.showHeroText ? "" : "Doorcast"}
@@ -372,48 +372,48 @@ export default function Doorcast() {
           }}
         />
         {meta.showHeroText ? (
-          <div className="container-x relative z-10 flex min-h-[340px] h-full flex-col justify-between gap-6 pt-14 pb-6 sm:min-h-[420px] sm:gap-8 sm:pt-[100px] sm:pb-8 md:pb-10">
-            {/* Logo lockup — top left */}
-            <div className="flex w-full max-w-xl flex-col items-start gap-3 sm:gap-4">
+          <div className="container-x relative z-10 flex h-full min-h-[360px] flex-col justify-between py-6 sm:min-h-[440px] sm:py-8 md:py-10">
+            {/* Logo lockup — top left, no extra top padding */}
+            <div className="flex w-full max-w-2xl flex-col items-start gap-3 sm:gap-4">
               {heroLogo ? (
                 <img
                   src={heroLogo}
                   alt="DOORCAST"
-                  width={280}
-                  height={96}
-                  className="h-auto w-[min(72vw,200px)] object-contain object-left sm:w-[240px] md:w-[280px]"
+                  width={360}
+                  height={124}
+                  className="h-auto w-[min(85vw,300px)] object-contain object-left sm:w-[340px] md:w-[380px]"
                 />
               ) : (
-                <DoorcastLogo light className="w-[min(72vw,200px)] sm:w-[240px] md:w-[280px]" />
+                <DoorcastLogo light className="w-[min(85vw,300px)] sm:w-[340px] md:w-[380px]" />
               )}
-              <div className="flex w-full max-w-full flex-wrap items-center gap-2 sm:gap-3">
-                <span className="shrink-0 text-xs font-medium text-white/90 sm:text-sm">Presented by</span>
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                <span className="shrink-0 text-sm font-medium text-white/90">Presented by</span>
                 {brandLogo ? (
                   <img
                     src={brandLogo}
                     alt={meta.presentedBy || "Education Doorway"}
                     width={200}
                     height={69}
-                    className="h-auto w-[min(60vw,160px)] object-contain object-left sm:w-[180px] md:w-[200px]"
+                    className="h-auto w-[200px] max-w-full object-contain object-left"
                   />
                 ) : (
                   <img
                     alt="Education Doorway"
                     width={200}
                     height={69}
-                    className="h-auto w-[min(60vw,160px)] object-contain object-left sm:w-[180px] md:w-[200px]"
+                    className="h-auto w-[200px] max-w-full object-contain object-left"
                     src="/logo-white.png"
                   />
                 )}
               </div>
             </div>
             {/* Tagline — bottom left */}
-            <p className="max-w-xl font-display text-base font-medium italic leading-snug text-white sm:text-xl md:text-2xl">
+            <p className="max-w-xl font-display text-lg font-medium italic leading-snug text-white sm:text-xl md:text-2xl">
               {meta.tagline}
             </p>
           </div>
         ) : (
-          <div className="relative z-10 min-h-[340px] h-full sm:min-h-[420px]" aria-hidden="true" />
+          <div className="relative z-10 h-full min-h-[360px] sm:min-h-[440px]" aria-hidden="true" />
         )}
       </section>
 
@@ -474,9 +474,9 @@ export default function Doorcast() {
               <DoorcastMark
                 src={aboutLogo}
                 light
-                className="relative z-[2] max-w-[200px] object-left sm:max-w-[240px] sm:object-right md:max-w-[280px]"
-                maxH={88}
-                maxW={280}
+                className="relative z-[2] max-w-[240px] object-left sm:max-w-[300px] sm:object-right md:max-w-[340px]"
+                maxH={120}
+                maxW={340}
               />
               <p
                 className="relative z-[2] max-w-md text-[12px] font-medium leading-relaxed text-white sm:text-[13px] sm:leading-6 md:text-sm"
@@ -505,18 +505,18 @@ export default function Doorcast() {
             <DoorcastMark
               src={shortsLogo}
               light={false}
-              className="max-w-[200px] object-left sm:max-w-[240px] md:max-w-[280px]"
-              maxH={88}
-              maxW={280}
+              className="max-w-[260px] object-left sm:max-w-[320px] md:max-w-[360px]"
+              maxH={130}
+              maxW={360}
             />
             <div className="mt-3 flex flex-wrap items-center gap-2 sm:gap-3">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 sm:text-xs">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Presented by
               </span>
               <BrandMark
                 src={shortsBrandLogo}
                 className="object-left"
-                maxH={56}
+                maxH={69}
                 maxW={200}
               />
             </div>
