@@ -16,6 +16,7 @@ import sa from "flag-icons/flags/4x3/sa.svg";
 import bd from "flag-icons/flags/4x3/bd.svg";
 import pk from "flag-icons/flags/4x3/pk.svg";
 import ng from "flag-icons/flags/4x3/ng.svg";
+import cy from "flag-icons/flags/4x3/cy.svg";
 
 import my1 from "flag-icons/flags/1x1/my.svg";
 import au1 from "flag-icons/flags/1x1/au.svg";
@@ -32,11 +33,12 @@ import sa1 from "flag-icons/flags/1x1/sa.svg";
 import bd1 from "flag-icons/flags/1x1/bd.svg";
 import pk1 from "flag-icons/flags/1x1/pk.svg";
 import ng1 from "flag-icons/flags/1x1/ng.svg";
+import cy1 from "flag-icons/flags/1x1/cy.svg";
 
-const FLAGS = { my, au, ca, fr, de, ie, es, ae, nl, gb, us, sa, bd, pk, ng };
+const FLAGS = { my, au, ca, fr, de, ie, es, ae, nl, gb, us, sa, bd, pk, ng, cy };
 const FLAGS_SQUARE = {
   my: my1, au: au1, ca: ca1, fr: fr1, de: de1, ie: ie1, es: es1, ae: ae1,
-  nl: nl1, gb: gb1, us: us1, sa: sa1, bd: bd1, pk: pk1, ng: ng1,
+  nl: nl1, gb: gb1, us: us1, sa: sa1, bd: bd1, pk: pk1, ng: ng1, cy: cy1,
 };
 
 /**
