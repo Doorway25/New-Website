@@ -89,7 +89,7 @@ export default function ImageUpload({
   }
 
   return (
-    <div className="image-upload span-2">
+    <div className="image-upload">
       <span className="image-upload-label">
         {label}
         {required ? " *" : ""}

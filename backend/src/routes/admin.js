@@ -1238,7 +1238,7 @@ mountCrud("pages", prisma.page, {
 });
 
 mountCrud("countries", prisma.country, {
-  fields: ["slug", "name", "flag", "code", "region", "blurb", "imageUrl"],
+  fields: ["slug", "name", "flag", "flagUrl", "code", "region", "blurb", "imageUrl"],
   search: ["name", "slug", "region"],
   orderBy: { sortOrder: "asc" },
 });

@@ -1,11 +1,16 @@
 import { Link } from "react-router-dom";
-import { countryBySlug, gradientFor } from "../data/site";
+import { mediaUrl } from "../api/client";
+import { useSite } from "../api/SiteContext";
+import { countryBySlug as staticCountryBySlug, gradientFor as staticGradientFor } from "../data/site";
 import { formatTuition } from "../utils/currency";
 import Flag from "./Flag";
 import Icon from "./Icon";
 import UniLogo from "./UniLogo";
 
 export default function UniversityCard({ uni }) {
+  const site = useSite();
+  const countryBySlug = site?.countryBySlug || staticCountryBySlug;
+  const gradientFor = site?.gradientFor || staticGradientFor;
   const country = countryBySlug[uni.country] || countryBySlug[uni.countrySlug];
   const grad = gradientFor(uni.slug);
   const cover = uni.imageUrl || "";
@@ -27,7 +32,12 @@ export default function UniversityCard({ uni }) {
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-t from-ink/50 via-ink/10 to-transparent" />
         <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-slate-700 backdrop-blur">
-          <Flag code={country?.code} className="text-sm" title={country?.name} />{" "}
+          <Flag
+            src={mediaUrl(country?.flagUrl) || ""}
+            code={country?.code}
+            className="text-sm"
+            title={country?.name}
+          />{" "}
           {country?.name?.split(" ")[0] || (uni.country || "").toUpperCase()}
         </div>
         <div className="absolute -bottom-6 left-4">

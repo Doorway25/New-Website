@@ -61,12 +61,59 @@ function BangladeshFlag({ className = "", title = "Bangladesh" }) {
 }
 
 /**
- * @param {string} code - ISO country code (gb, bd, pk, ng, …)
+ * @param {string} [src] - uploaded flag image URL (preferred)
+ * @param {string} [code] - ISO country code fallback (gb, bd, pk, ng, …)
  * @param {boolean} circle - circular badge (default true)
  * @param {boolean} fill - legacy: fill parent; prefer `circle` with an explicit size class
  * @param {string} className - for circle: size classes e.g. "h-7 w-7"; otherwise font-size for 4×3
  */
-export default function Flag({ code, className = "", title = "", circle = true, fill = false }) {
+export default function Flag({ src: customSrc, code, className = "", title = "", circle = true, fill = false }) {
+  const sizeClass = className.includes("h-") || className.includes("w-") || className.includes("size-")
+    ? className
+    : `h-[1.35em] w-[1.35em] ${className}`;
+
+  // Uploaded flag image (admin Countries → Flag image)
+  if (customSrc) {
+    if (!circle && !fill) {
+      return (
+        <img
+          src={customSrc}
+          alt={title || "Flag"}
+          title={title}
+          loading="lazy"
+          className={`inline-block h-[1em] w-auto shrink-0 rounded-[3px] object-cover align-middle shadow-sm ring-1 ring-black/5 ${className}`}
+        />
+      );
+    }
+    if (fill && !circle) {
+      return (
+        <img
+          src={customSrc}
+          alt={title || "Flag"}
+          title={title}
+          loading="lazy"
+          className={`block h-full w-full object-cover object-center ${className}`}
+        />
+      );
+    }
+    return (
+      <span
+        className={`relative inline-block shrink-0 overflow-hidden rounded-full align-middle ring-1 ring-black/10 ${sizeClass}`}
+        title={title}
+        role="img"
+        aria-label={title || "Flag"}
+      >
+        <img
+          src={customSrc}
+          alt=""
+          loading="lazy"
+          draggable={false}
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+      </span>
+    );
+  }
+
   if (!code) return null;
 
   // Explicit rectangle — official 4×3 art
@@ -83,10 +130,6 @@ export default function Flag({ code, className = "", title = "", circle = true, 
       />
     );
   }
-
-  const sizeClass = className.includes("h-") || className.includes("w-") || className.includes("size-")
-    ? className
-    : `h-[1.35em] w-[1.35em] ${className}`;
 
   // Bangladesh circular/fill: official proportions, full circle fill
   if (code === "bd") {

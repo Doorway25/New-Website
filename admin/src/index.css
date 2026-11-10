@@ -1038,13 +1038,45 @@ button, input, select, textarea { font: inherit; }
   align-items: stretch;
 }
 
+.form-grid > .form-field-wrap {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-grid > .form-field-wrap.span-full,
+.form-grid > .span-full {
+  grid-column: 1 / -1;
+}
+
 .form-grid > .field-block,
-.form-grid > label {
+.form-grid > label,
+.form-grid > .form-field-wrap > .field-block,
+.form-grid > .form-field-wrap > label {
   min-width: 0;
   display: grid;
   grid-template-rows: auto auto auto;
   align-content: start;
   gap: 6px;
+  height: 100%;
+}
+
+/* Side-by-side image pickers (flag + country) stay equal height */
+.form-grid > .form-field-wrap .image-upload {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.form-grid > .form-field-wrap .image-upload-box {
+  min-height: 168px;
+  height: 100%;
+}
+
+.form-grid > .form-field-wrap .image-drop {
+  min-height: 148px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .form-grid .field-label {
@@ -1898,10 +1930,16 @@ td.row-actions {
 
 .image-preview img {
   width: 100%;
-  max-height: 240px;
+  max-height: 160px;
+  min-height: 120px;
   object-fit: cover;
   border-radius: 10px;
   background: #e8eef8;
+}
+
+.form-grid > .form-field-wrap .image-preview {
+  height: 100%;
+  align-content: start;
 }
 
 .image-preview-actions {

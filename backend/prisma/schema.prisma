@@ -72,7 +72,8 @@ model Country {
   slug            String       @unique
   name            String
   flag            String?
-  code            String
+  flagUrl         String?
+  code            String       @default("")
   region          String
   blurb           String?
   imageUrl        String?

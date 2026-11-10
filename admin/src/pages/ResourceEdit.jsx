@@ -372,7 +372,11 @@ export default function ResourceEdit({ resourceKey }) {
             </div>
             <div className="form-grid">
               {section.fields.map((field) => (
-                <div key={field.key} className="form-field-wrap" data-field={field.key}>
+                <div
+                  key={field.key}
+                  className={`form-field-wrap${fieldSpanClass(field)}`}
+                  data-field={field.key}
+                >
                   <Field
                     field={field}
                     value={values[field.key]}
@@ -437,9 +441,10 @@ function applyYoutubeChange(prev, rawValue) {
   };
 }
 
-function fieldClassName(field, extra = "") {
-  const full =
-    field.span === "full" ||
+function isFullSpanField(field) {
+  if (field.span === "half" || field.span === 1) return false;
+  if (field.span === "full" || field.span === 2) return true;
+  return (
     field.type === "image" ||
     field.type === "gallery" ||
     field.type === "richtext" ||
@@ -448,8 +453,16 @@ function fieldClassName(field, extra = "") {
     field.type === "pointlist" ||
     field.type === "json" ||
     field.type === "stringlist" ||
-    field.key === "youtubeId";
-  return ["field-block", full ? "span-full" : "", extra].filter(Boolean).join(" ");
+    field.key === "youtubeId"
+  );
+}
+
+function fieldSpanClass(field) {
+  return isFullSpanField(field) ? " span-full" : "";
+}
+
+function fieldClassName(field, extra = "") {
+  return ["field-block", isFullSpanField(field) ? "span-full" : "", extra].filter(Boolean).join(" ");
 }
 
 function Field({

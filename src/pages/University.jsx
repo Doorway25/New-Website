@@ -176,7 +176,12 @@ export default function University() {
             />
             <div className="min-w-0 w-full">
               <div className="inline-flex max-w-full items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white backdrop-blur">
-                <Flag code={country?.code} className="text-xl" title={country?.name} />{" "}
+                <Flag
+                  src={mediaUrl(country?.flagUrl) || ""}
+                  code={country?.code}
+                  className="text-xl"
+                  title={country?.name}
+                />{" "}
                 <span className="truncate">{country?.name}</span>
               </div>
               <h1 className="mt-3 break-words font-display text-2xl font-extrabold leading-tight text-white sm:text-3xl md:text-4xl">

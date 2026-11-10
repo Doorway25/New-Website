@@ -52,7 +52,12 @@ export default function Countries() {
                     ) : null}
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-950/85 via-brand-950/25 to-transparent" />
                     <div className="absolute inset-x-0 bottom-0 flex items-end gap-3 p-4 text-white sm:p-5">
-                      <Flag code={c.code} className="h-10 w-10 shrink-0 drop-shadow sm:h-12 sm:w-12" title={c.name} />
+                      <Flag
+                        src={mediaUrl(c.flagUrl) || ""}
+                        code={c.code}
+                        className="h-10 w-10 shrink-0 drop-shadow sm:h-12 sm:w-12"
+                        title={c.name}
+                      />
                       <div className="min-w-0">
                         <h3 className="font-display text-lg font-bold leading-tight sm:text-xl">{c.name}</h3>
                         <span className="mt-1 inline-block rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-medium text-gold-400 backdrop-blur">

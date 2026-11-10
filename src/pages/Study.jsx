@@ -8,6 +8,7 @@ import UniversityCard from "../components/UniversityCard";
 import Pagination from "../components/Pagination";
 import CounsellingSection from "../components/CounsellingSection";
 import SeoHead from "../components/SeoHead";
+import { mediaUrl } from "../api/client";
 import { useSite } from "../api/SiteContext";
 
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -130,7 +131,14 @@ export default function Study() {
                         : "border-slate-200 bg-white text-ink hover:border-brand-200 hover:bg-brand-50"
                     }`}
                   >
-                    {tab.code ? <Flag code={tab.code} className="h-5 w-5" title={tab.name} /> : null}
+                    {tab.flagUrl || tab.code ? (
+                      <Flag
+                        src={tab.flagUrl ? mediaUrl(tab.flagUrl) : ""}
+                        code={tab.code}
+                        className="h-5 w-5"
+                        title={tab.name}
+                      />
+                    ) : null}
                     <span>{tab.name}</span>
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
