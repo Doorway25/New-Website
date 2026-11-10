@@ -219,6 +219,9 @@ export default function Doorcast() {
     showHeroText: false,
     aboutImageUrl: "",
     shortsPlaylistUrl: doorcastMeta.shortsPlaylistUrl,
+    watchNowLabel: "Watch Now",
+    playAllLabel: "Play all one by one",
+    moreStoriesLabel: "More video stories",
   });
   const [featured, setFeatured] = useState(doorcastEpisodes[0] || null);
   const [shorts, setShorts] = useState(doorcastShorts);
@@ -243,6 +246,9 @@ export default function Doorcast() {
           showHeroText: Boolean(s.showHeroText),
           aboutImageUrl: s.aboutImageUrl || "",
           shortsPlaylistUrl: shortsUrl,
+          watchNowLabel: s.watchNowLabel || "Watch Now",
+          playAllLabel: s.playAllLabel || "Play all one by one",
+          moreStoriesLabel: s.moreStoriesLabel || "More video stories",
         });
         if (data.featured?.youtubeId) setFeatured(data.featured);
         else if (Array.isArray(data.episodes) && data.episodes[0]) setFeatured(data.episodes[0]);
@@ -350,7 +356,7 @@ export default function Doorcast() {
                 className="absolute left-4 top-4 rounded-md px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow"
                 style={{ backgroundColor: ACCENT }}
               >
-                Watch Now
+                {meta.watchNowLabel || "Watch Now"}
               </span>
               {featured?.duration ? (
                 <span className="absolute bottom-4 right-4 rounded bg-black/70 px-2 py-1 text-xs font-semibold text-white">
@@ -418,7 +424,7 @@ export default function Doorcast() {
                 className="relative z-[2] inline-flex items-center gap-2 rounded-l-md rounded-r-full px-5 py-2.5 text-sm font-bold text-white shadow-xl transition hover:brightness-110"
                 style={{ backgroundColor: ACCENT }}
               >
-                Play all one by one
+                {meta.playAllLabel || "Play all one by one"}
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/25 text-xs">
                   ›
                 </span>
@@ -453,7 +459,7 @@ export default function Doorcast() {
               }
               className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:underline"
             >
-              More video stories <Icon name="arrow" className="h-4 w-4" />
+              {meta.moreStoriesLabel || "More video stories"} <Icon name="arrow" className="h-4 w-4" />
             </button>
           </div>
 

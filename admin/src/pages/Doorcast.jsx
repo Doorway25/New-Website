@@ -15,6 +15,9 @@ const EMPTY_SETTINGS = {
   playlistUrl: "",
   episodesPlaylistId: "",
   shortsPlaylistId: "",
+  watchNowLabel: "Watch Now",
+  playAllLabel: "Play all one by one",
+  moreStoriesLabel: "More video stories",
 };
 
 const EMPTY_VIDEO = {
@@ -23,6 +26,7 @@ const EMPTY_VIDEO = {
   subtitle: "",
   description: "",
   duration: "",
+  imageUrl: "",
   kind: "episode",
   featured: false,
   published: true,
@@ -63,6 +67,9 @@ export default function Doorcast() {
         playlistUrl: s.playlistUrl || "",
         episodesPlaylistId: s.episodesPlaylistId || "",
         shortsPlaylistId: s.shortsPlaylistId || "",
+        watchNowLabel: s.watchNowLabel || "Watch Now",
+        playAllLabel: s.playAllLabel || "Play all one by one",
+        moreStoriesLabel: s.moreStoriesLabel || "More video stories",
       });
       setEpisodePlaylist(
         s.episodesPlaylistId
@@ -143,6 +150,7 @@ export default function Doorcast() {
       subtitle: video.subtitle || "",
       description: video.description || "",
       duration: video.duration || "",
+      imageUrl: video.imageUrl || "",
       kind: video.kind || "episode",
       featured: Boolean(video.featured),
       published: video.published !== false,
@@ -153,7 +161,7 @@ export default function Doorcast() {
 
   function startAdd(kind = "episode") {
     setEditingId(null);
-    setForm({ ...EMPTY_VIDEO, kind });
+    setForm({ ...EMPTY_VIDEO, kind, featured: kind === "episode" });
     setAdding(true);
   }
 
@@ -180,6 +188,19 @@ export default function Doorcast() {
     }
   }
 
+  async function setFeatured(id) {
+    if (!canEdit) return;
+    setError("");
+    setMessage("");
+    try {
+      await put(`/api/admin/doorcast/videos/${id}`, { featured: true, published: true, kind: "episode" });
+      setMessage("Watch Now video updated");
+      load();
+    } catch (err) {
+      setError(err.message || "Could not set featured video");
+    }
+  }
+
   async function removeVideo(id, title) {
     if (!canDelete) return;
     if (!window.confirm(`Delete “${title}”?`)) return;
@@ -194,6 +215,7 @@ export default function Doorcast() {
 
   const episodes = videos.filter((v) => v.kind === "episode");
   const shorts = videos.filter((v) => v.kind === "short");
+  const featured = episodes.find((v) => v.featured) || episodes[0] || null;
 
   if (loading) {
     return (
@@ -210,8 +232,8 @@ export default function Doorcast() {
           <p className="eyebrow">Content</p>
           <h1>Doorcast</h1>
           <p className="muted">
-            Control hero image, about text, featured episodes, and shorts slider. Upload videos to
-            YouTube, then sync playlists here — they appear on the public /doorcast page.
+            Each block below matches a section on the public /doorcast page. Save settings, then
+            manage the Watch Now video and Shorts list.
           </p>
         </div>
       </header>
@@ -221,8 +243,8 @@ export default function Doorcast() {
 
       <form className="panel" onSubmit={saveSettings}>
         <div className="panel-head">
-          <h2>Page settings</h2>
-          <p className="muted">Hero image (default: image only). Optionally show tagline text over the image.</p>
+          <h2>1 · Hero</h2>
+          <p className="muted">Top full-bleed image. Optional logo + tagline overlay.</p>
         </div>
 
         <div className="form-grid">
@@ -260,7 +282,63 @@ export default function Doorcast() {
               onChange={(e) => setField("presentedBy", e.target.value)}
             />
           </label>
+        </div>
 
+        <div className="panel-head" style={{ marginTop: 28 }}>
+          <h2>2 · Watch Now video (left card)</h2>
+          <p className="muted">
+            This is the big play card (title, description, duration). Add/edit it in{" "}
+            <strong>Videos</strong> below — mark one episode as <strong>Featured (Watch Now)</strong>,
+            or sync a single YouTube video URL. Badge text is editable here.
+          </p>
+        </div>
+
+        <div className="form-grid">
+          <label>
+            “Watch Now” badge label
+            <input
+              value={settings.watchNowLabel}
+              onChange={(e) => setField("watchNowLabel", e.target.value)}
+              placeholder="Watch Now"
+            />
+          </label>
+
+          <div className="span-2" style={{ padding: "12px 14px", background: "#f4f6fb", borderRadius: 10 }}>
+            {featured ? (
+              <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+                <img
+                  src={featured.imageUrl || youtubeThumbUrl(featured.youtubeId)}
+                  alt=""
+                  style={{ width: 120, height: 68, objectFit: "cover", borderRadius: 8 }}
+                />
+                <div style={{ flex: 1, minWidth: 180 }}>
+                  <strong>Current Watch Now:</strong> {featured.title}
+                  {featured.duration ? <span className="muted"> · {featured.duration}</span> : null}
+                  {featured.description ? (
+                    <div className="muted" style={{ marginTop: 4, fontSize: 13 }}>
+                      {featured.description}
+                    </div>
+                  ) : null}
+                </div>
+                <button type="button" className="btn sm" onClick={() => startEdit(featured)}>
+                  Edit this video
+                </button>
+              </div>
+            ) : (
+              <p className="muted" style={{ margin: 0 }}>
+                No Watch Now video yet — use “Add episode” below or sync a YouTube video URL, then tick{" "}
+                <strong>Featured (Watch Now)</strong>.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="panel-head" style={{ marginTop: 28 }}>
+          <h2>3 · About panel (right card)</h2>
+          <p className="muted">About text + studio / host image behind the Doorcast logo panel.</p>
+        </div>
+
+        <div className="form-grid">
           <label className="span-2">
             About Doorcast
             <textarea
@@ -274,10 +352,36 @@ export default function Doorcast() {
             label="About portrait / host image"
             value={settings.aboutImageUrl}
             onChange={(url) => setField("aboutImageUrl", url)}
-            kind="thumb"
-            hint="Circular image next to about text"
+            kind="cover"
+            hint="Mic / host photo on the right about card (not circular). Leave empty to use default studio image."
           />
 
+          <label>
+            “Play all” button label
+            <input
+              value={settings.playAllLabel}
+              onChange={(e) => setField("playAllLabel", e.target.value)}
+              placeholder="Play all one by one"
+            />
+          </label>
+
+          <label>
+            Channel / “Play all” URL
+            <input
+              type="url"
+              value={settings.playlistUrl}
+              onChange={(e) => setField("playlistUrl", e.target.value)}
+              placeholder="https://www.youtube.com/playlist?list=..."
+            />
+          </label>
+        </div>
+
+        <div className="panel-head" style={{ marginTop: 28 }}>
+          <h2>4 · Shorts section</h2>
+          <p className="muted">Intro text + link under the shorts carousel. Videos themselves are synced below.</p>
+        </div>
+
+        <div className="form-grid">
           <label className="span-2">
             Shorts intro text
             <textarea
@@ -288,12 +392,11 @@ export default function Doorcast() {
           </label>
 
           <label className="span-2">
-            Channel / “Play all” URL
+            “More video stories” link label
             <input
-              type="url"
-              value={settings.playlistUrl}
-              onChange={(e) => setField("playlistUrl", e.target.value)}
-              placeholder="https://www.youtube.com/@EducationDoorway/videos"
+              value={settings.moreStoriesLabel}
+              onChange={(e) => setField("moreStoriesLabel", e.target.value)}
+              placeholder="More video stories"
             />
           </label>
         </div>
@@ -307,21 +410,21 @@ export default function Doorcast() {
 
       <div className="panel playlist-sync">
         <div className="panel-head">
-          <strong>YouTube playlist sync</strong>
+          <strong>5 · YouTube sync</strong>
           <p className="muted">
-            Episodes (Watch Now): paste a playlist URL or a single video URL, then Sync. Shorts:
-            paste the shorts playlist URL for the bottom slider.
+            <strong>Watch Now:</strong> paste a single video URL (or playlist) → Sync episodes.{" "}
+            <strong>Shorts slider:</strong> paste shorts playlist → Sync shorts.
           </p>
         </div>
 
         <div className="playlist-sync-row">
           <label className="grow">
-            Episodes playlist or video URL
+            Watch Now — playlist or single video URL
             <input
               type="url"
               value={episodePlaylist}
               onChange={(e) => setEpisodePlaylist(e.target.value)}
-              placeholder="Playlist or single video — e.g. https://www.youtube.com/playlist?list=PLTxqWjoR7G9A"
+              placeholder="https://www.youtube.com/watch?v=... or playlist URL"
             />
           </label>
           <button
@@ -330,13 +433,13 @@ export default function Doorcast() {
             disabled={!!syncing || !canEdit}
             onClick={() => syncPlaylist("episode")}
           >
-            {syncing === "episode" ? "Syncing…" : "Sync episodes"}
+            {syncing === "episode" ? "Syncing…" : "Sync Watch Now / episodes"}
           </button>
         </div>
 
         <div className="playlist-sync-row" style={{ marginTop: 12 }}>
           <label className="grow">
-            Shorts playlist (slider)
+            Shorts playlist (bottom carousel)
             <input
               type="url"
               value={shortsPlaylist}
@@ -358,10 +461,11 @@ export default function Doorcast() {
       <div className="panel">
         <div className="panel-head row" style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
           <div>
-            <h2>Videos</h2>
+            <h2>6 · Videos</h2>
             <p className="muted">
               {episodes.length} episode{episodes.length === 1 ? "" : "s"} · {shorts.length} short
-              {shorts.length === 1 ? "" : "s"}
+              {shorts.length === 1 ? "" : "s"} — tick <strong>Featured (Watch Now)</strong> on the
+              episode that should appear in the left card.
             </p>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -390,7 +494,7 @@ export default function Doorcast() {
               <input
                 value={form.title}
                 onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-                placeholder="Auto-fills from YouTube if left blank on add"
+                placeholder="e.g. Study in Malaysia?"
               />
             </label>
             <label>
@@ -406,8 +510,8 @@ export default function Doorcast() {
                 value={form.kind}
                 onChange={(e) => setForm((p) => ({ ...p, kind: e.target.value }))}
               >
-                <option value="episode">Episode (featured / Watch Now)</option>
-                <option value="short">Short (slider)</option>
+                <option value="episode">Episode (Watch Now card)</option>
+                <option value="short">Short (bottom slider)</option>
               </select>
             </label>
             <label>
@@ -419,20 +523,30 @@ export default function Doorcast() {
               />
             </label>
             <label className="span-2">
-              Description
+              Description (shown under title on Watch Now card)
               <textarea
                 rows={2}
                 value={form.description}
                 onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                placeholder="Real conversation on opportunities, costs, and pathways…"
               />
             </label>
+            <div className="span-2">
+              <ImageUpload
+                label="Custom thumbnail (optional)"
+                value={form.imageUrl}
+                onChange={(url) => setForm((p) => ({ ...p, imageUrl: url }))}
+                kind="cover"
+                hint="Leave empty to use YouTube thumbnail"
+              />
+            </div>
             <label style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <input
                 type="checkbox"
                 checked={form.featured}
                 onChange={(e) => setForm((p) => ({ ...p, featured: e.target.checked }))}
               />
-              <span>Featured (Watch Now)</span>
+              <span>Featured (Watch Now) — left card on /doorcast</span>
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <input
@@ -492,15 +606,21 @@ export default function Doorcast() {
                     <td>
                       <strong>{v.title}</strong>
                       {v.subtitle ? <div className="muted">{v.subtitle}</div> : null}
+                      {v.description ? (
+                        <div className="muted" style={{ fontSize: 12, maxWidth: 360 }}>
+                          {v.description}
+                        </div>
+                      ) : null}
                       <div className="muted" style={{ fontSize: 12 }}>
                         {v.youtubeId}
+                        {v.duration ? ` · ${v.duration}` : ""}
                       </div>
                     </td>
                     <td>
                       <span className="badge">{v.kind}</span>
                     </td>
                     <td>
-                      {v.featured ? <span className="badge ok">featured</span> : null}{" "}
+                      {v.featured ? <span className="badge ok">Watch Now</span> : null}{" "}
                       {v.published ? (
                         <span className="badge ok">live</span>
                       ) : (
@@ -508,6 +628,16 @@ export default function Doorcast() {
                       )}
                     </td>
                     <td className="row-actions">
+                      {v.kind === "episode" && !v.featured ? (
+                        <button
+                          type="button"
+                          className="btn sm"
+                          disabled={!canEdit}
+                          onClick={() => setFeatured(v.id)}
+                        >
+                          Set Watch Now
+                        </button>
+                      ) : null}
                       <button type="button" className="btn sm" onClick={() => startEdit(v)}>
                         Edit
                       </button>

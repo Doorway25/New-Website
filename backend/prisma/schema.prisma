@@ -420,6 +420,9 @@ model DoorcastSetting {
   playlistUrl        String?
   episodesPlaylistId String?
   shortsPlaylistId   String?
+  watchNowLabel      String?
+  playAllLabel       String?
+  moreStoriesLabel   String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 }

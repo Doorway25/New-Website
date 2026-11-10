@@ -242,6 +242,9 @@ async function main() {
         "A platform for real conversations, expert insights, and honest guidance for students and families. Through engaging discussions with university partners, alumni, and education specialists, Doorcast helps you make informed decisions about your future.",
       shortsIntro: "Watch the youtube shorts to know the key points of the full episode",
       playlistUrl: "https://www.youtube.com/@EducationDoorway/videos",
+      watchNowLabel: "Watch Now",
+      playAllLabel: "Play all one by one",
+      moreStoriesLabel: "More video stories",
     },
     update: {},
   });

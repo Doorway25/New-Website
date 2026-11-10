@@ -323,6 +323,9 @@ router.get(
         playlistUrl: "https://www.youtube.com/playlist?list=PLTxqWjoR7G9A",
         episodesPlaylistId: "PLTxqWjoR7G9A",
         shortsPlaylistId: "PLPX4VGzg8TQo",
+        watchNowLabel: "Watch Now",
+        playAllLabel: "Play all one by one",
+        moreStoriesLabel: "More video stories",
       };
     }
 
@@ -348,6 +351,9 @@ router.get(
         playlistUrl: settings.playlistUrl,
         episodesPlaylistId: settings.episodesPlaylistId,
         shortsPlaylistId: settings.shortsPlaylistId,
+        watchNowLabel: settings.watchNowLabel || "Watch Now",
+        playAllLabel: settings.playAllLabel || "Play all one by one",
+        moreStoriesLabel: settings.moreStoriesLabel || "More video stories",
       },
       featured,
       episodes,

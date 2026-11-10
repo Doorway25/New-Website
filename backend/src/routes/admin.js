@@ -276,6 +276,9 @@ const DOORCAST_DEFAULTS = {
   playlistUrl: "https://www.youtube.com/playlist?list=PLTxqWjoR7G9A",
   episodesPlaylistId: "PLTxqWjoR7G9A",
   shortsPlaylistId: null,
+  watchNowLabel: "Watch Now",
+  playAllLabel: "Play all one by one",
+  moreStoriesLabel: "More video stories",
 };
 
 async function ensureDoorcastSetting() {
@@ -310,6 +313,9 @@ router.put(
       "playlistUrl",
       "episodesPlaylistId",
       "shortsPlaylistId",
+      "watchNowLabel",
+      "playAllLabel",
+      "moreStoriesLabel",
     ]);
     if (data.showHeroText != null) data.showHeroText = Boolean(data.showHeroText);
     for (const key of [
@@ -322,6 +328,9 @@ router.put(
       "playlistUrl",
       "episodesPlaylistId",
       "shortsPlaylistId",
+      "watchNowLabel",
+      "playAllLabel",
+      "moreStoriesLabel",
     ]) {
       if (data[key] != null) data[key] = String(data[key]).trim() || null;
     }
