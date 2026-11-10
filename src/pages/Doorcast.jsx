@@ -310,7 +310,7 @@ export default function Doorcast() {
       />
 
       {/* 1 · Banner */}
-      <section className="relative h-[200px] overflow-hidden bg-black text-white sm:h-[260px] md:h-[300px]">
+      <section className="relative h-[220px] overflow-hidden bg-black text-white sm:h-[280px] md:h-[340px]">
         <img
           src={heroSrc}
           alt=""
@@ -325,24 +325,24 @@ export default function Doorcast() {
           }}
         />
         {meta.showHeroText ? (
-          <div className="container-x relative z-10 flex h-full flex-col justify-between py-3 sm:py-4">
-            <div className="flex flex-col items-start gap-1 sm:gap-1.5">
+          <div className="container-x relative z-10 flex h-full flex-col justify-between py-4 sm:py-5 md:py-6">
+            <div className="flex flex-col items-start gap-2 sm:gap-2.5">
               <img
                 src={LOGO_DC_WHITE}
                 alt="DOORCAST"
-                className="h-9 w-auto max-w-[min(88vw,320px)] object-contain object-left sm:h-12 md:h-14"
+                className="h-11 w-auto max-w-[min(90vw,360px)] object-contain object-left sm:h-14 md:h-16"
               />
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-medium text-white/90 sm:text-xs">Presented by</span>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="text-xs font-medium tracking-wide text-white/90">Presented by</span>
                 <img
                   src={LOGO_ED_WHITE}
                   alt="Education Doorway"
-                  className="h-8 w-auto max-w-[200px] object-contain object-left sm:h-9 sm:max-w-[220px]"
+                  className="h-9 w-auto max-w-[210px] object-contain object-left sm:h-10 sm:max-w-[230px]"
                 />
               </div>
             </div>
             {meta.tagline ? (
-              <p className="max-w-lg font-display text-sm font-medium italic leading-snug text-white sm:text-base md:text-lg">
+              <p className="max-w-xl font-display text-base font-medium italic leading-snug text-white sm:text-lg md:text-xl">
                 {meta.tagline}
               </p>
             ) : null}
@@ -351,47 +351,47 @@ export default function Doorcast() {
       </section>
 
       {/* 2 · Watch Now + About */}
-      <section className="bg-[#1a1a1a] py-2 sm:py-2.5">
-        <div className="container-x grid min-w-0 gap-2.5 sm:gap-3 lg:grid-cols-2 lg:items-stretch">
+      <section className="bg-[#1a1a1a] py-3 sm:py-4">
+        <div className="container-x grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2 lg:items-stretch">
           <button
             type="button"
             onClick={playFeatured}
-            className="group relative aspect-video w-full min-w-0 overflow-hidden rounded-xl bg-black text-left shadow-xl sm:rounded-2xl lg:aspect-auto lg:min-h-[240px]"
+            className="group relative aspect-video w-full min-w-0 overflow-hidden rounded-2xl bg-black text-left shadow-xl lg:aspect-auto lg:min-h-[280px]"
           >
             {featured?.youtubeId || featured?.imageUrl ? (
               <Thumb
                 youtubeId={featured?.youtubeId}
                 imageUrl={featured?.imageUrl}
                 alt={featured?.title || "Doorcast"}
-                className="absolute inset-0 h-full w-full scale-[1.08] object-cover transition duration-500 group-hover:scale-[1.12]"
+                className="absolute inset-0 h-full w-full scale-[1.06] object-cover transition duration-500 group-hover:scale-[1.1]"
               />
             ) : (
               <img
                 src={heroSrc}
                 alt={featured?.title || "Doorcast episode"}
-                className="absolute inset-0 h-full w-full scale-[1.08] object-cover transition duration-500 group-hover:scale-[1.12]"
+                className="absolute inset-0 h-full w-full scale-[1.06] object-cover transition duration-500 group-hover:scale-[1.1]"
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
             <span className="absolute inset-0 flex items-center justify-center">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-[#c8102e] shadow-xl transition group-hover:scale-110 sm:h-14 sm:w-14">
-                <PlayIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 text-[#c8102e] shadow-xl transition group-hover:scale-110">
+                <PlayIcon className="h-6 w-6" />
               </span>
             </span>
             <span
-              className="absolute bottom-2.5 left-2.5 rounded px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow sm:bottom-3 sm:left-3 sm:px-3 sm:py-1.5 sm:text-xs"
+              className="absolute bottom-3 left-3 rounded px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow"
               style={{ backgroundColor: ACCENT }}
             >
               {meta.watchNowLabel || "Watch Now"}
             </span>
             {featured?.duration ? (
-              <span className="absolute bottom-2.5 right-2.5 rounded bg-black/70 px-2 py-1 text-[10px] font-semibold text-white sm:bottom-3 sm:right-3 sm:text-xs">
+              <span className="absolute bottom-3 right-3 rounded bg-black/70 px-2 py-1 text-xs font-semibold text-white">
                 {featured.duration}
               </span>
             ) : null}
           </button>
 
-          <div className="relative aspect-video min-w-0 overflow-hidden rounded-xl bg-[#121212] shadow-xl sm:rounded-2xl lg:aspect-auto lg:min-h-[240px]">
+          <div className="relative aspect-video min-w-0 overflow-hidden rounded-2xl bg-[#121212] shadow-xl lg:aspect-auto lg:min-h-[280px]">
             <img
               src={aboutImg}
               alt=""
@@ -399,15 +399,14 @@ export default function Doorcast() {
               style={{ objectPosition: "28% 40%" }}
               loading="lazy"
             />
-            {/* Tight content stack — top-right */}
-            <div className="absolute inset-y-0 right-0 z-10 flex w-full flex-col items-start justify-start gap-2 px-4 py-4 text-left sm:w-[60%] sm:items-end sm:px-5 sm:py-5 sm:text-right md:w-[55%]">
+            <div className="absolute inset-y-0 right-0 z-10 flex w-full flex-col items-start justify-center gap-3 px-4 py-5 text-left sm:w-[58%] sm:items-end sm:px-6 sm:text-right">
               <img
                 src={LOGO_DC_WHITE}
                 alt="DOORCAST"
-                className="h-9 w-auto object-contain sm:h-11 md:h-12"
+                className="h-10 w-auto max-w-[280px] object-contain sm:h-12 sm:max-w-[320px]"
               />
               <p
-                className="max-w-md text-[12px] font-medium leading-snug text-white sm:text-[13px] sm:leading-5"
+                className="max-w-md text-[13px] font-medium leading-relaxed text-white sm:text-sm sm:leading-6"
                 style={{ textShadow: "0 1px 3px rgba(0,0,0,0.85)" }}
               >
                 {meta.about}
@@ -415,7 +414,7 @@ export default function Doorcast() {
               <button
                 type="button"
                 onClick={playAll}
-                className="mt-1 inline-flex max-w-full items-center gap-2 rounded-sm px-3 py-1.5 text-xs font-bold text-white shadow-lg transition hover:brightness-110 sm:px-4 sm:py-2 sm:text-sm"
+                className="inline-flex max-w-full items-center gap-2 rounded-sm px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:brightness-110"
                 style={{ backgroundColor: ACCENT }}
               >
                 <span className="truncate">{meta.playAllLabel || "Play all one by one"}</span>
@@ -427,25 +426,25 @@ export default function Doorcast() {
       </section>
 
       {/* 3 · Shorts */}
-      <section className="overflow-x-clip bg-[#f2f2f2] py-3 sm:py-4">
-        <div className="container-x grid min-w-0 items-center gap-4 sm:gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.35fr)]">
-          <div className="flex min-w-0 flex-col items-start">
+      <section className="overflow-x-clip bg-[#f2f2f2] py-5 sm:py-6 md:py-8">
+        <div className="container-x grid min-w-0 items-center gap-5 sm:gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)]">
+          <div className="flex min-w-0 flex-col items-start gap-2">
             <img
               src={LOGO_DC_COLOR}
               alt="DOORCAST"
-              className="h-10 w-auto max-w-[min(90vw,300px)] object-contain object-left sm:h-12 sm:max-w-[340px] md:h-14 md:max-w-[380px]"
+              className="h-12 w-auto max-w-[min(90vw,340px)] object-contain object-left sm:h-14 sm:max-w-[380px] md:h-16 md:max-w-[420px]"
             />
-            <div className="mt-1.5 flex flex-wrap items-center gap-2">
-              <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 sm:text-xs">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                 Presented by
               </span>
               <img
                 src={LOGO_ED_COLOR}
                 alt="Education Doorway"
-                className="h-8 w-auto max-w-[170px] object-contain object-left sm:h-9 sm:max-w-[190px]"
+                className="h-9 w-auto max-w-[190px] object-contain object-left sm:h-10 sm:max-w-[210px]"
               />
             </div>
-            <p className="mt-2.5 max-w-sm text-sm leading-relaxed text-[#0d157b] sm:text-base">
+            <p className="mt-1 max-w-sm text-sm leading-relaxed text-[#0d157b] sm:text-base">
               {meta.shortsIntro}
             </p>
             <button
@@ -455,7 +454,7 @@ export default function Doorcast() {
                   youtubePlaylistUrl(meta.shortsPlaylistUrl) || doorcastMeta.shortsPlaylistUrl
                 )
               }
-              className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:underline"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:underline"
             >
               {meta.moreStoriesLabel || "More video stories"} <Icon name="arrow" className="h-4 w-4" />
             </button>
