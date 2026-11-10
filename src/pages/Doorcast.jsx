@@ -26,12 +26,15 @@ function shortThumbCandidates(youtubeId) {
   ];
 }
 
-function Thumb({ youtubeId, imageUrl, alt = "", className = "", fit = "cover", short = false }) {
-  const candidates = [
-    ...(imageUrl && !String(imageUrl).includes("hqdefault") ? [mediaUrl(imageUrl)] : []),
-    ...(youtubeId ? (short ? shortThumbCandidates(youtubeId) : youtubeThumbCandidates(youtubeId)) : []),
-    ...(imageUrl ? [mediaUrl(imageUrl)] : []),
-  ].filter(Boolean);
+function Thumb({ youtubeId, imageUrl, alt = "", className = "", fit = "cover", short = false, preferYoutube = false }) {
+  const customImage =
+    imageUrl && !String(imageUrl).includes("hqdefault") ? mediaUrl(imageUrl) : "";
+  const yt = youtubeId ? (short ? shortThumbCandidates(youtubeId) : youtubeThumbCandidates(youtubeId)) : [];
+  const candidates = (
+    preferYoutube
+      ? [...yt, customImage, imageUrl ? mediaUrl(imageUrl) : ""]
+      : [customImage, ...yt, imageUrl ? mediaUrl(imageUrl) : ""]
+  ).filter(Boolean);
   const [i, setI] = useState(0);
   const src = candidates[i] || "";
   if (!src) {
@@ -309,120 +312,130 @@ export default function Doorcast() {
         path="/doorcast"
       />
 
-      {/* 1 · Banner — compact height, less empty middle space */}
-      <section className="relative h-[190px] overflow-hidden bg-black text-white sm:h-[230px] md:h-[270px]">
-        <img
-          src={heroSrc}
-          alt=""
-          className="absolute inset-0 h-full w-full scale-105 object-cover object-center"
-          onError={(e) => {
-            if (e.currentTarget.src.includes("doorcast-hero.webp")) {
-              e.currentTarget.src = "/doorcast-hero.jpg";
-              return;
-            }
-            if (e.currentTarget.src.includes("doorcast-hero")) return;
-            e.currentTarget.src = "/doorcast-hero.webp";
-          }}
-        />
-        {meta.showHeroText ? (
-          <div className="container-x relative z-10 flex h-full flex-col justify-between py-4 sm:py-5">
-            <div className="flex flex-col items-start gap-1.5">
-              <img
-                src={LOGO_DC_WHITE}
-                alt="DOORCAST"
-                width={240}
-                height={48}
-                style={{ height: 36, width: "auto", maxWidth: 240 }}
-                className="object-contain object-left sm:!h-[44px] sm:!max-w-[280px] md:!h-[48px] md:!max-w-[300px]"
-              />
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="shrink-0 text-[11px] font-medium tracking-wide text-white/90 sm:text-xs">
-                  Presented by
-                </span>
+      {/* 1 · Banner — panoramic hero, compact left lockup, ON AIR on the right */}
+      <section className="relative overflow-hidden bg-black text-white">
+        <div className="relative min-h-[200px] w-full sm:min-h-[240px] md:min-h-[280px] lg:min-h-[300px]">
+          <img
+            src={heroSrc}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover object-[85%_center] sm:object-[75%_center] md:object-[70%_center]"
+            onError={(e) => {
+              if (e.currentTarget.src.includes("doorcast-hero.webp")) {
+                e.currentTarget.src = "/doorcast-hero.jpg";
+                return;
+              }
+              if (e.currentTarget.src.includes("doorcast-hero")) return;
+              e.currentTarget.src = "/doorcast-hero.webp";
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 to-black/20 sm:from-black/85 sm:via-black/50 sm:to-transparent" />
+
+          {meta.showHeroText ? (
+            <div className="container-x relative z-10 flex h-full items-center py-5 sm:py-6 md:py-7">
+              <div className="flex max-w-[20rem] flex-col items-start gap-1.5 sm:max-w-xl sm:gap-2.5">
                 <img
-                  src={LOGO_ED_WHITE}
-                  alt="Education Doorway"
-                  width={160}
-                  height={32}
-                  style={{ height: 26, width: "auto", maxWidth: 150 }}
-                  className="object-contain object-left sm:!h-[30px] sm:!max-w-[170px]"
+                  src={LOGO_DC_WHITE}
+                  alt="DOORCAST"
+                  width={280}
+                  height={48}
+                  style={{ height: 34, width: "auto", maxWidth: 220 }}
+                  className="object-contain object-left sm:!h-11 sm:!max-w-[300px] md:!h-[52px] md:!max-w-[360px]"
                 />
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="text-[10px] font-medium tracking-wide text-white/90 sm:text-xs">
+                    Presented by
+                  </span>
+                  <img
+                    src={LOGO_ED_WHITE}
+                    alt="Education Doorway"
+                    width={150}
+                    height={28}
+                    style={{ height: 22, width: "auto", maxWidth: 130 }}
+                    className="object-contain object-left sm:!h-[28px] sm:!max-w-[160px] md:!h-[30px] md:!max-w-[170px]"
+                  />
+                </div>
+                <p className="max-w-[18rem] font-display text-[13px] font-medium italic leading-snug text-white sm:max-w-lg sm:text-base md:text-lg">
+                  {meta.tagline || "Beyond the Conversation. Into Your Future."}
+                </p>
               </div>
             </div>
-            <p className="max-w-xl shrink-0 pb-0.5 font-display text-sm font-medium italic leading-snug text-white sm:text-base md:text-lg">
-              {meta.tagline || "Beyond the Conversation. Into Your Future."}
-            </p>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </section>
 
-      {/* 2 · Watch Now + About — taller cards, more room for buttons */}
-      <section className="bg-[#1a1a1a] py-4 sm:py-5 md:py-6">
-        <div className="container-x grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-2 lg:items-stretch">
+      {/* 2 · Watch Now + About */}
+      <section className="bg-[#151515] py-4 sm:py-6 md:py-8">
+        <div className="container-x grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-2 lg:items-stretch lg:gap-6">
           <button
             type="button"
             onClick={playFeatured}
-            className="group relative aspect-video w-full min-w-0 overflow-hidden rounded-2xl bg-black text-left shadow-xl lg:aspect-auto lg:min-h-[340px]"
+            className="group relative aspect-video w-full min-w-0 overflow-hidden rounded-xl bg-black text-left shadow-xl ring-1 ring-white/10 sm:rounded-2xl"
           >
             {featured?.youtubeId || featured?.imageUrl ? (
               <Thumb
                 youtubeId={featured?.youtubeId}
                 imageUrl={featured?.imageUrl}
                 alt={featured?.title || "Doorcast"}
-                className="absolute inset-0 h-full w-full scale-110 object-cover transition duration-500 group-hover:scale-[1.14]"
+                preferYoutube
+                className="absolute inset-0 h-full w-full scale-[1.05] object-cover transition duration-500 group-hover:scale-[1.09]"
               />
             ) : (
               <img
                 src={heroSrc}
                 alt={featured?.title || "Doorcast episode"}
-                className="absolute inset-0 h-full w-full scale-110 object-cover transition duration-500 group-hover:scale-[1.14]"
+                className="absolute inset-0 h-full w-full scale-[1.05] object-cover transition duration-500 group-hover:scale-[1.09]"
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10" />
             <span className="absolute inset-0 flex items-center justify-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 text-[#c8102e] shadow-xl transition group-hover:scale-110">
-                <PlayIcon className="h-6 w-6" />
+              <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-[#c8102e] shadow-xl transition group-hover:scale-110 sm:mb-5 sm:h-16 sm:w-16">
+                <PlayIcon className="h-5 w-5 sm:h-7 sm:w-7" />
               </span>
             </span>
-            <span
-              className="absolute bottom-5 left-4 rounded px-3.5 py-2 text-xs font-bold uppercase tracking-wide text-white shadow sm:bottom-6 sm:left-5 sm:px-4 sm:text-sm"
-              style={{ backgroundColor: ACCENT }}
-            >
-              {meta.watchNowLabel || "Watch Now"}
-            </span>
-            {featured?.duration ? (
-              <span className="absolute bottom-5 right-4 rounded bg-black/70 px-2.5 py-1.5 text-xs font-semibold text-white sm:bottom-6 sm:right-5">
-                {featured.duration}
+            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 px-3 pb-3 pt-12 sm:px-5 sm:pb-5 sm:pt-14">
+              <span
+                className="rounded px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-md sm:px-4 sm:py-2 sm:text-sm"
+                style={{ backgroundColor: ACCENT }}
+              >
+                {meta.watchNowLabel || "Watch Now"}
               </span>
-            ) : null}
+              {featured?.duration ? (
+                <span className="rounded bg-black/75 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur-sm sm:px-2.5 sm:py-1.5 sm:text-xs">
+                  {featured.duration}
+                </span>
+              ) : null}
+            </div>
           </button>
 
-          <div className="relative aspect-video min-w-0 overflow-hidden rounded-2xl bg-[#121212] shadow-xl lg:aspect-auto lg:min-h-[340px]">
+          {/* Mobile: auto height so about text isn't clipped; desktop keeps 16:9 */}
+          <div className="relative min-h-[240px] min-w-0 overflow-hidden rounded-xl bg-[#101010] shadow-xl ring-1 ring-white/10 sm:min-h-0 sm:rounded-2xl sm:aspect-video">
             <img
               src={aboutImg}
               alt=""
               className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
-              style={{ objectPosition: "28% 40%" }}
+              style={{ objectPosition: "22% 42%" }}
               loading="lazy"
             />
-            <div className="absolute inset-y-0 right-0 z-10 flex w-full flex-col items-start justify-center gap-3 px-4 py-6 pb-10 text-left sm:w-[58%] sm:items-end sm:gap-3.5 sm:px-6 sm:py-7 sm:pb-12 sm:text-right">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/70 to-black/35 sm:bg-gradient-to-l sm:from-black/85 sm:via-black/50 sm:to-black/15" />
+            <div className="relative z-10 flex h-full w-full flex-col items-start justify-between gap-3 p-4 text-left sm:ml-auto sm:w-[64%] sm:items-end sm:gap-3 sm:p-6 sm:pr-7 sm:text-right md:w-[58%]">
               <img
                 src={LOGO_DC_WHITE}
                 alt="DOORCAST"
-                width={320}
-                height={64}
-                className="h-10 w-auto max-h-10 max-w-[260px] object-contain sm:h-12 sm:max-h-12 sm:max-w-[300px]"
+                width={240}
+                height={48}
+                style={{ height: 32, width: "auto", maxWidth: 200 }}
+                className="shrink-0 object-contain sm:!h-10 sm:!max-w-[250px]"
               />
               <p
-                className="max-w-md text-[13px] font-medium leading-relaxed text-white sm:text-sm sm:leading-6"
-                style={{ textShadow: "0 1px 3px rgba(0,0,0,0.85)" }}
+                className="max-w-md text-[12px] font-medium leading-relaxed text-white/95 sm:flex-1 sm:text-[13px] sm:leading-6"
+                style={{ textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}
               >
                 {meta.about}
               </p>
               <button
                 type="button"
                 onClick={playAll}
-                className="mb-2 inline-flex max-w-full items-center gap-2 rounded-sm px-4 py-2.5 text-sm font-bold text-white shadow-lg transition hover:brightness-110"
+                className="inline-flex max-w-full shrink-0 items-center gap-2 rounded-sm px-3.5 py-2 text-xs font-bold text-white shadow-lg transition hover:brightness-110 sm:px-4 sm:py-2.5 sm:text-sm"
                 style={{ backgroundColor: ACCENT }}
               >
                 <span className="truncate">{meta.playAllLabel || "Play all one by one"}</span>
