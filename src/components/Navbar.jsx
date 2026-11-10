@@ -148,6 +148,7 @@ export default function Navbar() {
             </Dropdown>
 
             <li><NavLink to="/events" className={navLink}>Events</NavLink></li>
+            <li><NavLink to="/doorcast" className={navLink}>Doorcast</NavLink></li>
             <li><NavLink to="/about-us" className={navLink}>About Us</NavLink></li>
 
             <Dropdown label="Contact Us" wide>
@@ -247,6 +248,7 @@ export default function Navbar() {
                 </div>
               </MobileAccordion>
               <MobileLink to="/events" label="Events" />
+              <MobileLink to="/doorcast" label="Doorcast" />
               <MobileLink to="/about-us" label="About Us" />
               <MobileAccordion label="Contact Us" open={sub === "c"} onToggle={() => setSub(sub === "c" ? null : "c")}>
                 <Link

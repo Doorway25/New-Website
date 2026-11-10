@@ -10,7 +10,7 @@ import { prisma } from "../lib/prisma.js";
 import { SEO_FIELDS, paginate, pick } from "../lib/utils.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { asyncHandler, HttpError } from "../middleware/error.js";
-import { fetchYoutubeMeta, fetchPlaylistVideos } from "../lib/youtube.js";
+import { extractYoutubeId, fetchYoutubeMeta, fetchPlaylistVideos } from "../lib/youtube.js";
 
 const router = Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -259,6 +259,368 @@ router.post(
       skipped: skipped.length,
       createdSlugs: created,
       updatedSlugs: updated,
+    });
+  })
+);
+
+const DOORCAST_DEFAULTS = {
+  key: "main",
+  heroImageUrl: "/doorcast-hero.jpg",
+  showHeroText: false,
+  tagline: "Beyond the Conversation. Into Your Future.",
+  presentedBy: "EDUCATION DOORWAY",
+  about:
+    "A platform for real conversations, expert insights, and honest guidance for students and families. Through engaging discussions with university partners, alumni, and education specialists, Doorcast helps you make informed decisions about your future.",
+  aboutImageUrl: null,
+  shortsIntro: "Watch the youtube shorts to know the key points of the full episode",
+  playlistUrl: "https://www.youtube.com/playlist?list=PLTxqWjoR7G9A",
+  episodesPlaylistId: "PLTxqWjoR7G9A",
+  shortsPlaylistId: null,
+};
+
+async function ensureDoorcastSetting() {
+  const existing = await prisma.doorcastSetting.findUnique({ where: { key: "main" } });
+  if (existing) return existing;
+  return prisma.doorcastSetting.create({ data: { ...DOORCAST_DEFAULTS } });
+}
+
+router.get(
+  "/doorcast",
+  asyncHandler(async (_req, res) => {
+    const settings = await ensureDoorcastSetting();
+    const videos = await prisma.doorcastVideo.findMany({
+      orderBy: [{ kind: "asc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
+    });
+    res.json({ settings, videos });
+  })
+);
+
+router.put(
+  "/doorcast/settings",
+  asyncHandler(async (req, res) => {
+    await ensureDoorcastSetting();
+    const data = pick(req.body || {}, [
+      "heroImageUrl",
+      "showHeroText",
+      "tagline",
+      "presentedBy",
+      "about",
+      "aboutImageUrl",
+      "shortsIntro",
+      "playlistUrl",
+      "episodesPlaylistId",
+      "shortsPlaylistId",
+    ]);
+    if (data.showHeroText != null) data.showHeroText = Boolean(data.showHeroText);
+    for (const key of [
+      "heroImageUrl",
+      "tagline",
+      "presentedBy",
+      "about",
+      "aboutImageUrl",
+      "shortsIntro",
+      "playlistUrl",
+      "episodesPlaylistId",
+      "shortsPlaylistId",
+    ]) {
+      if (data[key] != null) data[key] = String(data[key]).trim() || null;
+    }
+    const settings = await prisma.doorcastSetting.update({
+      where: { key: "main" },
+      data,
+    });
+    res.json(settings);
+  })
+);
+
+router.post(
+  "/doorcast/videos",
+  asyncHandler(async (req, res) => {
+    const rawId = String(req.body?.youtubeId || req.body?.url || "").trim();
+    const youtubeId = extractYoutubeId(rawId) || rawId;
+    if (!youtubeId) throw new HttpError(400, "YouTube URL or ID required");
+
+    const kind = String(req.body?.kind || "episode").toLowerCase() === "short" ? "short" : "episode";
+    let meta = null;
+    try {
+      meta = await fetchYoutubeMeta(youtubeId);
+    } catch {
+      /* allow manual title */
+    }
+
+    const title = String(req.body?.title || meta?.title || `YouTube ${youtubeId}`).trim();
+    const subtitle = req.body?.subtitle != null ? String(req.body.subtitle).trim() || null : null;
+    const description =
+      req.body?.description != null
+        ? String(req.body.description).trim() || null
+        : meta?.description?.slice(0, 500) || null;
+    const duration = req.body?.duration != null ? String(req.body.duration).trim() || null : null;
+    const imageUrl =
+      req.body?.imageUrl != null
+        ? String(req.body.imageUrl).trim() || null
+        : meta?.thumbnail || `https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`;
+    const featured = Boolean(req.body?.featured);
+    const published = req.body?.published !== false;
+    const sortOrder = Number(req.body?.sortOrder) || 0;
+
+    const existing = await prisma.doorcastVideo.findUnique({ where: { youtubeId } });
+    const payload = {
+      title,
+      subtitle,
+      description,
+      duration,
+      imageUrl,
+      kind,
+      featured,
+      published,
+      sortOrder,
+    };
+
+    if (existing) {
+      const updated = await prisma.doorcastVideo.update({
+        where: { id: existing.id },
+        data: payload,
+      });
+      return res.json(updated);
+    }
+
+    if (featured) {
+      await prisma.doorcastVideo.updateMany({
+        where: { kind: "episode", featured: true },
+        data: { featured: false },
+      });
+    }
+
+    const created = await prisma.doorcastVideo.create({
+      data: { youtubeId, ...payload },
+    });
+    res.status(201).json(created);
+  })
+);
+
+router.put(
+  "/doorcast/videos/:id",
+  asyncHandler(async (req, res) => {
+    const data = pick(req.body || {}, [
+      "youtubeId",
+      "title",
+      "subtitle",
+      "description",
+      "duration",
+      "imageUrl",
+      "kind",
+      "sortOrder",
+      "featured",
+      "published",
+    ]);
+    if (data.youtubeId != null) {
+      data.youtubeId = extractYoutubeId(data.youtubeId) || String(data.youtubeId).trim();
+    }
+    if (data.kind != null) {
+      data.kind = String(data.kind).toLowerCase() === "short" ? "short" : "episode";
+    }
+    if (data.sortOrder != null) data.sortOrder = Number(data.sortOrder) || 0;
+    if (data.featured != null) data.featured = Boolean(data.featured);
+    if (data.published != null) data.published = Boolean(data.published);
+    for (const key of ["title", "subtitle", "description", "duration", "imageUrl"]) {
+      if (data[key] != null) data[key] = String(data[key]).trim() || null;
+    }
+    if (data.title === null) delete data.title;
+
+    if (data.featured === true) {
+      await prisma.doorcastVideo.updateMany({
+        where: { kind: "episode", featured: true, NOT: { id: req.params.id } },
+        data: { featured: false },
+      });
+    }
+
+    try {
+      const item = await prisma.doorcastVideo.update({
+        where: { id: req.params.id },
+        data,
+      });
+      res.json(item);
+    } catch {
+      throw new HttpError(404, "Video not found");
+    }
+  })
+);
+
+router.delete(
+  "/doorcast/videos/:id",
+  requireAdmin,
+  asyncHandler(async (req, res) => {
+    try {
+      await prisma.doorcastVideo.delete({ where: { id: req.params.id } });
+      res.json({ ok: true });
+    } catch {
+      throw new HttpError(404, "Video not found");
+    }
+  })
+);
+
+router.post(
+  "/doorcast/sync-playlist",
+  asyncHandler(async (req, res) => {
+    const kind = String(req.body?.kind || "short").toLowerCase() === "episode" ? "episode" : "short";
+    const playlistRaw = String(req.body?.playlistUrl || req.body?.playlistId || req.body?.url || "").trim();
+    if (!playlistRaw) throw new HttpError(400, "YouTube playlist or video URL required");
+
+    await ensureDoorcastSetting();
+
+    // Allow a single video URL for episodes (Watch Now / featured)
+    const singleVideoId = extractYoutubeId(playlistRaw);
+    const looksLikePlaylist =
+      /[?&]list=/i.test(playlistRaw) || /^PL[\w-]+$/i.test(playlistRaw) || /playlist/i.test(playlistRaw);
+
+    if (singleVideoId && !looksLikePlaylist) {
+      let meta;
+      try {
+        meta = await fetchYoutubeMeta(singleVideoId);
+      } catch (err) {
+        throw new HttpError(err.status || 502, err.message || "YouTube video lookup failed");
+      }
+
+      const title = (meta.title || `YouTube ${singleVideoId}`).trim();
+      const description = meta.description ? meta.description.slice(0, 500) : null;
+      const imageUrl = meta.thumbnail || `https://i.ytimg.com/vi/${singleVideoId}/maxresdefault.jpg`;
+      const subtitle = meta.author || null;
+      const existing = await prisma.doorcastVideo.findUnique({ where: { youtubeId: singleVideoId } });
+      const payload = {
+        title,
+        subtitle,
+        description,
+        imageUrl,
+        kind,
+        sortOrder: 0,
+        published: true,
+        featured: kind === "episode",
+      };
+
+      if (kind === "episode") {
+        await prisma.doorcastVideo.updateMany({
+          where: { kind: "episode", featured: true },
+          data: { featured: false },
+        });
+        await prisma.doorcastSetting.update({
+          where: { key: "main" },
+          data: {
+            playlistUrl: `https://www.youtube.com/watch?v=${singleVideoId}`,
+          },
+        });
+      }
+
+      let video;
+      if (existing) {
+        video = await prisma.doorcastVideo.update({ where: { id: existing.id }, data: payload });
+      } else {
+        video = await prisma.doorcastVideo.create({ data: { youtubeId: singleVideoId, ...payload } });
+      }
+
+      return res.json({
+        ok: true,
+        kind,
+        mode: "single",
+        youtubeId: singleVideoId,
+        total: 1,
+        created: existing ? 0 : 1,
+        updated: existing ? 1 : 0,
+        skipped: 0,
+        video,
+      });
+    }
+
+    let playlist;
+    try {
+      playlist = await fetchPlaylistVideos(playlistRaw);
+    } catch (err) {
+      throw new HttpError(err.status || 502, err.message || "Playlist lookup failed");
+    }
+
+    const playlistField = kind === "episode" ? "episodesPlaylistId" : "shortsPlaylistId";
+    const settingUpdate = { [playlistField]: playlist.playlistId };
+    if (kind === "episode") {
+      settingUpdate.playlistUrl = `https://www.youtube.com/playlist?list=${playlist.playlistId}`;
+    }
+    await prisma.doorcastSetting.update({
+      where: { key: "main" },
+      data: settingUpdate,
+    });
+
+    const created = [];
+    const updated = [];
+    const skipped = [];
+
+    for (let i = 0; i < playlist.videoIds.length; i++) {
+      const youtubeId = playlist.videoIds[i];
+      let meta;
+      try {
+        meta = await fetchYoutubeMeta(youtubeId);
+      } catch {
+        skipped.push(youtubeId);
+        continue;
+      }
+
+      const title = (meta.title || `YouTube ${youtubeId}`).trim();
+      const description = meta.description ? meta.description.slice(0, 500) : null;
+      const imageUrl = meta.thumbnail || `https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`;
+      const subtitle = meta.author || playlist.title || null;
+
+      const existing = await prisma.doorcastVideo.findUnique({ where: { youtubeId } });
+      const payload = {
+        title,
+        subtitle,
+        description,
+        imageUrl,
+        kind,
+        sortOrder: i,
+        published: true,
+        featured: kind === "episode" && i === 0,
+      };
+
+      if (existing) {
+        // Keep shorts/episodes separate: do not convert a short into an episode (or vice versa)
+        if (existing.kind !== kind) {
+          skipped.push(youtubeId);
+          continue;
+        }
+        await prisma.doorcastVideo.update({
+          where: { id: existing.id },
+          data: payload,
+        });
+        updated.push(youtubeId);
+      } else {
+        await prisma.doorcastVideo.create({
+          data: { youtubeId, ...payload },
+        });
+        created.push(youtubeId);
+      }
+    }
+
+    if (kind === "episode" && created.length + updated.length > 0) {
+      const firstId = playlist.videoIds.find((id) => created.includes(id) || updated.includes(id));
+      if (firstId) {
+        await prisma.doorcastVideo.updateMany({
+          where: { kind: "episode", featured: true, NOT: { youtubeId: firstId } },
+          data: { featured: false },
+        });
+        await prisma.doorcastVideo.updateMany({
+          where: { youtubeId: firstId },
+          data: { featured: true, kind: "episode" },
+        });
+      }
+    }
+
+    res.json({
+      ok: true,
+      kind,
+      mode: "playlist",
+      playlistId: playlist.playlistId,
+      playlistTitle: playlist.title,
+      total: playlist.videoIds.length,
+      created: created.length,
+      updated: updated.length,
+      skipped: skipped.length,
     });
   })
 );

@@ -306,6 +306,57 @@ router.get(
 );
 
 router.get(
+  "/doorcast",
+  asyncHandler(async (_req, res) => {
+    cachePublic(res, 30);
+    let settings = await prisma.doorcastSetting.findUnique({ where: { key: "main" } });
+    if (!settings) {
+      settings = {
+        heroImageUrl: "/doorcast-hero.jpg",
+        showHeroText: false,
+        tagline: "Beyond the Conversation. Into Your Future.",
+        presentedBy: "EDUCATION DOORWAY",
+        about:
+          "A platform for real conversations, expert insights, and honest guidance for students and families. Through engaging discussions with university partners, alumni, and education specialists, Doorcast helps you make informed decisions about your future.",
+        aboutImageUrl: null,
+        shortsIntro: "Watch the youtube shorts to know the key points of the full episode",
+        playlistUrl: "https://www.youtube.com/playlist?list=PLTxqWjoR7G9A",
+        episodesPlaylistId: "PLTxqWjoR7G9A",
+        shortsPlaylistId: "PLPX4VGzg8TQo",
+      };
+    }
+
+    const videos = await prisma.doorcastVideo.findMany({
+      where: { published: true },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+    });
+
+    const episodes = videos.filter((v) => v.kind === "episode");
+    const shorts = videos.filter((v) => v.kind === "short");
+    const featured =
+      episodes.find((v) => v.featured) || episodes[0] || null;
+
+    res.json({
+      settings: {
+        heroImageUrl: settings.heroImageUrl,
+        showHeroText: settings.showHeroText,
+        tagline: settings.tagline,
+        presentedBy: settings.presentedBy,
+        about: settings.about,
+        aboutImageUrl: settings.aboutImageUrl,
+        shortsIntro: settings.shortsIntro,
+        playlistUrl: settings.playlistUrl,
+        episodesPlaylistId: settings.episodesPlaylistId,
+        shortsPlaylistId: settings.shortsPlaylistId,
+      },
+      featured,
+      episodes,
+      shorts,
+    });
+  })
+);
+
+router.get(
   "/stories/:slug",
   asyncHandler(async (req, res) => {
     const item = await prisma.story.findFirst({

@@ -19,6 +19,7 @@ import EventDetail from "./pages/EventDetail";
 import EventGalleryAlbum from "./pages/EventGalleryAlbum";
 import Stories from "./pages/Stories";
 import StoryDetail from "./pages/StoryDetail";
+import Doorcast from "./pages/Doorcast";
 import About from "./pages/About";
 import Team from "./pages/Team";
 import TeamDetail from "./pages/TeamDetail";
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="/stories" element={<Stories />} />
           <Route path="/stories/:category" element={<Stories />} />
           <Route path="/story/:slug" element={<StoryDetail />} />
+          <Route path="/doorcast" element={<Doorcast />} />
           <Route path="/about-us" element={<About />} />
           <Route path="/team" element={<Team />} />
           <Route path="/team/:slug" element={<TeamDetail />} />

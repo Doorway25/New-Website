@@ -16,6 +16,7 @@ const quickLinks = [
 const pages = [
   { label: "Articles", to: "/articles" },
   { label: "Events", to: "/events" },
+  { label: "Doorcast", to: "/doorcast" },
   { label: "Video Stories", to: "/stories" },
   { label: "Destinations", to: "/countries" },
   { label: "Study in UK", to: "/study-in-uk" },

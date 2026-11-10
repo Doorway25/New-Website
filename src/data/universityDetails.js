@@ -1,4 +1,4 @@
-import { formatTuition } from "../utils/currency";
+import { formatTuition } from "../utils/currency.js";
 
 /** Country-level defaults for university detail tabs. */
 const COUNTRY_DEFAULTS = {

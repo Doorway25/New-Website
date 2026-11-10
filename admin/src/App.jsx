@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import ResourceEdit from "./pages/ResourceEdit";
 import ResourceList from "./pages/ResourceList";
 import Settings from "./pages/Settings";
+import Doorcast from "./pages/Doorcast";
 import Users from "./pages/Users";
 import { resources } from "./resources";
 
@@ -39,6 +40,7 @@ export default function App() {
               <Route key={`${key}-edit`} path={`${key}/:id`} element={<ResourceEdit resourceKey={key} />} />
             ))}
             <Route path="leads" element={<Leads />} />
+            <Route path="doorcast" element={<Doorcast />} />
             <Route path="settings" element={<Settings />} />
             <Route path="users" element={<Users />} />
             <Route path="profile" element={<Profile />} />

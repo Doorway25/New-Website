@@ -404,3 +404,38 @@ model Lead {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+/** Doorcast page settings (singleton key=main) */
+model DoorcastSetting {
+  id                 String   @id @default(cuid())
+  key                String   @unique @default("main")
+  heroImageUrl       String?
+  showHeroText       Boolean  @default(false)
+  tagline            String?
+  presentedBy        String?  @default("EDUCATION DOORWAY")
+  about              String?  @db.Text
+  aboutImageUrl      String?
+  shortsIntro        String?
+  playlistUrl        String?
+  episodesPlaylistId String?
+  shortsPlaylistId   String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+/** Doorcast featured episodes + shorts carousel (YouTube-synced or manual) */
+model DoorcastVideo {
+  id          String   @id @default(cuid())
+  youtubeId   String   @unique
+  title       String
+  subtitle    String?
+  description String?  @db.Text
+  duration    String?
+  imageUrl    String?
+  kind        String   @default("episode") // episode | short
+  sortOrder   Int      @default(0)
+  featured    Boolean  @default(false)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

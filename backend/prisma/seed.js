@@ -168,6 +168,16 @@ async function main() {
       body: "Watch stories from guardians, students and university delegates.",
     },
     {
+      slug: "doorcast",
+      title: "Doorcast",
+      subtitle: "Beyond the Conversation. Into Your Future.",
+      eyebrow: "Media",
+      body: "Real conversations, expert insights, and honest guidance for students and families.",
+      metaTitle: "Doorcast | Education Doorway",
+      metaDescription:
+        "Watch Doorcast episodes and shorts — real conversations on study abroad with Education Doorway.",
+    },
+    {
       slug: "courses",
       title: "Course Finder",
       subtitle: "Find your course and academic level",
@@ -219,6 +229,22 @@ async function main() {
       update: page,
     });
   }
+
+  await prisma.doorcastSetting.upsert({
+    where: { key: "main" },
+    create: {
+      key: "main",
+      heroImageUrl: "/doorcast-hero.jpg",
+      showHeroText: false,
+      tagline: "Beyond the Conversation. Into Your Future.",
+      presentedBy: "EDUCATION DOORWAY",
+      about:
+        "A platform for real conversations, expert insights, and honest guidance for students and families. Through engaging discussions with university partners, alumni, and education specialists, Doorcast helps you make informed decisions about your future.",
+      shortsIntro: "Watch the youtube shorts to know the key points of the full episode",
+      playlistUrl: "https://www.youtube.com/@EducationDoorway/videos",
+    },
+    update: {},
+  });
 
   for (const [i, item] of countries.entries()) {
     await prisma.country.upsert({
