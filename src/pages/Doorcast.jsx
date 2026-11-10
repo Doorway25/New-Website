@@ -309,8 +309,8 @@ export default function Doorcast() {
         path="/doorcast"
       />
 
-      {/* 1 · Banner */}
-      <section className="relative h-[260px] overflow-hidden bg-black text-white sm:h-[320px] md:h-[380px]">
+      {/* 1 · Banner — compact height, less empty middle space */}
+      <section className="relative h-[190px] overflow-hidden bg-black text-white sm:h-[230px] md:h-[270px]">
         <img
           src={heroSrc}
           alt=""
@@ -325,15 +325,15 @@ export default function Doorcast() {
           }}
         />
         {meta.showHeroText ? (
-          <div className="container-x relative z-10 flex h-full flex-col justify-between py-5 sm:py-6 md:py-7">
-            <div className="flex flex-col items-start gap-1.5 sm:gap-2">
+          <div className="container-x relative z-10 flex h-full flex-col justify-between py-4 sm:py-5">
+            <div className="flex flex-col items-start gap-1.5">
               <img
                 src={LOGO_DC_WHITE}
                 alt="DOORCAST"
                 width={240}
                 height={48}
-                style={{ height: 40, width: "auto", maxWidth: 260 }}
-                className="object-contain object-left sm:!h-[48px] sm:!max-w-[300px] md:!h-[52px] md:!max-w-[320px]"
+                style={{ height: 36, width: "auto", maxWidth: 240 }}
+                className="object-contain object-left sm:!h-[44px] sm:!max-w-[280px] md:!h-[48px] md:!max-w-[300px]"
               />
               <div className="flex flex-wrap items-center gap-2">
                 <span className="shrink-0 text-[11px] font-medium tracking-wide text-white/90 sm:text-xs">
@@ -344,25 +344,25 @@ export default function Doorcast() {
                   alt="Education Doorway"
                   width={160}
                   height={32}
-                  style={{ height: 28, width: "auto", maxWidth: 160 }}
-                  className="object-contain object-left sm:!h-[32px] sm:!max-w-[180px]"
+                  style={{ height: 26, width: "auto", maxWidth: 150 }}
+                  className="object-contain object-left sm:!h-[30px] sm:!max-w-[170px]"
                 />
               </div>
             </div>
-            <p className="max-w-xl shrink-0 font-display text-base font-medium italic leading-snug text-white sm:text-lg md:text-xl">
+            <p className="max-w-xl shrink-0 pb-0.5 font-display text-sm font-medium italic leading-snug text-white sm:text-base md:text-lg">
               {meta.tagline || "Beyond the Conversation. Into Your Future."}
             </p>
           </div>
         ) : null}
       </section>
 
-      {/* 2 · Watch Now + About */}
-      <section className="bg-[#1a1a1a] py-3 sm:py-4">
-        <div className="container-x grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2 lg:items-stretch">
+      {/* 2 · Watch Now + About — taller cards, more room for buttons */}
+      <section className="bg-[#1a1a1a] py-4 sm:py-5 md:py-6">
+        <div className="container-x grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-2 lg:items-stretch">
           <button
             type="button"
             onClick={playFeatured}
-            className="group relative aspect-video w-full min-w-0 overflow-hidden rounded-2xl bg-black text-left shadow-xl lg:aspect-auto lg:min-h-[280px]"
+            className="group relative aspect-video w-full min-w-0 overflow-hidden rounded-2xl bg-black text-left shadow-xl lg:aspect-auto lg:min-h-[340px]"
           >
             {featured?.youtubeId || featured?.imageUrl ? (
               <Thumb
@@ -378,26 +378,26 @@ export default function Doorcast() {
                 className="absolute inset-0 h-full w-full scale-110 object-cover transition duration-500 group-hover:scale-[1.14]"
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <span className="absolute inset-0 flex items-center justify-center">
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 text-[#c8102e] shadow-xl transition group-hover:scale-110">
                 <PlayIcon className="h-6 w-6" />
               </span>
             </span>
             <span
-              className="absolute bottom-3 left-3 rounded px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow"
+              className="absolute bottom-5 left-4 rounded px-3.5 py-2 text-xs font-bold uppercase tracking-wide text-white shadow sm:bottom-6 sm:left-5 sm:px-4 sm:text-sm"
               style={{ backgroundColor: ACCENT }}
             >
               {meta.watchNowLabel || "Watch Now"}
             </span>
             {featured?.duration ? (
-              <span className="absolute bottom-3 right-3 rounded bg-black/70 px-2 py-1 text-xs font-semibold text-white">
+              <span className="absolute bottom-5 right-4 rounded bg-black/70 px-2.5 py-1.5 text-xs font-semibold text-white sm:bottom-6 sm:right-5">
                 {featured.duration}
               </span>
             ) : null}
           </button>
 
-          <div className="relative aspect-video min-w-0 overflow-hidden rounded-2xl bg-[#121212] shadow-xl lg:aspect-auto lg:min-h-[280px]">
+          <div className="relative aspect-video min-w-0 overflow-hidden rounded-2xl bg-[#121212] shadow-xl lg:aspect-auto lg:min-h-[340px]">
             <img
               src={aboutImg}
               alt=""
@@ -405,7 +405,7 @@ export default function Doorcast() {
               style={{ objectPosition: "28% 40%" }}
               loading="lazy"
             />
-            <div className="absolute inset-y-0 right-0 z-10 flex w-full flex-col items-start justify-center gap-2.5 px-4 py-5 pb-8 text-left sm:w-[58%] sm:items-end sm:gap-3 sm:px-6 sm:py-6 sm:pb-10 sm:text-right">
+            <div className="absolute inset-y-0 right-0 z-10 flex w-full flex-col items-start justify-center gap-3 px-4 py-6 pb-10 text-left sm:w-[58%] sm:items-end sm:gap-3.5 sm:px-6 sm:py-7 sm:pb-12 sm:text-right">
               <img
                 src={LOGO_DC_WHITE}
                 alt="DOORCAST"
@@ -422,7 +422,7 @@ export default function Doorcast() {
               <button
                 type="button"
                 onClick={playAll}
-                className="mb-1 inline-flex max-w-full items-center gap-2 rounded-sm px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:brightness-110 sm:mb-2"
+                className="mb-2 inline-flex max-w-full items-center gap-2 rounded-sm px-4 py-2.5 text-sm font-bold text-white shadow-lg transition hover:brightness-110"
                 style={{ backgroundColor: ACCENT }}
               >
                 <span className="truncate">{meta.playAllLabel || "Play all one by one"}</span>
