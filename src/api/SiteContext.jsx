@@ -284,7 +284,7 @@ export function SiteProvider({ children }) {
           fetchPublic("/branches").catch(() => []),
           fetchPublic("/event-albums").catch(() => ({ items: [] })),
           Promise.all(
-            ["home", "about-us", "contact-us", "apply-now", "study", "countries", "courses", "articles", "events", "stories", "study-in-uk", "team"].map((slug) =>
+            ["home", "about-us", "contact-us", "apply-now", "study", "countries", "courses", "articles", "events", "stories", "study-in-uk", "team", "doorcast"].map((slug) =>
               fetchPublic(`/pages/${slug}`).catch(() => null)
             )
           ),
