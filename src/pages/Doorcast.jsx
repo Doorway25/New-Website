@@ -236,7 +236,8 @@ export default function Doorcast() {
     let cancelled = false;
     fetchPublic("/doorcast")
       .then((data) => {
-        if (cancelled || !data) return;
+        // API/DB errors sometimes return { error } with HTTP 200 — keep local fallbacks
+        if (cancelled || !data || data.error) return;
         const s = data.settings || {};
         const shortsUrl = s.shortsPlaylistId
           ? `https://www.youtube.com/playlist?list=${encodeURIComponent(s.shortsPlaylistId)}`
@@ -262,10 +263,13 @@ export default function Doorcast() {
           moreStoriesLabel: s.moreStoriesLabel || "More video stories",
         });
         if (data.featured?.youtubeId) setFeatured(data.featured);
-        else if (Array.isArray(data.episodes) && data.episodes[0]) setFeatured(data.episodes[0]);
-        else setFeatured(null);
+        else if (Array.isArray(data.episodes) && data.episodes[0]?.youtubeId) {
+          setFeatured(data.episodes[0]);
+        }
+        // else keep static doorcastEpisodes fallback
+
         if (Array.isArray(data.shorts) && data.shorts.length) setShorts(data.shorts);
-        else setShorts([]);
+        // else keep static doorcastShorts fallback
       })
       .catch(() => {
         /* keep static fallbacks */
@@ -377,13 +381,13 @@ export default function Doorcast() {
                 imageUrl={featured?.imageUrl}
                 alt={featured?.title || "Doorcast"}
                 preferYoutube
-                className="absolute inset-0 h-full w-full scale-[1.05] object-cover transition duration-500 group-hover:scale-[1.09]"
+                className="absolute inset-0 h-full w-full scale-[1.18] object-cover object-center transition duration-500 group-hover:scale-[1.22]"
               />
             ) : (
               <img
                 src={heroSrc}
                 alt={featured?.title || "Doorcast episode"}
-                className="absolute inset-0 h-full w-full scale-[1.05] object-cover transition duration-500 group-hover:scale-[1.09]"
+                className="absolute inset-0 h-full w-full scale-[1.05] object-cover object-center transition duration-500 group-hover:scale-[1.09]"
               />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10" />

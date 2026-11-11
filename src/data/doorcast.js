@@ -15,14 +15,14 @@ export const doorcastMeta = {
   shortsPlaylistUrl: "https://www.youtube.com/playlist?list=PLPX4VGzg8TQo",
 };
 
-/** Full-length episodes (16:9) */
+/** Full-length episodes (16:9) — used when CMS/API is down */
 export const doorcastEpisodes = [
   {
     id: "featured",
-    title: "Study in Malaysia?",
-    youtubeId: "",
+    title: "DOORCAST IS HERE! Conversations That Open Doors!",
+    youtubeId: "qCVkSBAzRZE",
     duration: "56 Min",
-    description: "Real conversation on opportunities, costs, and pathways for international students in Malaysia.",
+    description: "Real conversations, expert insights, and guidance for students and families.",
   },
 ];
 

@@ -13,10 +13,10 @@ export function youtubeThumbUrl(id, quality = "hqdefault") {
   return `https://i.ytimg.com/vi/${id}/${quality}.jpg`;
 }
 
-/** Prefer sd → hq → mq (skip maxres — gray stub often returns 200). */
+/** Prefer hq720 → sd → hq → mq (skip maxres — gray stub often returns 200). */
 export function youtubeThumbCandidates(id) {
   if (!id) return [];
-  return ["sddefault", "hqdefault", "mqdefault"].map(
+  return ["hq720", "sddefault", "hqdefault", "mqdefault"].map(
     (q) => `https://i.ytimg.com/vi/${id}/${q}.jpg`
   );
 }
