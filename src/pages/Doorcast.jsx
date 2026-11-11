@@ -316,13 +316,13 @@ export default function Doorcast() {
         path="/doorcast"
       />
 
-      {/* 1 · Banner — panoramic hero, compact left lockup, ON AIR on the right */}
+      {/* 1 · Banner — taller hero, readable lockup, ON AIR on the right */}
       <section className="relative overflow-hidden bg-black text-white">
-        <div className="relative min-h-[200px] w-full sm:min-h-[240px] md:min-h-[280px] lg:min-h-[300px]">
+        <div className="relative h-[280px] w-full sm:h-[340px] md:h-[400px] lg:h-[440px]">
           <img
             src={heroSrc}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover object-[85%_center] sm:object-[75%_center] md:object-[70%_center]"
+            className="absolute inset-0 h-full w-full object-cover object-[82%_center] sm:object-[72%_center] md:object-[68%_center]"
             onError={(e) => {
               if (e.currentTarget.src.includes("doorcast-hero.webp")) {
                 e.currentTarget.src = "/doorcast-hero.jpg";
@@ -332,33 +332,38 @@ export default function Doorcast() {
               e.currentTarget.src = "/doorcast-hero.webp";
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 to-black/20 sm:from-black/85 sm:via-black/50 sm:to-transparent" />
+          {/* Strong left scrim so logos + tagline stay readable */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-black/15 sm:from-black/95 sm:via-black/55 sm:to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/25" />
 
           {meta.showHeroText ? (
-            <div className="container-x relative z-10 flex h-full items-center py-5 sm:py-6 md:py-7">
-              <div className="flex max-w-[20rem] flex-col items-start gap-1.5 sm:max-w-xl sm:gap-2.5">
+            <div className="container-x relative z-10 flex h-full items-center py-8 sm:py-10 md:py-12">
+              <div className="flex max-w-xl flex-col items-start gap-3 sm:gap-3.5 md:gap-4">
                 <img
                   src={LOGO_DC_WHITE}
                   alt="DOORCAST"
-                  width={280}
-                  height={48}
-                  style={{ height: 34, width: "auto", maxWidth: 220 }}
-                  className="object-contain object-left sm:!h-11 sm:!max-w-[300px] md:!h-[52px] md:!max-w-[360px]"
+                  width={360}
+                  height={72}
+                  style={{ height: 48, width: "auto", maxWidth: 280 }}
+                  className="object-contain object-left drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)] sm:!h-14 sm:!max-w-[340px] md:!h-16 md:!max-w-[400px]"
                 />
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  <span className="text-[10px] font-medium tracking-wide text-white/90 sm:text-xs">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                  <span className="text-xs font-medium tracking-wide text-white/90 sm:text-sm">
                     Presented by
                   </span>
                   <img
                     src={LOGO_ED_WHITE}
                     alt="Education Doorway"
-                    width={150}
-                    height={28}
-                    style={{ height: 22, width: "auto", maxWidth: 130 }}
-                    className="object-contain object-left sm:!h-[28px] sm:!max-w-[160px] md:!h-[30px] md:!max-w-[170px]"
+                    width={180}
+                    height={36}
+                    style={{ height: 28, width: "auto", maxWidth: 160 }}
+                    className="object-contain object-left drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] sm:!h-8 sm:!max-w-[190px] md:!h-9 md:!max-w-[210px]"
                   />
                 </div>
-                <p className="max-w-[18rem] font-display text-[13px] font-medium italic leading-snug text-white sm:max-w-lg sm:text-base md:text-lg">
+                <p
+                  className="max-w-md font-display text-base font-medium italic leading-relaxed text-white sm:max-w-lg sm:text-lg md:text-xl"
+                  style={{ textShadow: "0 2px 10px rgba(0,0,0,0.75)" }}
+                >
                   {meta.tagline || "Beyond the Conversation. Into Your Future."}
                 </p>
               </div>
